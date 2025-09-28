@@ -8,12 +8,22 @@ indent_style = space
 [*.xml]
 indent_size = 2
 
+# Markdown files
+[*.md]
+max_line_length = 100
+
 # C# files
 [*.cs]
 
-#### Core EditorConfig Options ####
+#### Sawyer additions
 
 max_line_length = off
+trim_trailing_whitespace = true
+
+# More performant logging (via LoggerMessage delegates or source generation)
+dotnet_diagnostic.CA1848.severity = none
+
+#### Core EditorConfig Options ####
 
 # Indentation and spacing
 indent_size = 4
