@@ -1,7 +1,6 @@
 # CoolCardGames
 
-This repository implements a number of card games (here's
-the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype)).
+This repository implements a number of card games.
 
 ## Getting Started
 
@@ -22,6 +21,8 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 `dotnet test`
 
 ## TODO
+
+Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype)).
 
 ### Short-Term
 
