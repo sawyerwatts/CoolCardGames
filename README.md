@@ -89,6 +89,7 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 - Seeds and replayability
 - Lobbies, queues, chat, notes, passwords, accounts
 - Track player stats
+- Sufficient logging such that games can be replayed
 
 ### Other Card Games to Implement
 
@@ -102,3 +103,4 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 - Go Fish
 - Pinochle
 - Rummy
+- Uno (altho this one isn't public domain, so prob not)
