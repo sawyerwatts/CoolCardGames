@@ -22,7 +22,7 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 
 ## TODO
 
-Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype)).
+Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
