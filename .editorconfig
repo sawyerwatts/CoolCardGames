@@ -20,8 +20,11 @@ max_line_length = 100
 max_line_length = off
 trim_trailing_whitespace = true
 
-# More performant logging (via LoggerMessage delegates or source generation)
+# CA1848: More performant logging (via LoggerMessage delegates or source generation)
 dotnet_diagnostic.CA1848.severity = none
+
+# CA1805: indicate when a property is explicitly initialized to its default value.
+dotnet_diagnostic.CA1805.severity = none
 
 #### Core EditorConfig Options ####
 
