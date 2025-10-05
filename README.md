@@ -26,10 +26,7 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
-- Checklists the types migrated from prototype
-- See Improvement Ideas from Prototype
-- make `IGame`
-- Reimplement `HeartsGame`
+- Reimplement `HeartsGame` w/ Improvement Ideas from Prototype
 - Make CLI entrypoint (offline only, for now)
 - Update architecture diagram to better detail interactions (and setup?)
 

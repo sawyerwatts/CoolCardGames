@@ -8,7 +8,7 @@ public static class GetHighest
     /// <paramref name="enumPriorities"/>.
     /// </summary>
     /// <param name="enumPriorities">
-    /// This starts with the t in the highest priority and can have additional ts in
+    /// This starts with the highest priority element and can have additional elements in
     /// decreasing priority. This must have at least one element and may not contain
     /// duplicates.
     /// </param>
