@@ -26,6 +26,8 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
+- Make player interfaces n stuff w/ Improvement Ideas from Prototype
+- Make GameState n stuff w/ Improvement Ideas from Prototype
 - Reimplement `HeartsGame` w/ Improvement Ideas from Prototype
 - Make CLI entrypoint (offline only, for now)
 - Update architecture diagram to better detail interactions (and setup?)
