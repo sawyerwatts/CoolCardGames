@@ -32,6 +32,9 @@ dotnet_diagnostic.CA1848.severity = none
 # CA1805: indicate when a property is explicitly initialized to its default value.
 dotnet_diagnostic.CA1805.severity = none
 
+# CS9113: Parameter is unread
+dotnet_diagnostic.CS9113.severity = suggestion
+
 # CA2007: Do not directly await a Task (not applicable to applications)
 dotnet_diagnostic.CA2007.severity = none
 
