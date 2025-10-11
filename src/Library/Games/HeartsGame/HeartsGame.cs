@@ -98,6 +98,9 @@ public class Player<TCard, TPlayerState, TGameState>(
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;
 
+    /// <remarks>
+    /// This will take the selected card out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// </remarks>
     /// <param name="validateChosenCard">
     /// This will take the current player hand and the pre-validated in-range index of the card to
     /// play, and return true iff it is valid to play that card.
@@ -121,6 +124,9 @@ public class Player<TCard, TPlayerState, TGameState>(
         return cardToPlay;
     }
 
+    /// <remarks>
+    /// This will take the selected card(s) out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// </remarks>
     /// <param name="validateChosenCards">
     /// This will take the current player hand and the pre-validated in-range and unique indexes of
     /// the cards to play, and return true iff it is valid to play those cards.
