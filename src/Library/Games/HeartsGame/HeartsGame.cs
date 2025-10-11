@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,7 @@ namespace CoolCardGames.Library.Games.HeartsGame;
 // TODO: how handle data visibility to diff players?
 
 public class HeartsGame(
-    ReadOnlyCollection<HeartsPlayerIntermediate> playerIntermediates,
+    IReadOnlyList<HeartsPlayer> playerIntermediates,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsGame.Settings settings,
@@ -25,20 +24,19 @@ public class HeartsGame(
         IOptionsMonitor<Settings> settingsMonitor,
         ILogger<HeartsGame> logger)
     {
-        public HeartsGame Make(List<IPlayerGameSession<HeartsCard>> playerSessions)
+        public HeartsGame Make(List<PlayerSession<HeartsCard>> playerSessions)
         {
             if (playerSessions.Count != NumPlayers)
                 throw new ArgumentException($"{nameof(playerSessions)} must have {NumPlayers} elements, but it has {playerSessions.Count} elements");
 
             var gameState = new HeartsGameState();
-            gameState.Players = new ReadOnlyCollection<HeartsPlayerState>(
-                Enumerable.Range(0, NumPlayers)
-                    .Select(_ => new HeartsPlayerState())
-                    .ToList()
-            );
+            gameState.Players = Enumerable.Range(0, NumPlayers)
+                .Select(_ => new HeartsPlayerState())
+                .ToList()
+                .AsReadOnly();
 
             var playerIntermediates = playerSessions
-                .Select((playerSession, i) => new HeartsPlayerIntermediate(playerSession, gameState, i))
+                .Select((playerSession, i) => new HeartsPlayer(playerSession, gameState, i))
                 .ToList()
                 .AsReadOnly();
 
@@ -49,12 +47,10 @@ public class HeartsGame(
     public Task Play(CancellationToken cancellationToken)
     {
         using var loggingScope = logger.BeginScope("Beginning a new hearts game with game ID {GameId}", Guid.NewGuid());
-        foreach (HeartsPlayerIntermediate playerIntermediate in playerIntermediates)
+        foreach (HeartsPlayer playerIntermediate in playerIntermediates)
         {
-            logger.LogInformation("Player at index {PlayerIndex} is {PlayerName} ({SessionType})",
-                playerIntermediate.GameStatePlayerIndex,
-                playerIntermediate.Session.PlayerDetails.Name,
-                playerIntermediate.Session.SessionType);
+            logger.LogInformation("Player at index {PlayerIndex} is {PlayerName}",
+                playerIntermediate.GameStatePlayerIndex, playerIntermediate.DisplayName);
         }
 
         logger.LogInformation("Completed the hearts game");
@@ -77,7 +73,7 @@ public class GameState<TCard, TPlayerState>
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
 {
-    public ReadOnlyCollection<TPlayerState> Players { get; set; } = ReadOnlyCollection<TPlayerState>.Empty;
+    public IReadOnlyList<TPlayerState> Players { get; set; } = new List<TPlayerState>().AsReadOnly();
 }
 
 public class PlayerState<TCard>
@@ -86,14 +82,17 @@ public class PlayerState<TCard>
     public Cards<TCard> Hand { get; set; } = [];
 }
 
-public record PlayerIntermediate<TCard, TPlayerState, TGameState>(
-    IPlayerGameSession<TCard> Session,
-    TGameState GameState,
-    int GameStatePlayerIndex)
+public class Player<TCard, TPlayerState, TGameState>(
+    PlayerSession<TCard> session,
+    TGameState gameState,
+    int gameStatePlayerIndex)
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
     where TGameState : GameState<TCard, TPlayerState>
 {
+    public string DisplayName => session.DisplayName;
+    public int GameStatePlayerIndex => gameStatePlayerIndex;
+
     // TODO: have methods to prompt for cards to play
 }
 
@@ -108,39 +107,62 @@ public class HeartsPlayerState : PlayerState<HeartsCard>
     public int Score { get; set; } = 0;
 }
 
-public record HeartsPlayerIntermediate(
-    IPlayerGameSession<HeartsCard> Session,
-    HeartsGameState GameState,
-    int GameStatePlayerIndex)
-    : PlayerIntermediate<HeartsCard, HeartsPlayerState, HeartsGameState>(Session, GameState, GameStatePlayerIndex);
+public class HeartsPlayer(
+    PlayerSession<HeartsCard> session,
+    HeartsGameState gameState,
+    int gameStatePlayerIndex)
+    : Player<HeartsCard, HeartsPlayerState, HeartsGameState>(session, gameState, gameStatePlayerIndex);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: prob make a Player feature folder w/in Core
+// TODO: prob make a PlayerSession feature folder w/in Core or something
 
-public record PlayerDetails(string Name)
+public static class AnonymousPlayerSession
 {
-    public static readonly PlayerDetails AnonymousAnteater = new("Anonymous Anteater");
-    public static readonly PlayerDetails AnonymousBat = new("Anonymous Bat");
-    public static readonly PlayerDetails AnonymousChinchilla = new("Anonymous Chinchilla");
-    public static readonly PlayerDetails AnonymousDog = new("Anonymous Dog");
-    public static readonly PlayerDetails AnonymousElephant = new("Anonymous Elephant");
+    public static readonly IReadOnlyList<string> DisplayNames = new List<string>(
+    [
+        "Anonymous Anteater",
+        "Anonymous Bat",
+        "Anonymous Chinchilla",
+        "Anonymous Dog",
+        "Anonymous Elephant",
+    ]).AsReadOnly();
 }
 
-public interface IPlayerGameSession<TCard>
+public abstract class PlayerSession<TCard>(string displayName)
+    where TCard : Card
 {
-    PlayerDetails PlayerDetails { get; }
-    string SessionType { get; }
+    public string DisplayName => displayName;
+
+    public abstract Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
+
+    public abstract Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
 }
 
-public class CliPlayerGameSession<TCard>(PlayerDetails playerDetails) : IPlayerGameSession<TCard>
+public class CliPlayerSession<TCard>(string displayName) : PlayerSession<TCard>(displayName)
+    where TCard : Card
 {
-    public PlayerDetails PlayerDetails => playerDetails;
-    public string SessionType => "Terminal";
+    public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
 
-public class GameAi<TCard>(PlayerDetails playerDetails) : IPlayerGameSession<TCard>
+public class Ai<TCard>(string displayName) : PlayerSession<TCard>(displayName)
+    where TCard : Card
 {
-    public PlayerDetails PlayerDetails => playerDetails;
-    public string SessionType => "Artificial";
+    public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
