@@ -1,7 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +10,7 @@ namespace CoolCardGames.Library.Games.HeartsGame;
 // TODO: how handle data visibility to diff players?
 
 public class HeartsGame(
-    IReadOnlyList<HeartsPlayer> playerIntermediates,
+    IReadOnlyList<HeartsPlayer> players,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsGame.Settings settings,
@@ -50,10 +47,10 @@ public class HeartsGame(
     public Task Play(CancellationToken cancellationToken)
     {
         using var loggingScope = logger.BeginScope("Beginning a new hearts game with game ID {GameId}", Guid.NewGuid());
-        foreach (HeartsPlayer playerIntermediate in playerIntermediates)
+        foreach (HeartsPlayer player in players)
         {
             logger.LogInformation("Player at index {PlayerIndex} is {PlayerName}",
-                playerIntermediate.GameStatePlayerIndex, playerIntermediate.DisplayName);
+                player.GameStatePlayerIndex, player.DisplayName);
         }
 
         logger.LogInformation("Completed the hearts game");
@@ -85,6 +82,8 @@ public class PlayerState<TCard>
     public Cards<TCard> Hand { get; set; } = [];
 }
 
+// TODO: write unit tests for these funcs
+// TODO: update these funcs to pass additional, human-readable validation info
 public class Player<TCard, TPlayerState, TGameState>(
     PlayerSession<TCard> session,
     TGameState gameState,
@@ -96,7 +95,62 @@ public class Player<TCard, TPlayerState, TGameState>(
     public string DisplayName => session.DisplayName;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
-    // TODO: have methods to prompt for cards to play
+    private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
+    private Cards<TCard> Hand => PlayerState.Hand;
+
+    /// <param name="validateChosenCard">
+    /// This will take the current player hand and the pre-validated in-range index of the card to
+    /// play, and return true iff it is valid to play that card.
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    public async Task<TCard> PlayCard(Func<Cards<TCard>, int, bool> validateChosenCard, CancellationToken cancellationToken)
+    {
+        bool validCardToPlay = false;
+        int iCardToPlay = -1;
+        while (!validCardToPlay)
+        {
+            iCardToPlay = await session.PromptForIndexOfCardToPlay(Hand, cancellationToken);
+            if (iCardToPlay < 0 || iCardToPlay >= Hand.Count)
+                continue;
+
+            validCardToPlay = validateChosenCard(Hand, iCardToPlay);
+        }
+
+        TCard cardToPlay = Hand[iCardToPlay];
+        Hand.RemoveAt(iCardToPlay);
+        return cardToPlay;
+    }
+
+    /// <param name="validateChosenCards">
+    /// This will take the current player hand and the pre-validated in-range and unique indexes of
+    /// the cards to play, and return true iff it is valid to play those cards.
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    public async Task<Cards<TCard>> PlayCards(Func<Cards<TCard>, List<int>, bool> validateChosenCards, CancellationToken cancellationToken)
+    {
+        bool validCardsToPlay = false;
+        List<int> iCardsToPlay = [];
+        while (!validCardsToPlay)
+        {
+            iCardsToPlay = await session.PromptForIndexesOfCardsToPlay(Hand, cancellationToken);
+            if (iCardsToPlay.Count != iCardsToPlay.Distinct().Count())
+                continue;
+
+            if (iCardsToPlay.Any(iCardToPlay => iCardToPlay < 0 || iCardToPlay >= Hand.Count))
+                continue;
+
+            validCardsToPlay = validateChosenCards(Hand, iCardsToPlay);
+        }
+
+        Cards<TCard> cardsToPlay = new(capacity: iCardsToPlay.Count);
+        foreach (int iCardToPlay in iCardsToPlay.OrderDescending())
+        {
+            cardsToPlay.Add(Hand[iCardToPlay]);
+            Hand.RemoveAt(iCardToPlay);
+        }
+
+        return cardsToPlay;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +172,7 @@ public class HeartsPlayer(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: update these funcs to pass additional, human-readable validation info
 public abstract class PlayerSession<TCard>(string displayName)
     where TCard : Card
 {
@@ -128,6 +183,8 @@ public abstract class PlayerSession<TCard>(string displayName)
     public abstract Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
 }
 
+// TODO: move to Cli.csproj
+// TODO: have a configurable delay b/w messages
 public class CliPlayerSession<TCard>(string displayName) : PlayerSession<TCard>(displayName)
     where TCard : Card
 {
