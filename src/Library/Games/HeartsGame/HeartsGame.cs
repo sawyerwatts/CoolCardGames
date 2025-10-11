@@ -68,7 +68,7 @@ public class GameState<TCard, TPlayerState>
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
 {
-    public ReadOnlyCollection<TPlayerState> PlayerStates { get; set; } = [];
+    public ReadOnlyCollection<TPlayerState> PlayerStates { get; set; } = ReadOnlyCollection<TPlayerState>.Empty;
 }
 
 public class PlayerState<TCard>

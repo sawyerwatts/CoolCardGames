@@ -1,6 +1,5 @@
 ﻿using CoolCardGames.Cli;
-using CoolCardGames.Library.Core;
-using CoolCardGames.Library.Games.HeartsGame;
+using CoolCardGames.Library;
 
 using Serilog;
 

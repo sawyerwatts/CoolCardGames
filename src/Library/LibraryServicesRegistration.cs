@@ -1,20 +1,16 @@
 using CoolCardGames.Library.Games.HeartsGame;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace CoolCardGames.Library.Core;
+namespace CoolCardGames.Library;
 
 public static class LibraryServicesRegistration
 {
     private const string GamesConfigSectionName = "Games";
 
-    public static IHostApplicationBuilder AddLibraryServices(this IHostApplicationBuilder builder)
+    public static void AddLibraryServices(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IDealer, Dealer>();
-
+        builder.AddCoreServices();
         builder.AddHeartsServices(GamesConfigSectionName);
-
-        return builder;
     }
 }

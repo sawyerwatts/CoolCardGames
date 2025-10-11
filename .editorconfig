@@ -26,6 +26,9 @@ dotnet_diagnostic.CA1034.severity = none
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = none
 
+# CA1724: Type names should not match namespaces
+dotnet_diagnostic.CA1724.severity = none
+
 # CA1848: More performant logging (via LoggerMessage delegates or source generation)
 dotnet_diagnostic.CA1848.severity = none
 
