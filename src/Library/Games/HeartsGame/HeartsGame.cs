@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -114,20 +117,6 @@ public class HeartsPlayer(
     : Player<HeartsCard, HeartsPlayerState, HeartsGameState>(session, gameState, gameStatePlayerIndex);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-// TODO: prob make a PlayerSession feature folder w/in Core or something
-
-public static class AnonymousPlayerSession
-{
-    public static readonly IReadOnlyList<string> DisplayNames = new List<string>(
-    [
-        "Anonymous Anteater",
-        "Anonymous Bat",
-        "Anonymous Chinchilla",
-        "Anonymous Dog",
-        "Anonymous Elephant",
-    ]).AsReadOnly();
-}
 
 public abstract class PlayerSession<TCard>(string displayName)
     where TCard : Card
