@@ -5,11 +5,11 @@ namespace CoolCardGames.Library.Games.HeartsGame;
 
 public static class HeartsServicesRegistration
 {
-    public static IHostApplicationBuilder AddHeartsServices(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddHeartsServices(this IHostApplicationBuilder builder, string gamesConfigSectionName)
     {
         builder.Services.AddSingleton<HeartsGame.Factory>();
         builder.Services.AddOptions<HeartsGame.Settings>()
-            .BindConfiguration($"{CoreServicesRegistration.GamesConfigSection}:Hearts")
+            .BindConfiguration($"{gamesConfigSectionName}:Hearts")
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

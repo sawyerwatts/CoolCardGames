@@ -62,6 +62,8 @@ public class HeartsGame(
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 public class GameState<TCard, TPlayerState>
     where TCard : Card
     where TPlayerState : PlayerState<TCard>

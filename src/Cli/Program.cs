@@ -13,8 +13,7 @@ builder.Services.AddSerilog();
 
 Driver.RegisterTo(builder);
 
-builder.AddCoreServices();
-builder.AddHeartsServices();
+builder.AddLibraryServices();
 
 IHost host = builder.Build();
 ILogger<Program> logger = host.Services.GetRequiredService<ILogger<Program>>();
