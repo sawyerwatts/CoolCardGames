@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.Library.Games.HeartsGame;
 
+// TODO: use events for all player rendering (dealing, people playing cards, etc)? or just an event to refresh + desc?
+
 // TODO: how handle data visibility to diff players?
 
 public class HeartsGame(
@@ -23,13 +25,13 @@ public class HeartsGame(
         IOptionsMonitor<Settings> settingsMonitor,
         ILogger<HeartsGame> logger)
     {
-        public HeartsGame Make(List<IPlayerSession<HeartsCard>> playerSessions)
+        public HeartsGame Make(List<IPlayerGameSession<HeartsCard>> playerSessions)
         {
             if (playerSessions.Count != NumPlayers)
                 throw new ArgumentException($"{nameof(playerSessions)} must have {NumPlayers} elements, but it has {playerSessions.Count} elements");
 
             var gameState = new HeartsGameState();
-            gameState.PlayerStates = new ReadOnlyCollection<HeartsPlayerState>(
+            gameState.Players = new ReadOnlyCollection<HeartsPlayerState>(
                 Enumerable.Range(0, NumPlayers)
                     .Select(_ => new HeartsPlayerState())
                     .ToList()
@@ -47,6 +49,13 @@ public class HeartsGame(
     public Task Play(CancellationToken cancellationToken)
     {
         using var loggingScope = logger.BeginScope("Beginning a new hearts game with game ID {GameId}", Guid.NewGuid());
+        foreach (HeartsPlayerIntermediate playerIntermediate in playerIntermediates)
+        {
+            logger.LogInformation("Player at index {PlayerIndex} is {PlayerName} ({SessionType})",
+                playerIntermediate.GameStatePlayerIndex,
+                playerIntermediate.Session.PlayerDetails.Name,
+                playerIntermediate.Session.SessionType);
+        }
 
         logger.LogInformation("Completed the hearts game");
         return Task.CompletedTask;
@@ -68,7 +77,7 @@ public class GameState<TCard, TPlayerState>
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
 {
-    public ReadOnlyCollection<TPlayerState> PlayerStates { get; set; } = ReadOnlyCollection<TPlayerState>.Empty;
+    public ReadOnlyCollection<TPlayerState> Players { get; set; } = ReadOnlyCollection<TPlayerState>.Empty;
 }
 
 public class PlayerState<TCard>
@@ -77,12 +86,13 @@ public class PlayerState<TCard>
     public Cards<TCard> Hand { get; set; } = [];
 }
 
-public class PlayerIntermediate<TCard, TPlayerState>(
-    IPlayerSession<TCard> playerSession,
-    GameState<TCard, TPlayerState> gameState,
-    int gameStatePlayerIndex)
+public record PlayerIntermediate<TCard, TPlayerState, TGameState>(
+    IPlayerGameSession<TCard> Session,
+    TGameState GameState,
+    int GameStatePlayerIndex)
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
+    where TGameState : GameState<TCard, TPlayerState>
 {
     // TODO: have methods to prompt for cards to play
 }
@@ -98,22 +108,39 @@ public class HeartsPlayerState : PlayerState<HeartsCard>
     public int Score { get; set; } = 0;
 }
 
-public class HeartsPlayerIntermediate(
-    IPlayerSession<HeartsCard> playerSession,
-    HeartsGameState gameState,
-    int gameStatePlayerIndex)
-    : PlayerIntermediate<HeartsCard, HeartsPlayerState>(playerSession, gameState, gameStatePlayerIndex);
+public record HeartsPlayerIntermediate(
+    IPlayerGameSession<HeartsCard> Session,
+    HeartsGameState GameState,
+    int GameStatePlayerIndex)
+    : PlayerIntermediate<HeartsCard, HeartsPlayerState, HeartsGameState>(Session, GameState, GameStatePlayerIndex);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-public interface IPlayerSession<TCard>
+// TODO: prob make a Player feature folder w/in Core
+
+public record PlayerDetails(string Name)
 {
+    public static readonly PlayerDetails AnonymousAnteater = new("Anonymous Anteater");
+    public static readonly PlayerDetails AnonymousBat = new("Anonymous Bat");
+    public static readonly PlayerDetails AnonymousChinchilla = new("Anonymous Chinchilla");
+    public static readonly PlayerDetails AnonymousDog = new("Anonymous Dog");
+    public static readonly PlayerDetails AnonymousElephant = new("Anonymous Elephant");
 }
 
-public class CliPlayerSession<TCard> : IPlayerSession<TCard>
+public interface IPlayerGameSession<TCard>
 {
+    PlayerDetails PlayerDetails { get; }
+    string SessionType { get; }
 }
 
-public class AiPlayerSession<TCard> : IPlayerSession<TCard>
+public class CliPlayerGameSession<TCard>(PlayerDetails playerDetails) : IPlayerGameSession<TCard>
 {
+    public PlayerDetails PlayerDetails => playerDetails;
+    public string SessionType => "Terminal";
+}
+
+public class GameAi<TCard>(PlayerDetails playerDetails) : IPlayerGameSession<TCard>
+{
+    public PlayerDetails PlayerDetails => playerDetails;
+    public string SessionType => "Artificial";
 }
