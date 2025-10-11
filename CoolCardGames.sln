@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C9651E49
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolCardGames.XUnitTests", "tests\XUnitTests\CoolCardGames.XUnitTests.csproj", "{C3DC5B34-2EB7-497E-BD77-3E6DED8E20CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolCardGames.Cli", "src\Cli\CoolCardGames.Cli.csproj", "{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +30,14 @@ Global
 		{C3DC5B34-2EB7-497E-BD77-3E6DED8E20CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3DC5B34-2EB7-497E-BD77-3E6DED8E20CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3DC5B34-2EB7-497E-BD77-3E6DED8E20CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{775DAA63-A67C-40EC-AD55-E8619CE747B0} = {FD209666-DCD4-4736-A8AB-5F6B522A998D}
 		{C3DC5B34-2EB7-497E-BD77-3E6DED8E20CA} = {C9651E49-871E-4585-BB71-5BC5373EDB8E}
+		{DB46A87E-1CC0-4B6E-9820-14FCD9A07BDC} = {FD209666-DCD4-4736-A8AB-5F6B522A998D}
 	EndGlobalSection
 EndGlobal
