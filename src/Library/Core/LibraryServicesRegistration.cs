@@ -5,15 +5,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace CoolCardGames.Library.Core;
 
-public static class ServicesRegistration
+public static class LibraryServicesRegistration
 {
-    private const string GamesConfigSection = "Games";
+    private const string GamesConfigSectionName = "Games";
 
     public static IHostApplicationBuilder AddLibraryServices(this IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton<IDealer, Dealer>();
 
-        builder.AddHeartsServices(GamesConfigSection);
+        builder.AddHeartsServices(GamesConfigSectionName);
 
         return builder;
     }
