@@ -20,11 +20,20 @@ max_line_length = 100
 max_line_length = off
 trim_trailing_whitespace = true
 
+# CA1034: Do not nest types
+dotnet_diagnostic.CA1034.severity = none
+
+# CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = none
+
 # CA1848: More performant logging (via LoggerMessage delegates or source generation)
 dotnet_diagnostic.CA1848.severity = none
 
 # CA1805: indicate when a property is explicitly initialized to its default value.
 dotnet_diagnostic.CA1805.severity = none
+
+# CA2007: Do not directly await a Task (not applicable to applications)
+dotnet_diagnostic.CA2007.severity = none
 
 #### Core EditorConfig Options ####
 
