@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+// TODO: have a centralized event channel
+
 // TODO: I almost want to log all game events
 //     would need to update GameEvents to take msg templates so could log appropriately
 
