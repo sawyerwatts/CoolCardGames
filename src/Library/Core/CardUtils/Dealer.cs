@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
+using CoolCardGames.Library.Core.MiscUtils;
+
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core.CardUtils;

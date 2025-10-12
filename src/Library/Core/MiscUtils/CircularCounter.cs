@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace CoolCardGames.Library.Core;
+namespace CoolCardGames.Library.Core.MiscUtils;
 
 public record struct CircularCounter
 {

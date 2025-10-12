@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using CoolCardGames.Library.Core.CardUtils;
+using CoolCardGames.Library.Core.Players;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

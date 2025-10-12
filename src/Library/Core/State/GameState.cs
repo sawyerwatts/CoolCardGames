@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Core;
+namespace CoolCardGames.Library.Core.State;
 
 public class GameState<TCard, TPlayerState>
     where TCard : Card
