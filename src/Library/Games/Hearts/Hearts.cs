@@ -36,8 +36,9 @@ public class Hearts(
     public async Task Play(CancellationToken cancellationToken)
     {
         using var loggingScope = logger.BeginScope(
-            "Beginning a new hearts game with game ID {GameId} and settings {Settings}",
+            "Hearts game with ID {GameId} and settings {Settings}",
             Guid.NewGuid(), settings);
+        logger.LogInformation("Beginning a hearts game");
         foreach (HeartsPlayer player in players)
         {
             logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}",
