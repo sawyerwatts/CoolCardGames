@@ -8,4 +8,4 @@ namespace CoolCardGames.Library.Core.GameEvents;
 /// other things like event-based game implementations or card-counting functionality.
 /// </remarks>
 /// <param name="Summary"></param>
-public partial record GameEvent(string Summary);
+public abstract partial record GameEvent(string Summary);
