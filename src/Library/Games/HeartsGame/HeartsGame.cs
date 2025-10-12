@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 namespace CoolCardGames.Library.Games.HeartsGame;
 
 // TODO: use events for all player rendering (dealing, people playing cards, etc)? or just an event to refresh + desc?
+//    have channels per player and have a FanOut ext method on Players?
 
 // TODO: how handle data visibility to diff players?
 
@@ -179,6 +180,14 @@ public class HeartsPlayer(
 ////////////////////////////////////////////////////////////////////////////////
 
 // TODO: update these funcs to pass additional, human-readable validation info
+/// <summary>
+/// <see cref="PlayerSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> are
+/// two different types primarily to support this use case: if playing online, if someone goes offline,
+/// the <see cref="Player{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
+/// implementation without a game's logic needing to be aware of the change.
+/// </summary>
+/// <param name="displayName"></param>
+/// <typeparam name="TCard"></typeparam>
 public abstract class PlayerSession<TCard>(string displayName)
     where TCard : Card
 {
