@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-public class HeartsSettings
+public record HeartsSettings
 {
     /// <summary>
     /// The game will end when a round is completed and someone has at least this many points.
