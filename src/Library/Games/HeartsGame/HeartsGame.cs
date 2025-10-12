@@ -25,10 +25,26 @@ public class HeartsGame(
         IOptionsMonitor<Settings> settingsMonitor,
         ILogger<HeartsGame> logger)
     {
-        public HeartsGame Make(List<PlayerSession<HeartsCard>> playerSessions)
+        public Settings DefaultGameSettings => settingsMonitor.CurrentValue;
+
+        public HeartsGame Make(List<PlayerSession<HeartsCard>> playerSessions, Settings? settings = null)
         {
             if (playerSessions.Count != NumPlayers)
                 throw new ArgumentException($"{nameof(playerSessions)} must have {NumPlayers} elements, but it has {playerSessions.Count} elements");
+
+            if (settings is null)
+                settings = DefaultGameSettings;
+            else
+            {
+                try
+                {
+                    Validator.ValidateObject(settings, new ValidationContext(settings), validateAllProperties: true);
+                }
+                catch (ValidationException exc)
+                {
+                    throw new ArgumentException("The given game settings failed validation", exc);
+                }
+            }
 
             var gameState = new HeartsGameState();
             gameState.Players = Enumerable.Range(0, NumPlayers)
@@ -41,7 +57,7 @@ public class HeartsGame(
                 .ToList()
                 .AsReadOnly();
 
-            return new HeartsGame(playerIntermediates, gameState, dealer, settingsMonitor.CurrentValue, logger);
+            return new HeartsGame(playerIntermediates, gameState, dealer, settings, logger);
         }
     }
 
