@@ -6,9 +6,10 @@ This repository implements a number of card games.
 
 ### Architecture
 
-This uses abstract core architecture. Within `Library.csproj`, there is `Core/`, which contains
-reusable classes (like `Dealer`), interfaces/abstract classes (likes `IGame`), and classes that can
-be extended or left as-is (like `Card` and `Cards`).
+This uses feature folders and abstract core architecture. Within `Library.csproj`, there is `Core/`,
+which contains reusable classes (like `Dealer`), interfaces/abstract classes (likes `IGame`), and
+classes that can be extended or left as-is (like `Card` and `Cards`). Beyond that, there can/will be
+other root directories in `Library.csproj` for other features, like account management n stuff.
 
 Here is the ***planned*** architecture (we'll see how long it takes for me to lose interest):
 
@@ -26,9 +27,8 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
-- Make player interfaces n stuff w/ Improvement Ideas from Prototype
-- Make GameState n stuff w/ Improvement Ideas from Prototype
-- Reimplement `HeartsGame` w/ Improvement Ideas from Prototype
+- Finish implementing `Hearts.cs` w/ improvement ideas
+- See floating TODOs
 - Make CLI entrypoint (offline only, for now)
 - Update architecture diagram to better detail interactions (and setup?)
 
