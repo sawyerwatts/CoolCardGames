@@ -66,8 +66,8 @@ public class HeartsGame(
         using var loggingScope = logger.BeginScope("Beginning a new hearts game with game ID {GameId}", Guid.NewGuid());
         foreach (HeartsPlayer player in players)
         {
-            logger.LogInformation("Player at index {PlayerIndex} is {PlayerName}",
-                player.GameStatePlayerIndex, player.DisplayName);
+            logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}",
+                player.GameStatePlayerIndex, player.AccountCard);
         }
 
         logger.LogInformation("Completed the hearts game");
@@ -109,8 +109,7 @@ public class Player<TCard, TPlayerState, TGameState>(
     where TPlayerState : PlayerState<TCard>
     where TGameState : GameState<TCard, TPlayerState>
 {
-    public string Id => session.PlayerId;
-    public string DisplayName => session.DisplayName;
+    public AccountCard AccountCard => session.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
     public void Notify(GameEvent gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
@@ -222,16 +221,16 @@ public abstract partial record GameEvent
     }
 
     public record DeckDealt(int NumHands) : GameEvent($"The deck was dealt to {NumHands} hands");
+
+    public record HandGiven(AccountCard Recipient, int NumCardsInHand) : GameEvent($"{Recipient} was given a hand with {NumCardsInHand} cards");
 }
 
 // Trick events
 public abstract partial record GameEvent
 {
-    public record CardAddedToTrick(string ActorId, string ActorDisplayName, Card Card)
-        : GameEvent($"The card {Card} was added to the trick by {ActorDisplayName} ({ActorId})");
+    public record CardAddedToTrick(AccountCard Actor, Card Card) : GameEvent($"The card {Card} was added to the trick by {Actor}");
 
-    public record TrickTaken(string ActorId, string ActorDisplayName, Card Card)
-        : GameEvent($"{ActorDisplayName} ({ActorId}) took the trick with card {Card}");
+    public record TrickTaken(AccountCard Actor, Card Card) : GameEvent($"{Actor} took the trick with card {Card}");
 }
 
 // Hearts events
@@ -243,6 +242,11 @@ public abstract partial record GameEvent
 
 ////////////////////////////////////////////////////////////////////////////////
 
+public record AccountCard(string Id, string DisplayName)
+{
+    public override string ToString() => $"{DisplayName} ({Id})";
+}
+
 // TODO: update these funcs to pass additional, human-readable validation info
 /// <remarks>
 /// <see cref="PlayerSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> are
@@ -250,13 +254,11 @@ public abstract partial record GameEvent
 /// the <see cref="Player{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
-/// <param name="displayName"></param>
 /// <typeparam name="TCard"></typeparam>
-public abstract class PlayerSession<TCard>(string playerId, string displayName)
+public abstract class PlayerSession<TCard>(AccountCard accountCard)
     where TCard : Card
 {
-    public string PlayerId => playerId;
-    public string DisplayName => displayName;
+    public AccountCard AccountCard => accountCard;
     public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = new();
 
     // TODO: update these methods to take whole game state?
@@ -267,7 +269,7 @@ public abstract class PlayerSession<TCard>(string playerId, string displayName)
 
 // TODO: move to Cli.csproj
 // TODO: have a configurable delay b/w messages
-public class CliPlayerSession<TCard>(string playerId, string displayName) : PlayerSession<TCard>(playerId, displayName)
+public class CliPlayerSession<TCard>(AccountCard accountCard) : PlayerSession<TCard>(accountCard)
     where TCard : Card
 {
     public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
@@ -281,7 +283,7 @@ public class CliPlayerSession<TCard>(string playerId, string displayName) : Play
     }
 }
 
-public class Ai<TCard>(string aiId, string displayName) : PlayerSession<TCard>(aiId, displayName)
+public class Ai<TCard>(AccountCard accountCard) : PlayerSession<TCard>(accountCard)
     where TCard : Card
 {
     public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
