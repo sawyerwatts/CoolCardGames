@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.Library.Games.HeartsGame;
 
@@ -10,56 +8,18 @@ namespace CoolCardGames.Library.Games.HeartsGame;
 
 // TODO: need to doc that each session and the game are all on diff threads
 
-public class HeartsGame(
+/// <remarks>
+/// It is intended to use <see cref="HeartsFactory"/> to instantiate this service.
+/// </remarks>
+public class Hearts(
     IReadOnlyList<HeartsPlayer> players,
     HeartsGameState gameState,
     IDealer dealer,
-    HeartsGame.Settings settings,
-    ILogger<HeartsGame> logger)
+    HeartsSettings settings,
+    ILogger<Hearts> logger)
     : IGame
 {
-    private const int NumPlayers = 4;
-
-    public class Factory(
-        IDealer dealer,
-        IOptionsMonitor<Settings> settingsMonitor,
-        ILogger<HeartsGame> logger)
-    {
-        public Settings DefaultGameSettings => settingsMonitor.CurrentValue;
-
-        public HeartsGame Make(List<PlayerSession<HeartsCard>> playerSessions, Settings? settings = null)
-        {
-            if (playerSessions.Count != NumPlayers)
-                throw new ArgumentException($"{nameof(playerSessions)} must have {NumPlayers} elements, but it has {playerSessions.Count} elements");
-
-            if (settings is null)
-                settings = DefaultGameSettings;
-            else
-            {
-                try
-                {
-                    Validator.ValidateObject(settings, new ValidationContext(settings), validateAllProperties: true);
-                }
-                catch (ValidationException exc)
-                {
-                    throw new ArgumentException("The given game settings failed validation", exc);
-                }
-            }
-
-            var gameState = new HeartsGameState();
-            gameState.Players = Enumerable.Range(0, NumPlayers)
-                .Select(_ => new HeartsPlayerState())
-                .ToList()
-                .AsReadOnly();
-
-            var playerIntermediates = playerSessions
-                .Select((playerSession, i) => new HeartsPlayer(playerSession, gameState, i))
-                .ToList()
-                .AsReadOnly();
-
-            return new HeartsGame(playerIntermediates, gameState, dealer, settings, logger);
-        }
-    }
+    public const int NumPlayers = 4;
 
     public Task Play(CancellationToken cancellationToken)
     {
@@ -70,17 +30,10 @@ public class HeartsGame(
                 player.GameStatePlayerIndex, player.AccountCard);
         }
 
+        // TODO: this
+
         logger.LogInformation("Completed the hearts game");
         return Task.CompletedTask;
-    }
-
-    public class Settings
-    {
-        /// <summary>
-        /// The game will end when a round is completed and someone has at least this many points.
-        /// </summary>
-        [Range(1, int.MaxValue)]
-        public int EndOfGamePoints { get; set; } = 100;
     }
 }
 
@@ -101,6 +54,13 @@ public class PlayerState<TCard>
 
 // TODO: write unit tests for these funcs
 // TODO: update these funcs to pass additional, human-readable validation info
+/// <summary>
+/// This class is an anti-corruption layer between the card games and the
+/// <see cref="PlayerSession{TCard}"/> so that:
+/// <br /> - The card games' logic can be blissfully unaware of the multithreading.
+/// <br /> - Reusably handle user input validation.
+/// <br /> - The session can be hot swapped (see <see cref="PlayerSession{TCard}"/> for more).
+/// </summary>
 public class Player<TCard, TPlayerState, TGameState>(
     PlayerSession<TCard> session,
     TGameState gameState,
@@ -238,6 +198,7 @@ public abstract partial record GameEvent
 {
     // TODO: passing cards
     // TODO: scores updated
+    // TODO: extend CardAddedToTrick for HeartsBroken?
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -249,8 +210,8 @@ public record AccountCard(string Id, string DisplayName)
 
 // TODO: update these funcs to pass additional, human-readable validation info
 /// <remarks>
-/// <see cref="PlayerSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> are
-/// two different types primarily to support this use case: if playing online, if someone goes offline,
+/// <see cref="PlayerSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> being
+/// two different types supports the following use case: if playing online, if someone goes offline,
 /// the <see cref="Player{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
