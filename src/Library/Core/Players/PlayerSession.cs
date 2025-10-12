@@ -15,7 +15,7 @@ public abstract class PlayerSession<TCard>(AccountCard accountCard)
     where TCard : Card
 {
     public AccountCard AccountCard => accountCard;
-    public ConcurrentQueue<Core.GameEvents.GameEvent> UnprocessedGameEvents { get; } = new();
+    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = new();
 
     // TODO: update these methods to take whole game state?
     public abstract Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken);

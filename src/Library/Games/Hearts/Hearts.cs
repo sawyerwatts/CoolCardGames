@@ -82,24 +82,24 @@ public class Hearts(
         List<Cards<HeartsCard>> hands = dealer.ShuffleCutDeal(
             deck: HeartsCard.MakeDeck(Decks.Standard52()),
             numHands: NumPlayers);
-        players.NotifyAll(Core.GameEvents.GameEvent.DeckShuffled.Singleton);
-        players.NotifyAll(Core.GameEvents.GameEvent.DeckCut.Singleton);
-        players.NotifyAll(new Core.GameEvents.GameEvent.DeckDealt(NumPlayers));
+        players.NotifyAll(GameEvent.DeckShuffled.Singleton);
+        players.NotifyAll(GameEvent.DeckCut.Singleton);
+        players.NotifyAll(new GameEvent.DeckDealt(NumPlayers));
 
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            players.NotifyAll(new Core.GameEvents.GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
+            players.NotifyAll(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
         }
 
         if (passDirection is PassDirection.Hold)
         {
-            players.NotifyAll(GameEvent.HeartsHoldEmRound.Singleton);
+            players.NotifyAll(HeartsGameEvent.HeartsHoldEmRound.Singleton);
             logger.LogInformation("Hold 'em round! No passing");
             return;
         }
 
-        players.NotifyAll(new GameEvent.HeartsGetReadyToPass(passDirection));
+        players.NotifyAll(new HeartsGameEvent.HeartsGetReadyToPass(passDirection));
         logger.LogInformation("Asking each player to select three cards to pass {PassDirection}",
             passDirection);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
@@ -130,7 +130,7 @@ public class Hearts(
             gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
         }
 
-        players.NotifyAll(new GameEvent.HeartsCardsPassed(passDirection));
+        players.NotifyAll(new HeartsGameEvent.HeartsCardsPassed(passDirection));
         logger.LogInformation("Hands are finalized");
     }
 

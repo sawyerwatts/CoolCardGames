@@ -21,7 +21,7 @@ public class Player<TCard, TPlayerState, TGameState>(
     public AccountCard AccountCard => session.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
-    public void Notify(Core.GameEvents.GameEvent gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
+    public void Notify(GameEvent gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;

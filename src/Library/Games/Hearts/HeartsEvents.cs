@@ -2,14 +2,14 @@ using System.Diagnostics;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-public abstract partial record GameEvent
+public abstract record HeartsGameEvent(string Summary) : GameEvent(Summary)
 {
-    public record HeartsHoldEmRound() : Core.GameEvents.GameEvent("Hold 'em round! No passing")
+    public record HeartsHoldEmRound() : HeartsGameEvent("Hold 'em round! No passing")
     {
         public static readonly HeartsHoldEmRound Singleton = new();
     }
 
-    public record HeartsGetReadyToPass(PassDirection PassDirection) : Core.GameEvents.GameEvent(
+    public record HeartsGetReadyToPass(PassDirection PassDirection) : HeartsGameEvent(
         PassDirection switch
         {
             PassDirection.Left or PassDirection.Right or PassDirection.Across => $"Get ready to pass three cards {PassDirection}",
@@ -17,7 +17,7 @@ public abstract partial record GameEvent
             _ => throw new UnreachableException($"Unknown {nameof(PassDirection)} given: {PassDirection}")
         });
 
-    public record HeartsCardsPassed(PassDirection PassDirection) : Core.GameEvents.GameEvent(
+    public record HeartsCardsPassed(PassDirection PassDirection) : HeartsGameEvent(
         PassDirection switch
         {
             PassDirection.Left or PassDirection.Right or PassDirection.Across  => $"Passed three cards {PassDirection}",
