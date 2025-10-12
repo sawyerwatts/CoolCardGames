@@ -1,4 +1,6 @@
-namespace CoolCardGames.XUnitTests.Library.Core;
+using CoolCardGames.Library.Core.CardUtils;
+
+namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public class GetHighestTests
 {

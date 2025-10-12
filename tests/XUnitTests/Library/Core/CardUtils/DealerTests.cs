@@ -1,6 +1,8 @@
+using CoolCardGames.Library.Core.CardUtils;
+
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace CoolCardGames.XUnitTests.Library.Core;
+namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public sealed class DealerTests
 {

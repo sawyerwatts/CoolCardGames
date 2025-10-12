@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Core;
+namespace CoolCardGames.Library.Core.CardUtils;
 
 public static class GetHighest
 {

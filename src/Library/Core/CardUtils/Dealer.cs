@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 using Microsoft.Extensions.Logging;
 
-namespace CoolCardGames.Library.Core;
+namespace CoolCardGames.Library.Core.CardUtils;
 
 public interface IDealer
 {
