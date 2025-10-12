@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Logging;
@@ -5,10 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.Library.Games.HeartsGame;
 
-// TODO: use events for all player rendering (dealing, people playing cards, etc)? or just an event to refresh + desc?
-//    have channels per player and have a FanOut ext method on Players?
-
 // TODO: how handle data visibility to diff players?
+
+// TODO: need to doc that each session and the game are all on diff threads
 
 public class HeartsGame(
     IReadOnlyList<HeartsPlayer> players,
@@ -93,8 +93,11 @@ public class Player<TCard, TPlayerState, TGameState>(
     where TPlayerState : PlayerState<TCard>
     where TGameState : GameState<TCard, TPlayerState>
 {
+    public string Id => session.PlayerId;
     public string DisplayName => session.DisplayName;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
+
+    public void Notify(GameEvent gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;
@@ -179,20 +182,68 @@ public class HeartsPlayer(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: update these funcs to pass additional, human-readable validation info
 /// <summary>
+/// This type contains implementations that represent game events, like a card being played.
+/// </summary>
+/// <remarks>
+/// These are intended primarily for UI notifications, but they can definitely be used for
+/// other things like event-based game implementations or card-counting functionality.
+/// </remarks>
+/// <param name="Summary"></param>
+public partial record GameEvent(string Summary);
+
+// Deck events
+public abstract partial record GameEvent
+{
+    public record DeckShuffled() : GameEvent("The deck was shuffled")
+    {
+        public static readonly DeckShuffled Singleton = new();
+    }
+
+    public record DeckCut() : GameEvent("The deck was cut")
+    {
+        public static readonly DeckCut Singleton = new();
+    }
+
+    public record DeckDealt(int NumHands) : GameEvent($"The deck was dealt to {NumHands} hands");
+}
+
+// Trick events
+public abstract partial record GameEvent
+{
+    public record CardAddedToTrick(string ActorId, string ActorDisplayName, Card Card)
+        : GameEvent($"The card {Card} was added to the trick by {ActorDisplayName} ({ActorId})");
+
+    public record TrickTaken(string ActorId, string ActorDisplayName, Card Card)
+        : GameEvent($"{ActorDisplayName} ({ActorId}) took the trick with card {Card}");
+}
+
+// Hearts events
+public abstract partial record GameEvent
+{
+    // TODO: passing cards
+    // TODO: scores updated
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO: update these funcs to pass additional, human-readable validation info
+/// <remarks>
 /// <see cref="PlayerSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> are
 /// two different types primarily to support this use case: if playing online, if someone goes offline,
 /// the <see cref="Player{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
 /// implementation without a game's logic needing to be aware of the change.
-/// </summary>
+/// </remarks>
 /// <param name="displayName"></param>
 /// <typeparam name="TCard"></typeparam>
-public abstract class PlayerSession<TCard>(string displayName)
+public abstract class PlayerSession<TCard>(string playerId, string displayName)
     where TCard : Card
 {
+    public string PlayerId => playerId;
     public string DisplayName => displayName;
+    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = new();
 
+    // TODO: update these methods to take whole game state?
     public abstract Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
 
     public abstract Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
@@ -200,7 +251,7 @@ public abstract class PlayerSession<TCard>(string displayName)
 
 // TODO: move to Cli.csproj
 // TODO: have a configurable delay b/w messages
-public class CliPlayerSession<TCard>(string displayName) : PlayerSession<TCard>(displayName)
+public class CliPlayerSession<TCard>(string playerId, string displayName) : PlayerSession<TCard>(playerId, displayName)
     where TCard : Card
 {
     public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
@@ -214,7 +265,7 @@ public class CliPlayerSession<TCard>(string displayName) : PlayerSession<TCard>(
     }
 }
 
-public class Ai<TCard>(string displayName) : PlayerSession<TCard>(displayName)
+public class Ai<TCard>(string aiId, string displayName) : PlayerSession<TCard>(aiId, displayName)
     where TCard : Card
 {
     public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
