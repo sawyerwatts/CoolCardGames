@@ -1,5 +1,3 @@
-using CoolCardGames.Library.Core.Players;
-
 namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsPlayer(

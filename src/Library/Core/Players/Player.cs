@@ -1,5 +1,3 @@
-using CoolCardGames.Library.Core.State;
-
 namespace CoolCardGames.Library.Core.Players;
 
 // TODO: write unit tests for these funcs

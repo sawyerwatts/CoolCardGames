@@ -1,9 +1,5 @@
 using System.Diagnostics;
 
-using CoolCardGames.Library.Core.CardUtils;
-using CoolCardGames.Library.Core.MiscUtils;
-using CoolCardGames.Library.Core.Players;
-
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;

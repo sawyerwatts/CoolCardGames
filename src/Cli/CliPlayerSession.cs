@@ -1,4 +1,3 @@
-using CoolCardGames.Library.Core;
 using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.Players;
 

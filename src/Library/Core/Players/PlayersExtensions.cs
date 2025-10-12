@@ -1,6 +1,3 @@
-using CoolCardGames.Library.Core.GameEvents;
-using CoolCardGames.Library.Core.State;
-
 namespace CoolCardGames.Library.Core.Players;
 
 public static class PlayersExtensions
