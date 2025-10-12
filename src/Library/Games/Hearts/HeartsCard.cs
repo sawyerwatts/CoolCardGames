@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Games.HeartsGame;
+namespace CoolCardGames.Library.Games.Hearts;
 
 public sealed record HeartsCard : Card
 {

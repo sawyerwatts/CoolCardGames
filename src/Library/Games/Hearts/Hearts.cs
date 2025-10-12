@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 using Microsoft.Extensions.Logging;
 
-namespace CoolCardGames.Library.Games.HeartsGame;
+namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: how handle data visibility to diff players?
 

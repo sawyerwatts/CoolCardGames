@@ -1,4 +1,4 @@
-using CoolCardGames.Library.Games.HeartsGame;
+using CoolCardGames.Library.Games.Hearts;
 
 using Microsoft.Extensions.Hosting;
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CoolCardGames.Library.Games.HeartsGame;
+namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsSettings
 {
