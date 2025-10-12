@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: I almost want to log all game events
+//     would need to update GameEvents to take msg templates so could log appropriately
 
 // TODO: the code is multi-braided: it does something, and it pushes a notification to do it
 //       pass players to dealer so can notify?
