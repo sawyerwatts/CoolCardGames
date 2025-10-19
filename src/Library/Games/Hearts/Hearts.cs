@@ -86,7 +86,6 @@ public class Hearts(
         if (passDirection is PassDirection.Hold)
         {
             PublishGameEvent(HeartsGameEvent.HeartsHoldEmRound.Singleton);
-            logger.LogInformation("Hold 'em round! No passing");
             return;
         }
 

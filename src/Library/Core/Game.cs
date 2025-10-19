@@ -29,5 +29,13 @@ public abstract class Game(GameEventHandler gameEventHandler, ILogger<Game> logg
     /// </remarks>
     protected abstract Task ActuallyPlay(CancellationToken cancellationToken);
 
-    protected void PublishGameEvent(GameEvent gameEvent) => gameEventHandler(gameEvent);
+    /// <summary>
+    /// This will log the game event and then handle it.
+    /// </summary>
+    /// <param name="gameEvent"></param>
+    protected void PublishGameEvent(GameEvent gameEvent)
+    {
+        logger.LogInformation("Publishing game event {GameEvent}", gameEvent);
+        gameEventHandler(gameEvent);
+    }
 }

@@ -32,11 +32,5 @@ public class GameEventFanOut : IGameEventFanOut
         _logger = logger;
     }
 
-    public GameEventHandler Handle => PublishGameEvent;
-
-    private void PublishGameEvent(GameEvent gameEvent)
-    {
-        _logger.LogInformation("Publishing game event {GameEvent}", gameEvent);
-        OnGameEvent.Invoke(gameEvent);
-    }
+    public GameEventHandler Handle => OnGameEvent;
 }

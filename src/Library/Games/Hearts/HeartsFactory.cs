@@ -43,9 +43,9 @@ public class HeartsFactory(
             .ToList()
             .AsReadOnly();
 
-        var eventTopic = eventFanOutFactory.Make(players.Select(player => player.GameEventHandler));
-        var dealer = dealerFactory.Make(eventTopic.Handle);
+        var eventFanOut = eventFanOutFactory.Make(players.Select(player => player.GameEventHandler));
+        var dealer = dealerFactory.Make(eventFanOut.Handle);
 
-        return new Hearts(eventTopic.Handle, players, gameState, dealer, settings, logger);
+        return new Hearts(eventFanOut.Handle, players, gameState, dealer, settings, logger);
     }
 }
