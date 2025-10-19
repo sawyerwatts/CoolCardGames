@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: have a centralized event channel
+// TODO: rename PlayerSession to User or something
 
 // TODO: I almost want to log all game events
 //     would need to update GameEvents to take msg templates so could log appropriately
@@ -32,11 +32,13 @@ public class Hearts(
     IDealer dealer,
     HeartsSettings settings,
     ILogger<Hearts> logger)
-    : IGame
+    : Game(
+        gameEventConsumers: players.Select(player => player.GameEventConsumer),
+        logger: logger)
 {
     public const int NumPlayers = 4;
 
-    public async Task Play(CancellationToken cancellationToken)
+    protected override async Task ActuallyPlay(CancellationToken cancellationToken)
     {
         using var loggingScope = logger.BeginScope(
             "Hearts game with ID {GameId} and settings {Settings}",
@@ -85,24 +87,25 @@ public class Hearts(
         List<Cards<HeartsCard>> hands = dealer.ShuffleCutDeal(
             deck: HeartsCard.MakeDeck(Decks.Standard52()),
             numHands: NumPlayers);
-        players.NotifyAll(GameEvent.DeckShuffled.Singleton);
-        players.NotifyAll(GameEvent.DeckCut.Singleton);
-        players.NotifyAll(new GameEvent.DeckDealt(NumPlayers));
+        PublishGameEvent(GameEvent.DeckShuffled.Singleton);
+        PublishGameEvent(GameEvent.DeckShuffled.Singleton);
+        PublishGameEvent(GameEvent.DeckCut.Singleton);
+        PublishGameEvent(new GameEvent.DeckDealt(NumPlayers));
 
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            players.NotifyAll(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
+            PublishGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
         }
 
         if (passDirection is PassDirection.Hold)
         {
-            players.NotifyAll(HeartsGameEvent.HeartsHoldEmRound.Singleton);
+            PublishGameEvent(HeartsGameEvent.HeartsHoldEmRound.Singleton);
             logger.LogInformation("Hold 'em round! No passing");
             return;
         }
 
-        players.NotifyAll(new HeartsGameEvent.HeartsGetReadyToPass(passDirection));
+        PublishGameEvent(new HeartsGameEvent.HeartsGetReadyToPass(passDirection));
         logger.LogInformation("Asking each player to select three cards to pass {PassDirection}",
             passDirection);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
@@ -133,7 +136,7 @@ public class Hearts(
             gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
         }
 
-        players.NotifyAll(new HeartsGameEvent.HeartsCardsPassed(passDirection));
+        PublishGameEvent(new HeartsGameEvent.HeartsCardsPassed(passDirection));
         logger.LogInformation("Hands are finalized");
     }
 

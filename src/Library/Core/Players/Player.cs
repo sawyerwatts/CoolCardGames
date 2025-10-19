@@ -21,7 +21,13 @@ public class Player<TCard, TPlayerState, TGameState>(
     public AccountCard AccountCard => session.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
-    public void Notify(GameEvent gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
+    /// <remarks>
+    /// This consumer simply appends the event to the session's game queue (instead of processing the
+    /// event) because it is desired to keep the game loop going even while the session works on
+    /// rendering events.
+    /// </remarks>
+    public GameEventConsumer GameEventConsumer =>
+        (gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;
