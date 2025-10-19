@@ -7,7 +7,9 @@ public static class CoreServicesRegistration
 {
     public static void AddCoreServices(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IDealer, Dealer>();
+        builder.Services.AddSingleton<IDealerFactory, DealerFactory>();
         builder.Services.AddSingleton<Dealer.IRng, Dealer.Rng>();
+
+        builder.Services.AddSingleton<IGameEventFanOutFactory, GameEventFanOutFactory>();
     }
 }

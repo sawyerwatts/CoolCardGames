@@ -17,14 +17,13 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// It is intended to use <see cref="HeartsFactory"/> to instantiate this service.
 /// </remarks>
 public class Hearts(
+    GameEventHandler eventHandler,
     IReadOnlyList<HeartsPlayer> players,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsSettings settings,
     ILogger<Hearts> logger)
-    : Game(
-        gameEventConsumers: players.Select(player => player.GameEventConsumer),
-        logger: logger)
+    : Game(eventHandler, logger)
 {
     public const int NumPlayers = 4;
 
@@ -77,10 +76,6 @@ public class Hearts(
         List<Cards<HeartsCard>> hands = dealer.ShuffleCutDeal(
             deck: HeartsCard.MakeDeck(Decks.Standard52()),
             numHands: NumPlayers);
-        PublishGameEvent(GameEvent.DeckShuffled.Singleton);
-        PublishGameEvent(GameEvent.DeckShuffled.Singleton);
-        PublishGameEvent(GameEvent.DeckCut.Singleton);
-        PublishGameEvent(new GameEvent.DeckDealt(NumPlayers));
 
         for (int i = 0; i < NumPlayers; i++)
         {

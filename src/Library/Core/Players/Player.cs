@@ -26,7 +26,7 @@ public class Player<TCard, TPlayerState, TGameState>(
     /// event) because it is desired to keep the game loop going even while the session works on
     /// rendering events.
     /// </remarks>
-    public GameEventConsumer GameEventConsumer =>
+    public GameEventHandler GameEventHandler =>
         (gameEvent) => session.UnprocessedGameEvents.Enqueue(gameEvent);
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];

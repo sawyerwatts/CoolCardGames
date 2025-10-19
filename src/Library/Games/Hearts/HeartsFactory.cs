@@ -6,7 +6,8 @@ using Microsoft.Extensions.Options;
 namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsFactory(
-    IDealer dealer,
+    IGameEventFanOutFactory eventFanOutFactory,
+    IDealerFactory dealerFactory,
     IOptionsMonitor<HeartsSettings> settingsMonitor,
     ILogger<Hearts> logger)
 {
@@ -42,6 +43,9 @@ public class HeartsFactory(
             .ToList()
             .AsReadOnly();
 
-        return new Hearts(players, gameState, dealer, settings, logger);
+        var eventTopic = eventFanOutFactory.Make(players.Select(player => player.GameEventHandler));
+        var dealer = dealerFactory.Make(eventTopic.Handle);
+
+        return new Hearts(eventTopic.Handle, players, gameState, dealer, settings, logger);
     }
 }

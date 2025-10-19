@@ -1,4 +1,5 @@
 using CoolCardGames.Library.Core.CardUtils;
+using CoolCardGames.Library.Core.GameEvents;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -8,11 +9,15 @@ public sealed class DealerTests
 {
     private readonly Dealer _dealer;
     private readonly RngMock _rng;
+    private readonly List<GameEvent> _events = [];
 
     public DealerTests()
     {
         _rng = new RngMock();
-        _dealer = new Dealer(_rng, NullLogger<Dealer>.Instance);
+        _dealer = new Dealer(
+            gameEventHandler: (gameEvent) => _events.Add(gameEvent),
+            rng: _rng,
+            logger: NullLogger<Dealer>.Instance);
     }
 
     [Fact]
@@ -49,6 +54,9 @@ public sealed class DealerTests
             ThreeOfHearts.Instance,
         ]);
         Assert.True(deck.Matches(expectedDeck));
+
+        Assert.Single(_events);
+        Assert.Equal(GameEvent.DeckCut.Singleton, _events[0]);
     }
 
     [Fact]
@@ -64,6 +72,9 @@ public sealed class DealerTests
             if (!deck.Matches(prevDeck))
                 numChangedDecks++;
             prevDeck = new Cards<Card>(deck);
+
+            Assert.Equal(i+1, _events.Count);
+            Assert.Equal(GameEvent.DeckShuffled.Singleton, _events[i]);
         }
 
         Assert.True(numChangedDecks > 3);
@@ -118,6 +129,9 @@ public sealed class DealerTests
         Assert.True(expectedHand1.Matches(hands[1]));
         Assert.True(expectedHand2.Matches(hands[2]));
         Assert.True(expectedHand3.Matches(hands[3]));
+
+        Assert.Single(_events);
+        Assert.Equal(new GameEvent.DeckDealt(4), _events[0]);
     }
 
     private class RngMock : Dealer.IRng

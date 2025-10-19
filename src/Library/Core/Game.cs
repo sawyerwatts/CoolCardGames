@@ -2,29 +2,8 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core;
 
-public abstract class Game
+public abstract class Game(GameEventHandler gameEventHandler, ILogger<Game> logger)
 {
-    private event GameEventConsumer OnGameEvent = null!;
-
-    private readonly ILogger<Game> _logger;
-
-    protected Game(
-        IEnumerable<GameEventConsumer> gameEventConsumers,
-        ILogger<Game> logger)
-    {
-        _logger = logger;
-        foreach (var gameEventConsumer in gameEventConsumers)
-            OnGameEvent += gameEventConsumer;
-        if (OnGameEvent is null)
-            throw new ArgumentException($"{nameof(gameEventConsumers)} needs at least one element");
-    }
-
-    protected void PublishGameEvent(GameEvent gameEvent)
-    {
-        _logger.LogInformation("Publishing game event {GameEvent}", gameEvent);
-        OnGameEvent.Invoke(gameEvent);
-    }
-
     /// <remarks>
     /// This method will never throw an exception, it will return it instead.
     /// </remarks>
@@ -37,7 +16,7 @@ public abstract class Game
         }
         catch (Exception exc)
         {
-            _logger.LogCritical(exc, "A game crashed due to an unexpected exception");
+            logger.LogCritical(exc, "A game crashed due to an unexpected exception");
             return exc;
         }
     }
@@ -49,4 +28,6 @@ public abstract class Game
     /// try/catch.
     /// </remarks>
     protected abstract Task ActuallyPlay(CancellationToken cancellationToken);
+
+    protected void PublishGameEvent(GameEvent gameEvent) => gameEventHandler(gameEvent);
 }

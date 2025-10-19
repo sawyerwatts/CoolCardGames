@@ -29,7 +29,17 @@ public interface IDealer
         where TCard : Card;
 }
 
-public sealed class Dealer(Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
+public interface IDealerFactory
+{
+    IDealer Make(GameEventHandler gameEventHandler);
+}
+
+public class DealerFactory(Dealer.IRng rng, ILogger<Dealer> logger) : IDealerFactory
+{
+    public IDealer Make(GameEventHandler gameEventHandler) => new Dealer(gameEventHandler, rng, logger);
+}
+
+public class Dealer(GameEventHandler gameEventHandler, Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
 {
     public List<Cards<TCard>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands)
         where TCard : Card
@@ -44,6 +54,7 @@ public sealed class Dealer(Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
     {
         logger.LogInformation("Shuffling the deck");
         rng.Shuffle(CollectionsMarshal.AsSpan(deck));
+        gameEventHandler.Invoke(GameEvent.DeckShuffled.Singleton);
         return deck;
     }
 
@@ -78,6 +89,7 @@ public sealed class Dealer(Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
         Cards<TCard> newCards = new(capacity: deck.Count);
         newCards.AddRange(cardsAboveCut);
         newCards.AddRange(cardsBelowAndAtCut);
+        gameEventHandler.Invoke(GameEvent.DeckCut.Singleton);
         return newCards;
     }
 
@@ -100,6 +112,7 @@ public sealed class Dealer(Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
             iCurrHand.Tick();
         }
 
+        gameEventHandler.Invoke(new GameEvent.DeckDealt(numHands));
         return hands;
     }
 
