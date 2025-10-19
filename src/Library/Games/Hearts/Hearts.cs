@@ -5,7 +5,8 @@ using Microsoft.Extensions.Logging;
 namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: the code is multi-braided: it does something, and it pushes a notification to do it
-//       pass players to dealer so can notify?
+
+// TODO: review all logs and see if they can/should be events
 
 // TODO: put iTrickStartPlayer into gameState?
 
@@ -69,6 +70,7 @@ public class Hearts(
     private async Task SetupRound(PassDirection passDirection, CancellationToken cancellationToken)
     {
         gameState.IsHeartsBroken = false;
+        HandleGameEvent(GameEvent.SettingUpNewRound.Singleton);
 
         logger.LogInformation("Shuffling, cutting, and dealing the deck to {NumPlayers}",
             NumPlayers);
@@ -80,16 +82,16 @@ public class Hearts(
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            PublishGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
+            HandleGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
         }
 
         if (passDirection is PassDirection.Hold)
         {
-            PublishGameEvent(HeartsGameEvent.HeartsHoldEmRound.Singleton);
+            HandleGameEvent(HeartsGameEvent.HoldEmRound.Singleton);
             return;
         }
 
-        PublishGameEvent(new HeartsGameEvent.HeartsGetReadyToPass(passDirection));
+        HandleGameEvent(new HeartsGameEvent.GetReadyToPass(passDirection));
         logger.LogInformation("Asking each player to select three cards to pass {PassDirection}",
             passDirection);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
@@ -120,8 +122,8 @@ public class Hearts(
             gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
         }
 
-        PublishGameEvent(new HeartsGameEvent.HeartsCardsPassed(passDirection));
-        logger.LogInformation("Hands are finalized");
+        HandleGameEvent(new HeartsGameEvent.CardsPassed(passDirection));
+        HandleGameEvent(GameEvent.BeginningNewRound.Singleton);
     }
 
     private Task<int> PlayOutTrick(bool isFirstTrick, int iTrickStartPlayer, CancellationToken cancellationToken)
@@ -131,6 +133,30 @@ public class Hearts(
 
     private void ScoreTricks()
     {
-        throw new NotImplementedException();
+        HandleGameEvent(GameEvent.ScoringRound.Singleton);
+        List<int> roundScores = new(capacity: NumPlayers);
+        foreach (HeartsPlayerState playerState in gameState.Players)
+        {
+            int roundScore = playerState.TricksTaken.Sum(trickCards => trickCards.Sum(card => card.Points));
+            roundScores.Add(roundScore);
+        }
+
+        if (roundScores.Count(score => score == 0) == 3)
+        {
+            int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
+            HandleGameEvent(new HeartsGameEvent.ShotTheMoon(players[iPlayerShotTheMoon].AccountCard));
+            const int totalPointsInDeck = 26;
+            for (int i = 0; i < roundScores.Count; i++)
+            {
+                if (i != iPlayerShotTheMoon)
+                    roundScores[i] = totalPointsInDeck;
+            }
+        }
+
+        for (int i = 0; i < roundScores.Count; i++)
+        {
+            gameState.Players[i].Score += roundScores[i];
+            HandleGameEvent(new HeartsGameEvent.TrickScored(players[i].AccountCard, roundScores[i], gameState.Players[i].Score));
+        }
     }
 }
