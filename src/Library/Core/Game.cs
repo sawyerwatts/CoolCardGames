@@ -19,7 +19,11 @@ public abstract class Game
             throw new ArgumentException($"{nameof(gameEventConsumers)} needs at least one element");
     }
 
-    protected void PublishGameEvent(GameEvent gameEvent) => OnGameEvent.Invoke(gameEvent);
+    protected void PublishGameEvent(GameEvent gameEvent)
+    {
+        _logger.LogInformation("Publishing game event {GameEvent}", gameEvent);
+        OnGameEvent.Invoke(gameEvent);
+    }
 
     /// <remarks>
     /// This method will never throw an exception, it will return it instead.

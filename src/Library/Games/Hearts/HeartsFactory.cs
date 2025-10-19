@@ -12,10 +12,10 @@ public class HeartsFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public Hearts Make(List<PlayerSession<HeartsCard>> playerSessions, HeartsSettings? settings = null)
+    public Hearts Make(List<User<HeartsCard>> users, HeartsSettings? settings = null)
     {
-        if (playerSessions.Count != Hearts.NumPlayers)
-            throw new ArgumentException($"{nameof(playerSessions)} must have {Hearts.NumPlayers} elements, but it has {playerSessions.Count} elements");
+        if (users.Count != Hearts.NumPlayers)
+            throw new ArgumentException($"{nameof(users)} must have {Hearts.NumPlayers} elements, but it has {users.Count} elements");
 
         if (settings is null)
             settings = DefaultHeartsSettings;
@@ -37,11 +37,11 @@ public class HeartsFactory(
             .ToList()
             .AsReadOnly();
 
-        var playerIntermediates = playerSessions
+        var players = users
             .Select((playerSession, i) => new HeartsPlayer(playerSession, gameState, i))
             .ToList()
             .AsReadOnly();
 
-        return new Hearts(playerIntermediates, gameState, dealer, settings, logger);
+        return new Hearts(players, gameState, dealer, settings, logger);
     }
 }

@@ -4,14 +4,14 @@ namespace CoolCardGames.Library.Core.Players;
 // TODO: update these funcs to pass additional, human-readable validation info
 /// <summary>
 /// This class is an anti-corruption layer between the card games and the
-/// <see cref="PlayerSession{TCard}"/> so that:
+/// <see cref="User{TCard}"/> so that:
 /// <br /> - The card games' logic can be blissfully unaware of the multithreading (if implemented
 /// that way).
 /// <br /> - Reusably handle user input validation.
-/// <br /> - The session can be hot swapped (see <see cref="PlayerSession{TCard}"/> for more).
+/// <br /> - The session can be hot swapped (see <see cref="User{TCard}"/> for more).
 /// </summary>
 public class Player<TCard, TPlayerState, TGameState>(
-    PlayerSession<TCard> session,
+    User<TCard> session,
     TGameState gameState,
     int gameStatePlayerIndex)
     where TCard : Card

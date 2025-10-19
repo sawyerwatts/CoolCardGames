@@ -4,22 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: rename PlayerSession to User or something
-
-// TODO: I almost want to log all game events
-//     would need to update GameEvents to take msg templates so could log appropriately
-
 // TODO: the code is multi-braided: it does something, and it pushes a notification to do it
 //       pass players to dealer so can notify?
 
 // TODO: put iTrickStartPlayer into gameState?
 
 // TODO: how handle data visibility to diff players?
-
-// TODO: need to doc that each session and the game are all on diff threads
-//       altho not necessarily
-
-// TODO: doc that game events are used for UI changes in playersession
 
 // TODO: decompose Hearts class to make it easier to test
 
