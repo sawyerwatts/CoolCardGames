@@ -62,8 +62,7 @@ public class Hearts(
             ScoreTricks();
         }
 
-        // TODO: update this to use events: LogWinnersAndLosers();
-
+        WinnersAndLosers();
         logger.LogInformation("Completed the hearts game");
     }
 
@@ -157,6 +156,31 @@ public class Hearts(
         {
             gameState.Players[i].Score += roundScores[i];
             HandleGameEvent(new HeartsGameEvent.TrickScored(players[i].AccountCard, roundScores[i], gameState.Players[i].Score));
+        }
+    }
+
+    private void WinnersAndLosers()
+    {
+        for (int i = 0; i < gameState.Players.Count; i++)
+        {
+            HeartsPlayerState playerState = gameState.Players[i];
+            if (playerState.Score < settings.EndOfGamePoints)
+                continue;
+            logger.LogInformation("{AccountCard} is at or over {EndOfGamePoints} points with {TotalPoints}",
+                players[i].AccountCard, settings.EndOfGamePoints, playerState.Score);
+        }
+
+        int minScore = gameState.Players.Min(player => player.Score);
+        for (int i = 0; i < gameState.Players.Count; i++)
+        {
+            HeartsPlayerState playerState = gameState.Players[i];
+            if (playerState.Score != minScore)
+            {
+                HandleGameEvent(new GameEvent.Loser(players[i].AccountCard));
+                continue;
+            }
+            logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", players[i].AccountCard, playerState.Score);
+            HandleGameEvent(new GameEvent.Winner(players[i].AccountCard));
         }
     }
 }
