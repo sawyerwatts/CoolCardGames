@@ -30,5 +30,6 @@ public abstract record HeartsGameEvent(string Summary) : GameEvent(Summary)
     public record TrickScored(AccountCard AccountCard, int RoundPoints, int TotalPoints)
         : HeartsGameEvent($"{AccountCard} scored {RoundPoints} point(s) this round and has a total of {TotalPoints} point(s)");
 
-    // TODO: extend CardAddedToTrick for HeartsBroken?
+    public record HeartsHaveBeenBroken(AccountCard AccountCard, HeartsCard HeartsCard)
+        : HeartsGameEvent($"Hearts have been broken by {AccountCard} with {HeartsCard}");
 }

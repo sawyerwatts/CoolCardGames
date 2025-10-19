@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+// TODO: mv log scoping to base class? would need a settings base class too
+
 // TODO: the code is multi-braided: it does something, and it pushes a notification to do it
 
 // TODO: review all logs and see if they can/should be events
@@ -45,16 +47,17 @@ public class Hearts(
         {
             await SetupRound((PassDirection)dealerPosition.Tick(), cancellationToken);
 
-            int iTrickStartPlayer = gameState.Players.FindIndex(player =>
+            gameState.IndexTrickStartPlayer = gameState.Players.FindIndex(player =>
                 player.Hand.Any(card => card.Value is TwoOfClubs));
-            if (iTrickStartPlayer == -1)
-                throw new InvalidOperationException(
-                    $"Could not find a player with the {nameof(TwoOfClubs)}");
+            if (gameState.IndexTrickStartPlayer == -1)
+                throw new InvalidOperationException($"Could not find a player with the {nameof(TwoOfClubs)}");
 
-            iTrickStartPlayer = await PlayOutTrick(isFirstTrick: true, iTrickStartPlayer, cancellationToken);
-
+            gameState.IsFirstTrick = true;
             while (gameState.Players[0].Hand.Any())
-                iTrickStartPlayer = await PlayOutTrick(isFirstTrick: false, iTrickStartPlayer, cancellationToken);
+            {
+                await PlayOutTrick(cancellationToken);
+                gameState.IsFirstTrick = false;
+            }
 
             if (gameState.Players.Any(player => player.Hand.Any()))
                 throw new InvalidOperationException("Some players have cards left despite the 0th player having none");
@@ -125,9 +128,70 @@ public class Hearts(
         HandleGameEvent(GameEvent.BeginningNewRound.Singleton);
     }
 
-    private Task<int> PlayOutTrick(bool isFirstTrick, int iTrickStartPlayer, CancellationToken cancellationToken)
+    // TODO: update and review this method w/ events in mind
+    private async Task PlayOutTrick(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        CircularCounter iTrickPlayer = new(seed: gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
+        while (true) // TODO: at risk of infinite loop
+        {
+            logger.LogInformation("Getting trick's opening card from {AccountCard}", players[iTrickPlayer.N].AccountCard);
+            if (!gameState.IsHeartsBroken && gameState.Players[gameState.IndexTrickStartPlayer].Hand.All(card => card.Value.Suit is Suit.Hearts))
+            {
+                logger.LogInformation(
+                    "Hearts has not been broken and {AccountCard} only has hearts, skipping to the next player",
+                    players[iTrickPlayer.N].AccountCard);
+                iTrickPlayer.CycleClockwise();
+            }
+            else
+                break;
+        }
+
+        HeartsCard openingCard = await players[gameState.IndexTrickStartPlayer].PlayCard(
+            validateChosenCard: (hand, iCardToPlay) => gameState.IsFirstTrick
+                ? hand[iCardToPlay].Value is TwoOfClubs
+                : gameState.IsHeartsBroken || hand[iCardToPlay].Value.Suit is not Suit.Hearts,
+            cancellationToken);
+        logger.LogInformation("{AccountCard} played {CardValue}", players[iTrickPlayer.N].AccountCard, openingCard.Value);
+        Cards<HeartsCard> trick = new(capacity: NumPlayers) { openingCard };
+        Suit suitToFollow = openingCard.Value.Suit;
+
+        while (iTrickPlayer.CycleClockwise() != gameState.IndexTrickStartPlayer)
+        {
+            var playerWithAction = players[iTrickPlayer.N];
+            logger.LogInformation("Getting trick's next card from {AccountCard}", playerWithAction.AccountCard);
+            HeartsCard chosenCard = await players[iTrickPlayer.N].PlayCard(
+                validateChosenCard: (hand, iCardToPlay) =>
+                {
+                    if (!CheckPlayedCard.IsSuitFollowedIfPossible(suitToFollow, hand, iCardToPlay))
+                        return false;
+                    if (gameState.IsFirstTrick && hand[iCardToPlay].Points != 0)
+                        return false;
+                    return true;
+                },
+                cancellationToken);
+            trick.Add(chosenCard);
+            logger.LogInformation("{AccountCard} played {CardValue}", playerWithAction.AccountCard, chosenCard.Value);
+
+            if (!gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
+            {
+                HandleGameEvent(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard));
+                gameState.IsHeartsBroken = true;
+            }
+        }
+
+        if (trick.Count != NumPlayers)
+            throw new InvalidOperationException($"After playing a trick, the trick has {trick.Count} cards but expected {NumPlayers} cards");
+
+        IEnumerable<HeartsCard> onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
+        Rank highestOnSuitRank = GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
+        int iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card => card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
+        if (iTrickTakerOffsetFromStartPlayer == -1)
+            throw new InvalidOperationException($"Could not find a card in the trick with suit {suitToFollow} and rank {highestOnSuitRank}");
+        int iNextTrickStartPlayer = new CircularCounter(seed: gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
+            .Tick(delta: iTrickTakerOffsetFromStartPlayer);
+        logger.LogInformation("{AccountCard} took the trick with {Card}", players[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]);
+        gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
+        gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
     }
 
     private void ScoreTricks()
