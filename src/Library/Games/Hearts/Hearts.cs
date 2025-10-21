@@ -72,7 +72,7 @@ public class Hearts(
     private async Task SetupRound(PassDirection passDirection, CancellationToken cancellationToken)
     {
         gameState.IsHeartsBroken = false;
-        HandleGameEvent(GameEvent.SettingUpNewRound.Singleton);
+        PublishGameEvent(GameEvent.SettingUpNewRound.Singleton);
 
         logger.LogInformation("Shuffling, cutting, and dealing the deck to {NumPlayers}",
             NumPlayers);
@@ -84,16 +84,16 @@ public class Hearts(
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            HandleGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
+            PublishGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
         }
 
         if (passDirection is PassDirection.Hold)
         {
-            HandleGameEvent(HeartsGameEvent.HoldEmRound.Singleton);
+            PublishGameEvent(HeartsGameEvent.HoldEmRound.Singleton);
             return;
         }
 
-        HandleGameEvent(new HeartsGameEvent.GetReadyToPass(passDirection));
+        PublishGameEvent(new HeartsGameEvent.GetReadyToPass(passDirection));
         logger.LogInformation("Asking each player to select three cards to pass {PassDirection}",
             passDirection);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
@@ -124,8 +124,8 @@ public class Hearts(
             gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
         }
 
-        HandleGameEvent(new HeartsGameEvent.CardsPassed(passDirection));
-        HandleGameEvent(GameEvent.BeginningNewRound.Singleton);
+        PublishGameEvent(new HeartsGameEvent.CardsPassed(passDirection));
+        PublishGameEvent(GameEvent.BeginningNewRound.Singleton);
     }
 
     // TODO: update and review this method w/ events in mind
@@ -174,7 +174,7 @@ public class Hearts(
 
             if (!gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
-                HandleGameEvent(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard));
+                PublishGameEvent(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard));
                 gameState.IsHeartsBroken = true;
             }
         }
@@ -196,7 +196,7 @@ public class Hearts(
 
     private void ScoreTricks()
     {
-        HandleGameEvent(GameEvent.ScoringRound.Singleton);
+        PublishGameEvent(GameEvent.ScoringRound.Singleton);
         List<int> roundScores = new(capacity: NumPlayers);
         foreach (HeartsPlayerState playerState in gameState.Players)
         {
@@ -207,7 +207,7 @@ public class Hearts(
         if (roundScores.Count(score => score == 0) == 3)
         {
             int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
-            HandleGameEvent(new HeartsGameEvent.ShotTheMoon(players[iPlayerShotTheMoon].AccountCard));
+            PublishGameEvent(new HeartsGameEvent.ShotTheMoon(players[iPlayerShotTheMoon].AccountCard));
             const int totalPointsInDeck = 26;
             for (int i = 0; i < roundScores.Count; i++)
             {
@@ -219,7 +219,7 @@ public class Hearts(
         for (int i = 0; i < roundScores.Count; i++)
         {
             gameState.Players[i].Score += roundScores[i];
-            HandleGameEvent(new HeartsGameEvent.TrickScored(players[i].AccountCard, roundScores[i], gameState.Players[i].Score));
+            PublishGameEvent(new HeartsGameEvent.TrickScored(players[i].AccountCard, roundScores[i], gameState.Players[i].Score));
         }
     }
 
@@ -240,11 +240,11 @@ public class Hearts(
             HeartsPlayerState playerState = gameState.Players[i];
             if (playerState.Score != minScore)
             {
-                HandleGameEvent(new GameEvent.Loser(players[i].AccountCard));
+                PublishGameEvent(new GameEvent.Loser(players[i].AccountCard));
                 continue;
             }
             logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", players[i].AccountCard, playerState.Score);
-            HandleGameEvent(new GameEvent.Winner(players[i].AccountCard));
+            PublishGameEvent(new GameEvent.Winner(players[i].AccountCard));
         }
     }
 }

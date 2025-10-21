@@ -10,6 +10,6 @@ public static class CoreServicesRegistration
         builder.Services.AddSingleton<IDealerFactory, DealerFactory>();
         builder.Services.AddSingleton<Dealer.IRng, Dealer.Rng>();
 
-        builder.Services.AddSingleton<IGameEventFanOutFactory, GameEventFanOutFactory>();
+        builder.Services.AddSingleton<IGameEventMultiplexerFactory, GameEventMultiplexerFactory>();
     }
 }

@@ -22,7 +22,7 @@ public abstract class Game(GameEventHandler gameEventHandler, ILogger<Game> logg
     }
 
     /// <remarks>
-    /// Implementations should send <see cref="GameEvent"/>s via <see cref="HandleGameEvent"/>.
+    /// Implementations should send <see cref="GameEvent"/>s via <see cref="PublishGameEvent"/>.
     /// <br />
     /// The caller has a try/catch around this method, so implementations do not need a top-level
     /// try/catch.
@@ -33,9 +33,8 @@ public abstract class Game(GameEventHandler gameEventHandler, ILogger<Game> logg
     /// This will log the game event and then handle it.
     /// </summary>
     /// <param name="gameEvent"></param>
-    protected void HandleGameEvent(GameEvent gameEvent)
+    protected void PublishGameEvent(GameEvent gameEvent)
     {
-        logger.LogInformation("Publishing game event {GameEvent}", gameEvent);
         gameEventHandler(gameEvent);
     }
 }
