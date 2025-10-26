@@ -1,6 +1,6 @@
-namespace CoolCardGames.Library.Core.Players;
+namespace CoolCardGames.Library.Core.Actors;
 
-public class AiUser<TCard>(AccountCard accountCard) : User<TCard>(accountCard)
+public class AiUserSession<TCard>(AccountCard accountCard) : UserSession<TCard>(accountCard)
     where TCard : Card
 {
     public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)

@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+using CoolCardGames.Library.Core.Actors;
+
 namespace CoolCardGames.Library.Games.Hearts;
 
 public abstract record HeartsGameEvent(string Summary) : GameEvent(Summary)

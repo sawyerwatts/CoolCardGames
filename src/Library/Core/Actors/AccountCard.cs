@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Core.Players;
+namespace CoolCardGames.Library.Core.Actors;
 
 public record AccountCard(string Id, string DisplayName)
 {

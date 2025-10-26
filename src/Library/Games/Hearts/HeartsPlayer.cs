@@ -1,7 +1,9 @@
+using CoolCardGames.Library.Core.Actors;
+
 namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsPlayer(
-    User<HeartsCard> user,
+    UserSession<HeartsCard> userSession,
     HeartsGameState gameState,
     int gameStatePlayerIndex)
-    : Player<HeartsCard, HeartsPlayerState, HeartsGameState>(user, gameState, gameStatePlayerIndex);
+    : Player<HeartsCard, HeartsPlayerState, HeartsGameState>(userSession, gameState, gameStatePlayerIndex);

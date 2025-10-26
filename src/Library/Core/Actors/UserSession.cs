@@ -1,17 +1,17 @@
 using System.Collections.Concurrent;
 
-namespace CoolCardGames.Library.Core.Players;
+namespace CoolCardGames.Library.Core.Actors;
 
 // TODO: update these funcs to pass additional, human-readable validation info
 
 /// <remarks>
-/// <see cref="User{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> being
+/// <see cref="UserSession{TCard}"/> and <see cref="Player{TCard,TPlayerState,TGameState}"/> being
 /// two different types supports the following use case: if playing online, if someone goes offline,
 /// the <see cref="Player{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
 /// <typeparam name="TCard"></typeparam>
-public abstract class User<TCard>(AccountCard accountCard)
+public abstract class UserSession<TCard>(AccountCard accountCard)
     where TCard : Card
 {
     public AccountCard AccountCard => accountCard;

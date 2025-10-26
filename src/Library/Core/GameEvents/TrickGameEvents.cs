@@ -1,3 +1,5 @@
+using CoolCardGames.Library.Core.Actors;
+
 namespace CoolCardGames.Library.Core.GameEvents;
 
 public abstract partial record GameEvent

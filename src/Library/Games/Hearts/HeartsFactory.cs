@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using CoolCardGames.Library.Core.Actors;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +15,7 @@ public class HeartsFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public Hearts Make(List<User<HeartsCard>> users, HeartsSettings? settings = null)
+    public Hearts Make(List<UserSession<HeartsCard>> users, HeartsSettings? settings = null)
     {
         if (users.Count != Hearts.NumPlayers)
             throw new ArgumentException($"{nameof(users)} must have {Hearts.NumPlayers} elements, but it has {users.Count} elements");
