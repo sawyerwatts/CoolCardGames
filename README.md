@@ -16,7 +16,11 @@ A `User` becomes a `Player` as they enter a `Game`: for example, a `User` is inj
 
 Here is the ***planned*** architecture (we'll see how long it takes for me to lose interest):
 
-![architecture.png](./docs/images/architecture.png)
+![appArchitecture.png](./docs/images/appArchitecture.png)
+
+### Game Top-Level Classes and Data Flow
+
+![dataFlow](./docs/images/dataFlow.png)
 
 ### Build and Test
 

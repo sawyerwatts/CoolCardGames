@@ -4,6 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+/* TODO: impl Bridge pattern (see diagram in wiki)
+   - Make abstract Player and PlayerBridge
+   - rm HeartsPlayer
+   - mv CliUser to CliPlayer
+   - mv AiUse to AiPlayer
+   - add healthcheck to Player so bridge can swap as needed
+   - update xmldocs
+ */
+
 // TODO: replace GameEventHandler w/ publisher and consumer classes
 //       have the publisher log the event
 
