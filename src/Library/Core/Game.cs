@@ -4,6 +4,8 @@ namespace CoolCardGames.Library.Core;
 
 public abstract class Game(GameEventHandler gameEventHandler, ILogger<Game> logger)
 {
+    public abstract string Name { get; }
+
     /// <remarks>
     /// This method will never throw an exception, it will return it instead.
     /// </remarks>

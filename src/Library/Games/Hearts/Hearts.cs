@@ -4,8 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-/* TODO: impl Bridge pattern (see diagram in wiki)
-   - Make abstract Player and PlayerBridge
+/* TODO: impl Bridge pattern (see diagram in readme)
+   - make abstract Player
+   - make PlayerBridge
    - rm HeartsPlayer
    - mv CliUser to CliPlayer
    - mv AiUse to AiPlayer
@@ -45,6 +46,8 @@ public class Hearts(
     : Game(eventHandler, logger)
 {
     public const int NumPlayers = 4;
+
+    public override string Name => "Hearts";
 
     protected override async Task ActuallyPlay(CancellationToken cancellationToken)
     {
