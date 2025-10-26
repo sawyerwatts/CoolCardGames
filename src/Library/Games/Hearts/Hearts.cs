@@ -4,6 +4,13 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+// TODO: replace GameEventHandler w/ publisher and consumer classes
+//       have the publisher log the event
+
+// TODO: add an event (w/ ID) to say that game is about to ask player P for a card or cards, and
+//       then send that ID in the request to P so P can make sure it's up to date
+//       (also prob send game state so it can hard reset if needed?)
+
 // TODO: mv log scoping to base class? would need a settings base class too
 
 // TODO: the code is multi-braided: it does something, and it pushes a notification to do it
