@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
 
@@ -18,7 +18,7 @@ public class PlayerSessionBridge<TCard>(IPlayerSession<TCard> playerSession, AiP
 {
     public AccountCard AccountCard => playerSession.AccountCard;
 
-    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = [];
+    public ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
 
     public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {

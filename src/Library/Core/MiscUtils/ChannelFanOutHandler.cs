@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 namespace CoolCardGames.Library.Core.MiscUtils;
 
 /// <inheritdoc cref="HandleFanout"/>
+/// <remarks>
+/// It is intended to use <see cref="ChannelFanOutHandlerFactory"/> to instantiate this service.
+/// </remarks>
 public class ChannelFanOutHandler<TMessage>(
     ChannelReader<TMessage> sourceReader,
     ILogger<ChannelFanOutHandler<TMessage>> logger)

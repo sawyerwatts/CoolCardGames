@@ -1,3 +1,5 @@
+using System.Threading.Channels;
+
 using CoolCardGames.Library.Core.CardUtils;
 using CoolCardGames.Library.Core.GameEvents;
 
@@ -7,6 +9,7 @@ namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public sealed class DealerTests
 {
+    private readonly Channel<GameEvent> _channel = Channel.CreateUnbounded<GameEvent>();
     private readonly Dealer _dealer;
     private readonly RngMock _rng;
     private readonly List<GameEvent> _events = [];
@@ -15,13 +18,13 @@ public sealed class DealerTests
     {
         _rng = new RngMock();
         _dealer = new Dealer(
-            gameEventHandler: (gameEvent) => _events.Add(gameEvent),
+            gameEventWriter: _channel.Writer,
             rng: _rng,
             logger: NullLogger<Dealer>.Instance);
     }
 
     [Fact]
-    public void TestCut()
+    public async Task TestCut()
     {
         Cards<Card> deck = Card.MakeDeck(
         [
@@ -38,7 +41,7 @@ public sealed class DealerTests
         ]);
 
         _rng.GetInt32Value = 3;
-        deck = _dealer.Cut(deck);
+        deck = await _dealer.Cut(deck, CancellationToken.None);
 
         Cards<Card> expectedDeck = Card.MakeDeck(
         [
@@ -60,7 +63,7 @@ public sealed class DealerTests
     }
 
     [Fact]
-    public void TestShuffle()
+    public async Task TestShuffle()
     {
         Cards<Card> deck = Card.MakeDeck(Decks.Standard52());
         Cards<Card> prevDeck = new(deck);
@@ -68,7 +71,7 @@ public sealed class DealerTests
         int numChangedDecks = 0;
         for (int i = 0; i < 5; i++)
         {
-            deck = _dealer.Shuffle(deck);
+            deck = await _dealer.Shuffle(deck, CancellationToken.None);
             if (!deck.Matches(prevDeck))
                 numChangedDecks++;
             prevDeck = new Cards<Card>(deck);
@@ -81,7 +84,7 @@ public sealed class DealerTests
     }
 
     [Fact]
-    public void TestDeal()
+    public async Task TestDeal()
     {
         Cards<Card> deck = Card.MakeDeck(
         [
@@ -123,7 +126,7 @@ public sealed class DealerTests
             SevenOfHearts.Instance,
         ]);
 
-        List<Cards<Card>> hands = _dealer.Deal(deck, 4);
+        List<Cards<Card>> hands = await _dealer.Deal(deck, 4, CancellationToken.None);
         Assert.Equal(4, hands.Count);
         Assert.True(expectedHand0.Matches(hands[0]));
         Assert.True(expectedHand1.Matches(hands[1]));

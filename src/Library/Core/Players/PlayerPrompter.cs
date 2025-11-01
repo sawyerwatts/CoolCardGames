@@ -21,14 +21,6 @@ public class PlayerPrompter<TCard, TPlayerState, TGameState>(
     public AccountCard AccountCard => playerSession.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
-    /// <remarks>
-    /// This consumer simply appends the event to the session's game queue (instead of processing the
-    /// event) because it is desired to keep the game loop going even while the session works on
-    /// rendering events.
-    /// </remarks>
-    public GameEventHandler GameEventHandler =>
-        (gameEvent) => playerSession.UnprocessedGameEvents.Enqueue(gameEvent);
-
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;
 

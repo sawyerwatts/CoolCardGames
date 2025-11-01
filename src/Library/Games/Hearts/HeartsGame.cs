@@ -1,10 +1,9 @@
 using System.Diagnostics;
+using System.Threading.Channels;
 
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
-
-// TODO: replace GameEventHandler w/ Channel and rip out queues n stuff
 
 // TODO: add an event (w/ ID) to say that game is about to ask player P for a card or cards, and
 //       then send that ID in the request to P so P can make sure it's up to date
@@ -23,16 +22,16 @@ namespace CoolCardGames.Library.Games.Hearts;
 // TODO: decompose Hearts class to make it easier to test
 
 /// <remarks>
-/// It is intended to use <see cref="HeartsFactory"/> to instantiate this service.
+/// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
-public class Hearts(
-    GameEventHandler eventHandler,
+public class HeartsGame(
+    ChannelWriter<GameEvent> gameEventWriter,
     IReadOnlyList<HeartsPlayerPrompter> playerPrompters,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsSettings settings,
-    ILogger<Hearts> logger)
-    : Game(eventHandler, logger)
+    ILogger<HeartsGame> logger)
+    : Game(gameEventWriter, logger)
 {
     public const int NumPlayers = 4;
 
@@ -70,38 +69,39 @@ public class Hearts(
             if (gameState.Players.Any(player => player.Hand.Any()))
                 throw new InvalidOperationException("Some players have cards left despite the 0th player having none");
 
-            ScoreTricks();
+            await ScoreTricks(cancellationToken);
         }
 
-        WinnersAndLosers();
+        await WinnersAndLosers(cancellationToken);
         logger.LogInformation("Completed the hearts game");
     }
 
     private async Task SetupRound(PassDirection passDirection, CancellationToken cancellationToken)
     {
         gameState.IsHeartsBroken = false;
-        PublishGameEvent(GameEvent.SettingUpNewRound.Singleton);
+        await PublishGameEvent(GameEvent.SettingUpNewRound.Singleton, cancellationToken);
 
         logger.LogInformation("Shuffling, cutting, and dealing the deck to {NumPlayers}",
             NumPlayers);
         // TODO: could preserve and reshuffle cards instead of reinstantiating every round
-        List<Cards<HeartsCard>> hands = dealer.ShuffleCutDeal(
+        List<Cards<HeartsCard>> hands = await dealer.ShuffleCutDeal(
             deck: HeartsCard.MakeDeck(Decks.Standard52()),
-            numHands: NumPlayers);
+            numHands: NumPlayers,
+            cancellationToken);
 
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            PublishGameEvent(new GameEvent.HandGiven(playerPrompters[i].AccountCard, hands[i].Count));
+            await PublishGameEvent(new GameEvent.HandGiven(playerPrompters[i].AccountCard, hands[i].Count), cancellationToken);
         }
 
         if (passDirection is PassDirection.Hold)
         {
-            PublishGameEvent(HeartsGameEvent.HoldEmRound.Singleton);
+            await PublishGameEvent(HeartsGameEvent.HoldEmRound.Singleton, cancellationToken);
             return;
         }
 
-        PublishGameEvent(new HeartsGameEvent.GetReadyToPass(passDirection));
+        await PublishGameEvent(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
         logger.LogInformation("Asking each player to select three cards to pass {PassDirection}",
             passDirection);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
@@ -132,8 +132,8 @@ public class Hearts(
             gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
         }
 
-        PublishGameEvent(new HeartsGameEvent.CardsPassed(passDirection));
-        PublishGameEvent(GameEvent.BeginningNewRound.Singleton);
+        await PublishGameEvent(new HeartsGameEvent.CardsPassed(passDirection), cancellationToken);
+        await PublishGameEvent(GameEvent.BeginningNewRound.Singleton, cancellationToken);
     }
 
     // TODO: update and review this method w/ events in mind
@@ -182,7 +182,7 @@ public class Hearts(
 
             if (!gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
-                PublishGameEvent(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard));
+                await PublishGameEvent(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard), cancellationToken);
                 gameState.IsHeartsBroken = true;
             }
         }
@@ -202,9 +202,9 @@ public class Hearts(
         gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
     }
 
-    private void ScoreTricks()
+    private async Task ScoreTricks(CancellationToken cancellationToken)
     {
-        PublishGameEvent(GameEvent.ScoringRound.Singleton);
+        await PublishGameEvent(GameEvent.ScoringRound.Singleton, cancellationToken);
         List<int> roundScores = new(capacity: NumPlayers);
         foreach (HeartsPlayerState playerState in gameState.Players)
         {
@@ -215,7 +215,7 @@ public class Hearts(
         if (roundScores.Count(score => score == 0) == 3)
         {
             int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
-            PublishGameEvent(new HeartsGameEvent.ShotTheMoon(playerPrompters[iPlayerShotTheMoon].AccountCard));
+            await PublishGameEvent(new HeartsGameEvent.ShotTheMoon(playerPrompters[iPlayerShotTheMoon].AccountCard), cancellationToken);
             const int totalPointsInDeck = 26;
             for (int i = 0; i < roundScores.Count; i++)
             {
@@ -227,11 +227,11 @@ public class Hearts(
         for (int i = 0; i < roundScores.Count; i++)
         {
             gameState.Players[i].Score += roundScores[i];
-            PublishGameEvent(new HeartsGameEvent.TrickScored(playerPrompters[i].AccountCard, roundScores[i], gameState.Players[i].Score));
+            await PublishGameEvent(new HeartsGameEvent.TrickScored(playerPrompters[i].AccountCard, roundScores[i], gameState.Players[i].Score), cancellationToken);
         }
     }
 
-    private void WinnersAndLosers()
+    private async Task WinnersAndLosers(CancellationToken cancellationToken)
     {
         for (int i = 0; i < gameState.Players.Count; i++)
         {
@@ -248,12 +248,12 @@ public class Hearts(
             HeartsPlayerState playerState = gameState.Players[i];
             if (playerState.Score != minScore)
             {
-                PublishGameEvent(new GameEvent.Loser(playerPrompters[i].AccountCard));
+                await PublishGameEvent(new GameEvent.Loser(playerPrompters[i].AccountCard), cancellationToken);
                 continue;
             }
 
             logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", playerPrompters[i].AccountCard, playerState.Score);
-            PublishGameEvent(new GameEvent.Winner(playerPrompters[i].AccountCard));
+            await PublishGameEvent(new GameEvent.Winner(playerPrompters[i].AccountCard), cancellationToken);
         }
     }
 }

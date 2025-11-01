@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Threading.Channels;
 
 using Microsoft.Extensions.Logging;
 
@@ -10,55 +11,55 @@ public interface IDealer
     /// <remarks>
     /// This may or may not mutate the supplied <paramref name="deck"/>.
     /// </remarks>
-    List<Cards<TCard>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands)
+    Task<List<Cards<TCard>>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card;
 
     /// <remarks>
     /// This may or may not mutate the supplied <paramref name="deck"/>.
     /// </remarks>
-    Cards<TCard> Shuffle<TCard>(Cards<TCard> deck)
+    Task<Cards<TCard>> Shuffle<TCard>(Cards<TCard> deck, CancellationToken cancellationToken)
         where TCard : Card;
 
     /// <remarks>
     /// This may or may not mutate the supplied <paramref name="deck"/>.
     /// </remarks>
-    Cards<TCard> Cut<TCard>(Cards<TCard> deck, int minNumCardsFromEdges = 1)
+    Task<Cards<TCard>> Cut<TCard>(Cards<TCard> deck, CancellationToken cancellationToken, int minNumCardsFromEdges = 1)
         where TCard : Card;
 
-    List<Cards<TCard>> Deal<TCard>(Cards<TCard> deck, int numHands)
+    Task<List<Cards<TCard>>> Deal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card;
 }
 
 public interface IDealerFactory
 {
-    IDealer Make(GameEventHandler gameEventHandler);
+    IDealer Make(ChannelWriter<GameEvent> gameEventWriter);
 }
 
 public class DealerFactory(Dealer.IRng rng, ILogger<Dealer> logger) : IDealerFactory
 {
-    public IDealer Make(GameEventHandler gameEventHandler) => new Dealer(gameEventHandler, rng, logger);
+    public IDealer Make(ChannelWriter<GameEvent> gameEventWriter) => new Dealer(gameEventWriter, rng, logger);
 }
 
-public class Dealer(GameEventHandler gameEventHandler, Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
+public class Dealer(ChannelWriter<GameEvent> gameEventWriter, Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
 {
-    public List<Cards<TCard>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands)
+    public async Task<List<Cards<TCard>>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card
     {
-        Cards<TCard> shuffled = Shuffle(deck);
-        Cards<TCard> cut = Cut(shuffled);
-        return Deal(cut, numHands);
+        Cards<TCard> shuffled = await Shuffle(deck, cancellationToken);
+        Cards<TCard> cut = await Cut(shuffled, cancellationToken);
+        return await Deal(cut, numHands, cancellationToken);
     }
 
-    public Cards<TCard> Shuffle<TCard>(Cards<TCard> deck)
+    public async Task<Cards<TCard>> Shuffle<TCard>(Cards<TCard> deck, CancellationToken cancellationToken)
         where TCard : Card
     {
         logger.LogInformation("Shuffling the deck");
         rng.Shuffle(CollectionsMarshal.AsSpan(deck));
-        gameEventHandler.Invoke(GameEvent.DeckShuffled.Singleton);
+        await gameEventWriter.WriteAsync(GameEvent.DeckShuffled.Singleton, cancellationToken);
         return deck;
     }
 
-    public Cards<TCard> Cut<TCard>(Cards<TCard> deck, int minNumCardsFromEdges = 1)
+    public async Task<Cards<TCard>> Cut<TCard>(Cards<TCard> deck, CancellationToken cancellationToken, int minNumCardsFromEdges = 1)
         where TCard : Card
     {
         logger.LogInformation(
@@ -89,11 +90,11 @@ public class Dealer(GameEventHandler gameEventHandler, Dealer.IRng rng, ILogger<
         Cards<TCard> newCards = new(capacity: deck.Count);
         newCards.AddRange(cardsAboveCut);
         newCards.AddRange(cardsBelowAndAtCut);
-        gameEventHandler.Invoke(GameEvent.DeckCut.Singleton);
+        await gameEventWriter.WriteAsync(GameEvent.DeckCut.Singleton, cancellationToken);
         return newCards;
     }
 
-    public List<Cards<TCard>> Deal<TCard>(Cards<TCard> deck, int numHands)
+    public async Task<List<Cards<TCard>>> Deal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card
     {
         logger.LogInformation("Dealing the deck to {NumHands} hands", numHands);
@@ -112,7 +113,7 @@ public class Dealer(GameEventHandler gameEventHandler, Dealer.IRng rng, ILogger<
             iCurrHand.Tick();
         }
 
-        gameEventHandler.Invoke(new GameEvent.DeckDealt(numHands));
+        await gameEventWriter.WriteAsync(new GameEvent.DeckDealt(numHands), cancellationToken);
         return hands;
     }
 

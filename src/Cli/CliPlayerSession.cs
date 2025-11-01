@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.GameEvents;
@@ -12,7 +12,7 @@ public class CliPlayerSession<TCard>(AccountCard accountCard) : IPlayerSession<T
 {
     public AccountCard AccountCard => accountCard;
 
-    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = [];
+    public ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
 
     public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {

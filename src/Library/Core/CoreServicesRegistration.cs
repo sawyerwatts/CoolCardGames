@@ -12,7 +12,7 @@ public static class CoreServicesRegistration
         builder.Services.AddSingleton<IDealerFactory, DealerFactory>();
         builder.Services.AddSingleton<Dealer.IRng, Dealer.Rng>();
 
-        builder.Services.AddSingleton<IGameEventMultiplexerFactory, GameEventMultiplexerFactory>();
+        builder.Services.AddSingleton<ChannelFanOutHandlerFactory>();
         builder.Services.AddSingleton<AiPlayerFactory>();
     }
 }

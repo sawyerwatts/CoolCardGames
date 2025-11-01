@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
 
@@ -15,16 +15,21 @@ namespace CoolCardGames.Library.Core.Players;
 public interface IPlayerSession<TCard>
     where TCard : Card
 {
-    public AccountCard AccountCard { get; }
-    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; }
+    AccountCard AccountCard { get; }
+
+    /// <remarks>
+    /// This is nullable because if the player is not currently involved in a game, then they won't
+    /// be receiving game events.
+    /// </remarks>
+    ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
 
     /// <summary>
     /// This will ask the player for any card to play. Validation and removal from hand will be handled elsewhere.
     /// </summary>
-    public abstract Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
+    Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
 
     /// <summary>
     /// This will ask the player for card(s) to play. Validation and removal from hand will be handled elsewhere.
     /// </summary>
-    public abstract Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
+    Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken);
 }
