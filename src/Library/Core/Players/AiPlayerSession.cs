@@ -1,16 +1,20 @@
+using System.Collections.Concurrent;
+
 namespace CoolCardGames.Library.Core.Players;
 
-public class AiPlayerSession<TCard>(AccountCard accountCard) : PlayerSession<TCard>
+public class AiPlayerSession<TCard>(AccountCard accountCard) : IPlayerSession<TCard>
     where TCard : Card
 {
-    public override AccountCard AccountCard => accountCard;
+    public AccountCard AccountCard => accountCard;
 
-    public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = [];
+
+    public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public override Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

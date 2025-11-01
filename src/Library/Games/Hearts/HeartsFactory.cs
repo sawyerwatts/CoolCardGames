@@ -15,7 +15,7 @@ public class HeartsFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public Hearts Make(List<PlayerSession<HeartsCard>> users, HeartsSettings? settings = null)
+    public Hearts Make(List<IPlayerSession<HeartsCard>> users, HeartsSettings? settings = null)
     {
         if (users.Count != Hearts.NumPlayers)
             throw new ArgumentException($"{nameof(users)} must have {Hearts.NumPlayers} elements, but it has {users.Count} elements");

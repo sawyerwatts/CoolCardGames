@@ -6,17 +6,17 @@ namespace CoolCardGames.Library.Core.Players;
 // TODO: update these funcs to pass additional, human-readable validation info
 
 /// <remarks>
-/// <see cref="PlayerSession{TCard}"/> and <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/> being
+/// <see cref="IPlayerSession{TCard}"/> and <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/> being
 /// two different types supports the following use case: if playing online, if someone goes offline,
 /// the <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
 /// <typeparam name="TCard"></typeparam>
-public interface PlayerSession<TCard>
+public interface IPlayerSession<TCard>
     where TCard : Card
 {
-    public abstract AccountCard AccountCard { get; }
-    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = new();
+    public AccountCard AccountCard { get; }
+    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; }
 
     /// <summary>
     /// This will ask the player for any card to play. Validation and removal from hand will be handled elsewhere.

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace CoolCardGames.Library.Core.Players;
 
 // TODO: somehow swap out impl to ai player session
@@ -10,18 +12,20 @@ namespace CoolCardGames.Library.Core.Players;
 /// <param name="playerSession"></param>
 /// <param name="aiFactory"></param>
 /// <typeparam name="TCard"></typeparam>
-public class PlayerSessionBridge<TCard>(PlayerSession<TCard> playerSession, AiPlayerFactory aiFactory)
-    : PlayerSession<TCard>
+public class PlayerSessionBridge<TCard>(IPlayerSession<TCard> playerSession, AiPlayerFactory aiFactory)
+    : IPlayerSession<TCard>
     where TCard : Card
 {
-    public override AccountCard AccountCard => playerSession.AccountCard;
+    public AccountCard AccountCard => playerSession.AccountCard;
 
-    public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = [];
+
+    public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return playerSession.PromptForIndexOfCardToPlay(cards, cancellationToken);
     }
 
-    public override Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return playerSession.PromptForIndexesOfCardsToPlay(cards, cancellationToken);
     }
