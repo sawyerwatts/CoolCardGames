@@ -12,7 +12,7 @@ namespace CoolCardGames.Library.Core.Players;
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
 /// <typeparam name="TCard"></typeparam>
-public abstract class PlayerSession<TCard>
+public interface PlayerSession<TCard>
     where TCard : Card
 {
     public abstract AccountCard AccountCard { get; }
