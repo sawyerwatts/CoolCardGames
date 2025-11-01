@@ -4,14 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-/* TODO: impl Bridge pattern (see diagram in readme)
-   - make abstract Player
-   - make PlayerBridge
-   - rm HeartsPlayer
-   - mv CliUser to CliPlayer
-   - mv AiUse to AiPlayer
-   - add healthcheck to Player so bridge can swap as needed
-   - update xmldocs
+/* TODO: update per new data flow diagram
+ * - [ ] Rename Player to PlayerPrompter
+ * - [ ] Rename UserSession to PlayerSession
+ * - [ ] Make PlayerSession abstract
+ *     - [ ] Add abstract HealthCheck
+ * - [ ] Make PlayerSessionBridge
  */
 
 // TODO: replace GameEventHandler w/ Channel
