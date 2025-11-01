@@ -14,8 +14,7 @@ namespace CoolCardGames.Library.Games.Hearts;
    - update xmldocs
  */
 
-// TODO: replace GameEventHandler w/ publisher and consumer classes
-//       have the publisher log the event
+// TODO: replace GameEventHandler w/ Channel
 
 // TODO: add an event (w/ ID) to say that game is about to ask player P for a card or cards, and
 //       then send that ID in the request to P so P can make sure it's up to date
