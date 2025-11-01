@@ -4,21 +4,21 @@ namespace CoolCardGames.Library.Core.Actors;
 // TODO: update these funcs to pass additional, human-readable validation info
 /// <summary>
 /// This class is an anti-corruption layer between the card games and the
-/// <see cref="UserSession{TCard}"/> so that:
+/// <see cref="PlayerSession{TCard}"/> so that:
 /// <br /> - The card games' logic can be blissfully unaware of the multithreading (if implemented
 /// that way).
 /// <br /> - Reusably handle user input validation.
-/// <br /> - The user can be hot swapped (see <see cref="UserSession{TCard}"/> for more).
+/// <br /> - The user can be hot swapped (see <see cref="PlayerSession{TCard}"/> for more).
 /// </summary>
-public class Player<TCard, TPlayerState, TGameState>(
-    UserSession<TCard> userSession,
+public class PlayerPrompter<TCard, TPlayerState, TGameState>(
+    PlayerSession<TCard> playerSession,
     TGameState gameState,
     int gameStatePlayerIndex)
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
     where TGameState : GameState<TCard, TPlayerState>
 {
-    public AccountCard AccountCard => userSession.AccountCard;
+    public AccountCard AccountCard => playerSession.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
     /// <remarks>
@@ -27,7 +27,7 @@ public class Player<TCard, TPlayerState, TGameState>(
     /// rendering events.
     /// </remarks>
     public GameEventHandler GameEventHandler =>
-        (gameEvent) => userSession.UnprocessedGameEvents.Enqueue(gameEvent);
+        (gameEvent) => playerSession.UnprocessedGameEvents.Enqueue(gameEvent);
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
     private Cards<TCard> Hand => PlayerState.Hand;
@@ -46,7 +46,7 @@ public class Player<TCard, TPlayerState, TGameState>(
         int iCardToPlay = -1;
         while (!validCardToPlay)
         {
-            iCardToPlay = await userSession.PromptForIndexOfCardToPlay(Hand, cancellationToken);
+            iCardToPlay = await playerSession.PromptForIndexOfCardToPlay(Hand, cancellationToken);
             if (iCardToPlay < 0 || iCardToPlay >= Hand.Count)
                 continue;
 
@@ -72,7 +72,7 @@ public class Player<TCard, TPlayerState, TGameState>(
         List<int> iCardsToPlay = [];
         while (!validCardsToPlay)
         {
-            iCardsToPlay = await userSession.PromptForIndexesOfCardsToPlay(Hand, cancellationToken);
+            iCardsToPlay = await playerSession.PromptForIndexesOfCardsToPlay(Hand, cancellationToken);
             if (iCardsToPlay.Count != iCardsToPlay.Distinct().Count())
                 continue;
 
