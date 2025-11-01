@@ -4,15 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-/* TODO: update per new data flow diagram
- * - [ ] Rename Player to PlayerPrompter
- * - [ ] Rename UserSession to PlayerSession
- * - [ ] Make PlayerSession abstract
- *     - [ ] Add abstract HealthCheck
- * - [ ] Make PlayerSessionBridge
- */
-
-// TODO: replace GameEventHandler w/ Channel
+// TODO: replace GameEventHandler w/ Channel and rip out queues n stuff
 
 // TODO: add an event (w/ ID) to say that game is about to ask player P for a card or cards, and
 //       then send that ID in the request to P so P can make sure it's up to date
@@ -35,7 +27,7 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// </remarks>
 public class Hearts(
     GameEventHandler eventHandler,
-    IReadOnlyList<HeartsPlayer> players,
+    IReadOnlyList<HeartsPlayerPrompter> playerPrompters,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsSettings settings,
@@ -52,7 +44,7 @@ public class Hearts(
             "Hearts game with ID {GameId} and settings {Settings}",
             Guid.NewGuid(), settings);
         logger.LogInformation("Beginning a hearts game");
-        foreach (HeartsPlayer player in players)
+        foreach (HeartsPlayerPrompter player in playerPrompters)
         {
             logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}",
                 player.GameStatePlayerIndex, player.AccountCard);
@@ -100,7 +92,7 @@ public class Hearts(
         for (int i = 0; i < NumPlayers; i++)
         {
             gameState.Players[i].Hand = hands[i];
-            PublishGameEvent(new GameEvent.HandGiven(players[i].AccountCard, hands[i].Count));
+            PublishGameEvent(new GameEvent.HandGiven(playerPrompters[i].AccountCard, hands[i].Count));
         }
 
         if (passDirection is PassDirection.Hold)
@@ -115,7 +107,7 @@ public class Hearts(
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
         for (int i = 0; i < NumPlayers; i++)
         {
-            Task<Cards<HeartsCard>> task = players[i].PlayCards(
+            Task<Cards<HeartsCard>> task = playerPrompters[i].PlayCards(
                 validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
                 cancellationToken);
             takeCardsFromPlayerTasks.Add(task);
@@ -150,32 +142,32 @@ public class Hearts(
         CircularCounter iTrickPlayer = new(seed: gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
         while (true) // TODO: at risk of infinite loop
         {
-            logger.LogInformation("Getting trick's opening card from {AccountCard}", players[iTrickPlayer.N].AccountCard);
+            logger.LogInformation("Getting trick's opening card from {AccountCard}", playerPrompters[iTrickPlayer.N].AccountCard);
             if (!gameState.IsHeartsBroken && gameState.Players[gameState.IndexTrickStartPlayer].Hand.All(card => card.Value.Suit is Suit.Hearts))
             {
                 logger.LogInformation(
                     "Hearts has not been broken and {AccountCard} only has hearts, skipping to the next player",
-                    players[iTrickPlayer.N].AccountCard);
+                    playerPrompters[iTrickPlayer.N].AccountCard);
                 iTrickPlayer.CycleClockwise();
             }
             else
                 break;
         }
 
-        HeartsCard openingCard = await players[gameState.IndexTrickStartPlayer].PlayCard(
+        HeartsCard openingCard = await playerPrompters[gameState.IndexTrickStartPlayer].PlayCard(
             validateChosenCard: (hand, iCardToPlay) => gameState.IsFirstTrick
                 ? hand[iCardToPlay].Value is TwoOfClubs
                 : gameState.IsHeartsBroken || hand[iCardToPlay].Value.Suit is not Suit.Hearts,
             cancellationToken);
-        logger.LogInformation("{AccountCard} played {CardValue}", players[iTrickPlayer.N].AccountCard, openingCard.Value);
+        logger.LogInformation("{AccountCard} played {CardValue}", playerPrompters[iTrickPlayer.N].AccountCard, openingCard.Value);
         Cards<HeartsCard> trick = new(capacity: NumPlayers) { openingCard };
         Suit suitToFollow = openingCard.Value.Suit;
 
         while (iTrickPlayer.CycleClockwise() != gameState.IndexTrickStartPlayer)
         {
-            var playerWithAction = players[iTrickPlayer.N];
+            var playerWithAction = playerPrompters[iTrickPlayer.N];
             logger.LogInformation("Getting trick's next card from {AccountCard}", playerWithAction.AccountCard);
-            HeartsCard chosenCard = await players[iTrickPlayer.N].PlayCard(
+            HeartsCard chosenCard = await playerPrompters[iTrickPlayer.N].PlayCard(
                 validateChosenCard: (hand, iCardToPlay) =>
                 {
                     if (!CheckPlayedCard.IsSuitFollowedIfPossible(suitToFollow, hand, iCardToPlay))
@@ -205,7 +197,7 @@ public class Hearts(
             throw new InvalidOperationException($"Could not find a card in the trick with suit {suitToFollow} and rank {highestOnSuitRank}");
         int iNextTrickStartPlayer = new CircularCounter(seed: gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
             .Tick(delta: iTrickTakerOffsetFromStartPlayer);
-        logger.LogInformation("{AccountCard} took the trick with {Card}", players[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]);
+        logger.LogInformation("{AccountCard} took the trick with {Card}", playerPrompters[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]);
         gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
         gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
     }
@@ -223,7 +215,7 @@ public class Hearts(
         if (roundScores.Count(score => score == 0) == 3)
         {
             int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
-            PublishGameEvent(new HeartsGameEvent.ShotTheMoon(players[iPlayerShotTheMoon].AccountCard));
+            PublishGameEvent(new HeartsGameEvent.ShotTheMoon(playerPrompters[iPlayerShotTheMoon].AccountCard));
             const int totalPointsInDeck = 26;
             for (int i = 0; i < roundScores.Count; i++)
             {
@@ -235,7 +227,7 @@ public class Hearts(
         for (int i = 0; i < roundScores.Count; i++)
         {
             gameState.Players[i].Score += roundScores[i];
-            PublishGameEvent(new HeartsGameEvent.TrickScored(players[i].AccountCard, roundScores[i], gameState.Players[i].Score));
+            PublishGameEvent(new HeartsGameEvent.TrickScored(playerPrompters[i].AccountCard, roundScores[i], gameState.Players[i].Score));
         }
     }
 
@@ -247,7 +239,7 @@ public class Hearts(
             if (playerState.Score < settings.EndOfGamePoints)
                 continue;
             logger.LogInformation("{AccountCard} is at or over {EndOfGamePoints} points with {TotalPoints}",
-                players[i].AccountCard, settings.EndOfGamePoints, playerState.Score);
+                playerPrompters[i].AccountCard, settings.EndOfGamePoints, playerState.Score);
         }
 
         int minScore = gameState.Players.Min(player => player.Score);
@@ -256,12 +248,12 @@ public class Hearts(
             HeartsPlayerState playerState = gameState.Players[i];
             if (playerState.Score != minScore)
             {
-                PublishGameEvent(new GameEvent.Loser(players[i].AccountCard));
+                PublishGameEvent(new GameEvent.Loser(playerPrompters[i].AccountCard));
                 continue;
             }
 
-            logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", players[i].AccountCard, playerState.Score);
-            PublishGameEvent(new GameEvent.Winner(players[i].AccountCard));
+            logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", playerPrompters[i].AccountCard, playerState.Score);
+            PublishGameEvent(new GameEvent.Winner(playerPrompters[i].AccountCard));
         }
     }
 }

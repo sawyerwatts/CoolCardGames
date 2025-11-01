@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-using CoolCardGames.Library.Core.Actors;
+using CoolCardGames.Library.Core.Players;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,7 +15,7 @@ public class HeartsFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public Hearts Make(List<UserSession<HeartsCard>> users, HeartsSettings? settings = null)
+    public Hearts Make(List<PlayerSession<HeartsCard>> users, HeartsSettings? settings = null)
     {
         if (users.Count != Hearts.NumPlayers)
             throw new ArgumentException($"{nameof(users)} must have {Hearts.NumPlayers} elements, but it has {users.Count} elements");
@@ -40,14 +40,14 @@ public class HeartsFactory(
             .ToList()
             .AsReadOnly();
 
-        var players = users
-            .Select((user, i) => new HeartsPlayer(user, gameState, i))
+        var asReadOnly = users
+            .Select((user, i) => new HeartsPlayerPrompter(user, gameState, i))
             .ToList()
             .AsReadOnly();
 
-        var eventFanOut = eventMultiplexerFactory.Make(players.Select(player => player.GameEventHandler));
+        var eventFanOut = eventMultiplexerFactory.Make(asReadOnly.Select(player => player.GameEventHandler));
         var dealer = dealerFactory.Make(eventFanOut.Handle);
 
-        return new Hearts(eventFanOut.Handle, players, gameState, dealer, settings, logger);
+        return new Hearts(eventFanOut.Handle, asReadOnly, gameState, dealer, settings, logger);
     }
 }

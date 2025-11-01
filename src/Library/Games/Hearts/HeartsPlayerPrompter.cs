@@ -1,9 +1,9 @@
-using CoolCardGames.Library.Core.Actors;
+using CoolCardGames.Library.Core.Players;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-public class HeartsPlayer(
-    UserSession<HeartsCard> userSession,
+public class HeartsPlayerPrompter(
+    PlayerSession<HeartsCard> playerSession,
     HeartsGameState gameState,
     int gameStatePlayerIndex)
-    : Player<HeartsCard, HeartsPlayerState, HeartsGameState>(userSession, gameState, gameStatePlayerIndex);
+    : PlayerPrompter<HeartsCard, HeartsPlayerState, HeartsGameState>(playerSession, gameState, gameStatePlayerIndex);

@@ -1,25 +1,9 @@
 using System.Collections.Concurrent;
 
-namespace CoolCardGames.Library.Core.Actors;
+namespace CoolCardGames.Library.Core.Players;
 
 // TODO: update these methods to take whole game state?
 // TODO: update these funcs to pass additional, human-readable validation info
-
-public class PlayerSessionBridge<TCard>(PlayerSession<TCard> playerSession) : PlayerSession<TCard>
-    where TCard : Card
-{
-    public override AccountCard AccountCard => playerSession.AccountCard;
-
-    public override Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
-    {
-        return playerSession.PromptForIndexOfCardToPlay(cards, cancellationToken);
-    }
-
-    public override Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
-    {
-        return playerSession.PromptForIndexesOfCardsToPlay(cards, cancellationToken);
-    }
-}
 
 /// <remarks>
 /// <see cref="PlayerSession{TCard}"/> and <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/> being
@@ -28,10 +12,10 @@ public class PlayerSessionBridge<TCard>(PlayerSession<TCard> playerSession) : Pl
 /// implementation without a game's logic needing to be aware of the change.
 /// </remarks>
 /// <typeparam name="TCard"></typeparam>
-public abstract class PlayerSession<TCard>(AccountCard accountCard)
+public abstract class PlayerSession<TCard>
     where TCard : Card
 {
-    public virtual AccountCard AccountCard => accountCard;
+    public abstract AccountCard AccountCard { get; }
     public ConcurrentQueue<GameEvent> UnprocessedGameEvents { get; } = new();
 
     /// <summary>

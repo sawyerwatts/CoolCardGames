@@ -1,4 +1,4 @@
-using CoolCardGames.Library.Core.Actors;
+using CoolCardGames.Library.Core.Players;
 
 namespace CoolCardGames.Library.Core.GameEvents;
 

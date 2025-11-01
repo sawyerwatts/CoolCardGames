@@ -1,3 +1,5 @@
+using CoolCardGames.Library.Core.Players;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,5 +13,6 @@ public static class CoreServicesRegistration
         builder.Services.AddSingleton<Dealer.IRng, Dealer.Rng>();
 
         builder.Services.AddSingleton<IGameEventMultiplexerFactory, GameEventMultiplexerFactory>();
+        builder.Services.AddSingleton<AiPlayerFactory>();
     }
 }

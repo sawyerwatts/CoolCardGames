@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-using CoolCardGames.Library.Core.Actors;
+using CoolCardGames.Library.Core.Players;
 
 namespace CoolCardGames.Library.Games.Hearts;
 

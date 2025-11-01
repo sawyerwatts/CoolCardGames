@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Core.Actors;
+namespace CoolCardGames.Library.Core.Players;
 
 // TODO: write unit tests for these funcs
 // TODO: update these funcs to pass additional, human-readable validation info
