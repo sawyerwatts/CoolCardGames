@@ -262,6 +262,7 @@ public class Hearts(
                 PublishGameEvent(new GameEvent.Loser(players[i].AccountCard));
                 continue;
             }
+
             logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", players[i].AccountCard, playerState.Score);
             PublishGameEvent(new GameEvent.Winner(players[i].AccountCard));
         }
