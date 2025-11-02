@@ -20,11 +20,7 @@ public class ChannelFanOut<TMessage>(
         if (_destinations.Any(destination => destination.Name == name))
             throw new ArgumentException($"There is already a destination with name {name}");
 
-        var channel = Channel.CreateUnbounded<TMessage>(new UnboundedChannelOptions()
-        {
-            SingleWriter = true,
-            SingleReader = singleReader,
-        });
+        var channel = Channel.CreateUnbounded<TMessage>(new UnboundedChannelOptions() { SingleWriter = true, SingleReader = singleReader, });
         var destination = new Destination(name, channel);
         _destinations.Add(destination);
         return destination.Channel.Reader;
@@ -55,6 +51,7 @@ public class ChannelFanOut<TMessage>(
 
                 logger.LogInformation("Fanned out message");
             }
+
             logger.LogInformation("Ending fan out");
         }
         catch (Exception e)
@@ -97,5 +94,5 @@ public class ChannelFanOut<TMessage>(
         logger.LogInformation("Completed all the destination channels");
     }
 
-    private readonly record struct Destination(string Name, Channel<TMessage> Channel);
+    protected readonly record struct Destination(string Name, Channel<TMessage> Channel);
 }

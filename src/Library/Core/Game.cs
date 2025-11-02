@@ -1,10 +1,8 @@
-using System.Threading.Channels;
-
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core;
 
-public abstract class Game(ChannelWriter<GameEvent> gameEventWriter, ILogger<Game> logger)
+public abstract class Game(IGameEventPublisher gameEventPublisher, ILogger<Game> logger)
 {
     public abstract string Name { get; }
 
@@ -35,6 +33,6 @@ public abstract class Game(ChannelWriter<GameEvent> gameEventWriter, ILogger<Gam
 
     protected async Task PublishGameEvent(GameEvent gameEvent, CancellationToken cancellationToken)
     {
-        await gameEventWriter.WriteAsync(gameEvent, cancellationToken);
+        await gameEventPublisher.Publish(gameEvent, cancellationToken);
     }
 }

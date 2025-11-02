@@ -1,13 +1,14 @@
 using System.Diagnostics;
-using System.Threading.Channels;
 
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: add an event (w/ ID) to say that game is about to ask player P for a card or cards, and
-//       then send that ID in the request to P so P can make sure it's up to date
-//       (also prob send game state so it can hard reset if needed?)
+// TODO: need to kick off chanFanOut
+//       only want to kick off if game starts tho, otherwise will leak channels
+//       how will gameEventsChan get closed?
+//       make a GameHarness proxy that kicks off all svcs and handles closing everything down?
+//           make Game disposable and have GameHarness have startup+disposal Func<Task> lists?
 
 // TODO: mv log scoping to base class? would need a settings base class too
 
@@ -21,17 +22,19 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: decompose Hearts class to make it easier to test
 
+// TODO: revisit HeartsGame and HeartsGameFactory and see how they can be reused
+
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
 public class HeartsGame(
-    ChannelWriter<GameEvent> gameEventWriter,
+    IGameEventPublisher gameEventPublisher,
     IReadOnlyList<HeartsPlayerPrompter> playerPrompters,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsSettings settings,
     ILogger<HeartsGame> logger)
-    : Game(gameEventWriter, logger)
+    : Game(gameEventPublisher, logger)
 {
     public const int NumPlayers = 4;
 

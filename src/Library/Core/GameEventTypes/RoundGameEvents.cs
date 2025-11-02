@@ -1,4 +1,4 @@
-namespace CoolCardGames.Library.Core.GameEvents;
+namespace CoolCardGames.Library.Core.GameEventTypes;
 
 public abstract partial record GameEvent
 {

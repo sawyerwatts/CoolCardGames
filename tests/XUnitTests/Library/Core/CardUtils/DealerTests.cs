@@ -1,7 +1,5 @@
-using System.Threading.Channels;
-
 using CoolCardGames.Library.Core.CardUtils;
-using CoolCardGames.Library.Core.GameEvents;
+using CoolCardGames.Library.Core.GameEventTypes;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -9,16 +7,16 @@ namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public sealed class DealerTests
 {
-    private readonly Channel<GameEvent> _channel = Channel.CreateUnbounded<GameEvent>();
     private readonly Dealer _dealer;
     private readonly RngMock _rng;
-    private readonly List<GameEvent> _events = [];
+    private readonly ListGameEventPublisher _publisher;
 
     public DealerTests()
     {
+        _publisher = new ListGameEventPublisher();
         _rng = new RngMock();
         _dealer = new Dealer(
-            gameEventWriter: _channel.Writer,
+            gameEventPublisher: _publisher,
             rng: _rng,
             logger: NullLogger<Dealer>.Instance);
     }
@@ -58,8 +56,8 @@ public sealed class DealerTests
         ]);
         Assert.True(deck.Matches(expectedDeck));
 
-        Assert.Single(_events);
-        Assert.Equal(GameEvent.DeckCut.Singleton, _events[0]);
+        Assert.Single(_publisher.Events);
+        Assert.Equal(GameEvent.DeckCut.Singleton, _publisher.Events[0]);
     }
 
     [Fact]
@@ -76,8 +74,8 @@ public sealed class DealerTests
                 numChangedDecks++;
             prevDeck = new Cards<Card>(deck);
 
-            Assert.Equal(i+1, _events.Count);
-            Assert.Equal(GameEvent.DeckShuffled.Singleton, _events[i]);
+            Assert.Equal(i+1, _publisher.Events.Count);
+            Assert.Equal(GameEvent.DeckShuffled.Singleton, _publisher.Events[i]);
         }
 
         Assert.True(numChangedDecks > 3);
@@ -133,8 +131,8 @@ public sealed class DealerTests
         Assert.True(expectedHand2.Matches(hands[2]));
         Assert.True(expectedHand3.Matches(hands[3]));
 
-        Assert.Single(_events);
-        Assert.Equal(new GameEvent.DeckDealt(4), _events[0]);
+        Assert.Single(_publisher.Events);
+        Assert.Equal(new GameEvent.DeckDealt(4), _publisher.Events[0]);
     }
 
     private class RngMock : Dealer.IRng

@@ -14,5 +14,7 @@ public static class CoreServicesRegistration
 
         builder.Services.AddSingleton<ChannelFanOutFactory>();
         builder.Services.AddSingleton<AiPlayerFactory>();
+
+        builder.Services.AddSingleton<ChannelGameEventPublisherFactory>();
     }
 }

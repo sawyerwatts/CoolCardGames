@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Threading.Channels;
 
 using Microsoft.Extensions.Logging;
 
@@ -32,15 +31,15 @@ public interface IDealer
 
 public interface IDealerFactory
 {
-    IDealer Make(ChannelWriter<GameEvent> gameEventWriter);
+    IDealer Make(IGameEventPublisher gameEventPublisher);
 }
 
 public class DealerFactory(Dealer.IRng rng, ILogger<Dealer> logger) : IDealerFactory
 {
-    public IDealer Make(ChannelWriter<GameEvent> gameEventWriter) => new Dealer(gameEventWriter, rng, logger);
+    public IDealer Make(IGameEventPublisher gameEventPublisher) => new Dealer(gameEventPublisher, rng, logger);
 }
 
-public class Dealer(ChannelWriter<GameEvent> gameEventWriter, Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
+public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILogger<Dealer> logger) : IDealer
 {
     public async Task<List<Cards<TCard>>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card
@@ -55,7 +54,7 @@ public class Dealer(ChannelWriter<GameEvent> gameEventWriter, Dealer.IRng rng, I
     {
         logger.LogInformation("Shuffling the deck");
         rng.Shuffle(CollectionsMarshal.AsSpan(deck));
-        await gameEventWriter.WriteAsync(GameEvent.DeckShuffled.Singleton, cancellationToken);
+        await gameEventPublisher.Publish(GameEvent.DeckShuffled.Singleton, cancellationToken);
         return deck;
     }
 
@@ -90,7 +89,7 @@ public class Dealer(ChannelWriter<GameEvent> gameEventWriter, Dealer.IRng rng, I
         Cards<TCard> newCards = new(capacity: deck.Count);
         newCards.AddRange(cardsAboveCut);
         newCards.AddRange(cardsBelowAndAtCut);
-        await gameEventWriter.WriteAsync(GameEvent.DeckCut.Singleton, cancellationToken);
+        await gameEventPublisher.Publish(GameEvent.DeckCut.Singleton, cancellationToken);
         return newCards;
     }
 
@@ -113,7 +112,7 @@ public class Dealer(ChannelWriter<GameEvent> gameEventWriter, Dealer.IRng rng, I
             iCurrHand.Tick();
         }
 
-        await gameEventWriter.WriteAsync(new GameEvent.DeckDealt(numHands), cancellationToken);
+        await gameEventPublisher.Publish(new GameEvent.DeckDealt(numHands), cancellationToken);
         return hands;
     }
 

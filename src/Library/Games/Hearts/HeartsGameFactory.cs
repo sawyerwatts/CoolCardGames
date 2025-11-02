@@ -10,13 +10,14 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsGameFactory(
     ChannelFanOutFactory channelFanOutFactory,
+    ChannelGameEventPublisherFactory channelGameEventPublisherFactory,
     IDealerFactory dealerFactory,
     IOptionsMonitor<HeartsSettings> settingsMonitor,
     ILogger<HeartsGame> logger)
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public HeartsGame Make(List<IPlayer<HeartsCard>> players, HeartsSettings? settings = null)
+    public Game Make(List<IPlayer<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
     {
         if (players.Count != HeartsGame.NumPlayers)
             throw new ArgumentException($"{nameof(players)} must have {HeartsGame.NumPlayers} elements, but it has {players.Count} elements");
@@ -46,16 +47,17 @@ public class HeartsGameFactory(
             .ToList()
             .AsReadOnly();
 
-        var gameEvents = Channel.CreateUnbounded<GameEvent>();
-        var dealer = dealerFactory.Make(gameEvents.Writer);
+        var gameEventsChannel = Channel.CreateUnbounded<GameEvent>();
+        var gameEventsPublisher = channelGameEventPublisherFactory.Make(gameEventsChannel.Writer);
+        var dealer = dealerFactory.Make(gameEventsPublisher);
 
-        var channelFanOut = channelFanOutFactory.Make(gameEvents.Reader);
+        var channelFanOut = channelFanOutFactory.Make(gameEventsChannel.Reader);
         foreach (var player in players)
         {
             var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
             player.CurrentGamesEvents = chanReader;
         }
 
-        return new HeartsGame(gameEvents.Writer, prompters, gameState, dealer, settings, logger);
+        return new HeartsGame(gameEventsPublisher, prompters, gameState, dealer, settings, logger);
     }
 }
