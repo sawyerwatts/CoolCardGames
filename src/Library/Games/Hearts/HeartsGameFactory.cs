@@ -16,10 +16,10 @@ public class HeartsGameFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public HeartsGame Make(List<IPlayer<HeartsCard>> users, HeartsSettings? settings = null)
+    public HeartsGame Make(List<IPlayer<HeartsCard>> players, HeartsSettings? settings = null)
     {
-        if (users.Count != HeartsGame.NumPlayers)
-            throw new ArgumentException($"{nameof(users)} must have {HeartsGame.NumPlayers} elements, but it has {users.Count} elements");
+        if (players.Count != HeartsGame.NumPlayers)
+            throw new ArgumentException($"{nameof(players)} must have {HeartsGame.NumPlayers} elements, but it has {players.Count} elements");
 
         if (settings is null)
             settings = DefaultHeartsSettings;
@@ -41,8 +41,8 @@ public class HeartsGameFactory(
             .ToList()
             .AsReadOnly();
 
-        var inputPrompters = users
-            .Select((user, i) => new HeartsInputPrompter(user, gameState, i))
+        var prompters = players
+            .Select((player, i) => new HeartsPlayerPrompter(player, gameState, i))
             .ToList()
             .AsReadOnly();
 
@@ -50,12 +50,12 @@ public class HeartsGameFactory(
         var dealer = dealerFactory.Make(gameEvents.Writer);
 
         var channelFanOut = channelFanOutFactory.Make(gameEvents.Reader);
-        foreach (var user in users)
+        foreach (var player in players)
         {
-            var currUserCurrGameEventsChannel = channelFanOut.CreateReader(name: user.AccountCard.ToString());
-            user.CurrentGamesEvents = currUserCurrGameEventsChannel;
+            var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
+            player.CurrentGamesEvents = chanReader;
         }
 
-        return new HeartsGame(gameEvents.Writer, inputPrompters, gameState, dealer, settings, logger);
+        return new HeartsGame(gameEvents.Writer, prompters, gameState, dealer, settings, logger);
     }
 }

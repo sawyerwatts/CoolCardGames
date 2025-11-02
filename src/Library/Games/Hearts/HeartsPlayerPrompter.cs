@@ -2,8 +2,8 @@ using CoolCardGames.Library.Core.Players;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-public class HeartsInputPrompter(
+public class HeartsPlayerPrompter(
     IPlayer<HeartsCard> player,
     HeartsGameState gameState,
     int gameStatePlayerIndex)
-    : InputPrompter<HeartsCard, HeartsPlayerState, HeartsGameState>(player, gameState, gameStatePlayerIndex);
+    : PlayerPrompter<HeartsCard, HeartsPlayerState, HeartsGameState>(player, gameState, gameStatePlayerIndex);

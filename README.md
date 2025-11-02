@@ -11,9 +11,6 @@ which contains reusable classes (like `Dealer`), interfaces/abstract classes (li
 classes that can be extended or left as-is (like `Card` and `Cards`). Beyond that, there can/will be
 other root directories in `Library.csproj` for other features, like account management n stuff.
 
-A `User` becomes a `Player` as they enter a `Game`: for example, a `User` is injected into a
-`HeartsPlayer` during the construction of a `HeartsGame`.
-
 Here is the ***planned*** architecture (we'll see how long it takes for me to lose interest):
 
 ![appArchitecture.png](./docs/images/appArchitecture.png)

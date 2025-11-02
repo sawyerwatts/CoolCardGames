@@ -2,15 +2,8 @@ namespace CoolCardGames.Library.Core.Players;
 
 // TODO: write unit tests for these funcs
 // TODO: update these funcs to pass additional, human-readable validation info
-/// <summary>
-/// This class is an anti-corruption layer between the card games and the
-/// <see cref="IPlayer{TCard}"/> so that:
-/// <br /> - The card games' logic can be blissfully unaware of the multithreading (if implemented
-/// that way).
-/// <br /> - Reusably handle user input validation.
-/// <br /> - The user can be hot swapped (see <see cref="IPlayer{TCard}"/> for more).
-/// </summary>
-public class InputPrompter<TCard, TPlayerState, TGameState>(
+
+public class PlayerPrompter<TCard, TPlayerState, TGameState>(
     IPlayer<TCard> player,
     TGameState gameState,
     int gameStatePlayerIndex)
