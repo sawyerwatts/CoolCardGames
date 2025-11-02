@@ -9,6 +9,7 @@ namespace CoolCardGames.Library.Games.Hearts;
 //       how will gameEventsChan get closed?
 //       make a GameHarness proxy that kicks off all svcs and handles closing everything down?
 //           make Game disposable and have GameHarness have startup+disposal Func<Task> lists?
+//           merge GameHarness and HeartsGameFactory?
 
 // TODO: mv log scoping to base class? would need a settings base class too
 
