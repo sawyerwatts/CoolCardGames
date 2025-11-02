@@ -2,7 +2,7 @@ using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
 
-public class AiPlayerSession<TCard>(AccountCard accountCard) : IPlayerSession<TCard>
+public class AiPlayer<TCard>(AccountCard accountCard) : IPlayer<TCard>
     where TCard : Card
 {
     public AccountCard AccountCard => accountCard;

@@ -4,21 +4,21 @@ namespace CoolCardGames.Library.Core.Players;
 // TODO: update these funcs to pass additional, human-readable validation info
 /// <summary>
 /// This class is an anti-corruption layer between the card games and the
-/// <see cref="IPlayerSession{TCard}"/> so that:
+/// <see cref="IPlayer{TCard}"/> so that:
 /// <br /> - The card games' logic can be blissfully unaware of the multithreading (if implemented
 /// that way).
 /// <br /> - Reusably handle user input validation.
-/// <br /> - The user can be hot swapped (see <see cref="IPlayerSession{TCard}"/> for more).
+/// <br /> - The user can be hot swapped (see <see cref="IPlayer{TCard}"/> for more).
 /// </summary>
-public class PlayerPrompter<TCard, TPlayerState, TGameState>(
-    IPlayerSession<TCard> playerSession,
+public class InputPrompter<TCard, TPlayerState, TGameState>(
+    IPlayer<TCard> player,
     TGameState gameState,
     int gameStatePlayerIndex)
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
     where TGameState : GameState<TCard, TPlayerState>
 {
-    public AccountCard AccountCard => playerSession.AccountCard;
+    public AccountCard AccountCard => player.AccountCard;
     public int GameStatePlayerIndex => gameStatePlayerIndex;
 
     private TPlayerState PlayerState => gameState.Players[gameStatePlayerIndex];
@@ -38,7 +38,7 @@ public class PlayerPrompter<TCard, TPlayerState, TGameState>(
         int iCardToPlay = -1;
         while (!validCardToPlay)
         {
-            iCardToPlay = await playerSession.PromptForIndexOfCardToPlay(Hand, cancellationToken);
+            iCardToPlay = await player.PromptForIndexOfCardToPlay(Hand, cancellationToken);
             if (iCardToPlay < 0 || iCardToPlay >= Hand.Count)
                 continue;
 
@@ -64,7 +64,7 @@ public class PlayerPrompter<TCard, TPlayerState, TGameState>(
         List<int> iCardsToPlay = [];
         while (!validCardsToPlay)
         {
-            iCardsToPlay = await playerSession.PromptForIndexesOfCardsToPlay(Hand, cancellationToken);
+            iCardsToPlay = await player.PromptForIndexesOfCardsToPlay(Hand, cancellationToken);
             if (iCardsToPlay.Count != iCardsToPlay.Distinct().Count())
                 continue;
 

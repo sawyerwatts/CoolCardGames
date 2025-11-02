@@ -5,21 +5,15 @@ namespace CoolCardGames.Library.Core.Players;
 // TODO: update these methods to take whole game state?
 // TODO: update these funcs to pass additional, human-readable validation info
 
-/// <remarks>
-/// <see cref="IPlayerSession{TCard}"/> and <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/> being
-/// two different types supports the following use case: if playing online, if someone goes offline,
-/// the <see cref="PlayerPrompter{TCard,TPlayerState,TGameState}"/>'s session can be hot swapped to an AI
-/// implementation without a game's logic needing to be aware of the change.
-/// </remarks>
-/// <typeparam name="TCard"></typeparam>
-public interface IPlayerSession<TCard>
+public interface IPlayer<TCard>
     where TCard : Card
 {
     AccountCard AccountCard { get; }
 
     /// <remarks>
-    /// This is nullable because if the player is not currently involved in a game, then they won't
-    /// be receiving game events.
+    /// This is nullable because if the player has not yet been in a game, then this will not have
+    /// been initialized. Do note that once a game completes, this property may contain a non-null,
+    /// but completed, channel reader.
     /// </remarks>
     ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
 

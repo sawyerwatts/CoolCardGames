@@ -26,7 +26,7 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// </remarks>
 public class HeartsGame(
     ChannelWriter<GameEvent> gameEventWriter,
-    IReadOnlyList<HeartsPlayerPrompter> playerPrompters,
+    IReadOnlyList<HeartsInputPrompter> playerPrompters,
     HeartsGameState gameState,
     IDealer dealer,
     HeartsSettings settings,
@@ -43,7 +43,7 @@ public class HeartsGame(
             "Hearts game with ID {GameId} and settings {Settings}",
             Guid.NewGuid(), settings);
         logger.LogInformation("Beginning a hearts game");
-        foreach (HeartsPlayerPrompter player in playerPrompters)
+        foreach (HeartsInputPrompter player in playerPrompters)
         {
             logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}",
                 player.GameStatePlayerIndex, player.AccountCard);

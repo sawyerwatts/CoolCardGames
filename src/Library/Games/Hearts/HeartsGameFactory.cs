@@ -16,7 +16,7 @@ public class HeartsGameFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public HeartsGame Make(List<IPlayerSession<HeartsCard>> users, HeartsSettings? settings = null)
+    public HeartsGame Make(List<IPlayer<HeartsCard>> users, HeartsSettings? settings = null)
     {
         if (users.Count != HeartsGame.NumPlayers)
             throw new ArgumentException($"{nameof(users)} must have {HeartsGame.NumPlayers} elements, but it has {users.Count} elements");
@@ -41,8 +41,8 @@ public class HeartsGameFactory(
             .ToList()
             .AsReadOnly();
 
-        var playerPrompters = users
-            .Select((user, i) => new HeartsPlayerPrompter(user, gameState, i))
+        var inputPrompters = users
+            .Select((user, i) => new HeartsInputPrompter(user, gameState, i))
             .ToList()
             .AsReadOnly();
 
@@ -56,9 +56,6 @@ public class HeartsGameFactory(
             user.CurrentGamesEvents = currUserCurrGameEventsChannel;
         }
 
-        // TODO: somehow, at some point, need to unset channels from
-        //       or maybe each player has a chanReader that is registered as a mailbox for channelFanOutHandler
-
-        return new HeartsGame(gameEvents.Writer, playerPrompters, gameState, dealer, settings, logger);
+        return new HeartsGame(gameEvents.Writer, inputPrompters, gameState, dealer, settings, logger);
     }
 }

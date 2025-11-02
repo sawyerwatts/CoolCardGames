@@ -7,7 +7,7 @@ using CoolCardGames.Library.Core.Players;
 namespace CoolCardGames.Cli;
 
 // TODO: have a configurable delay b/w messages
-public class CliPlayerSession<TCard>(AccountCard accountCard) : IPlayerSession<TCard>
+public class CliPlayer<TCard>(AccountCard accountCard) : IPlayer<TCard>
     where TCard : Card
 {
     public AccountCard AccountCard => accountCard;
