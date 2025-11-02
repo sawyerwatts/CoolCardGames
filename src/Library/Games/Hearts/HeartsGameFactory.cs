@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 namespace CoolCardGames.Library.Games.Hearts;
 
 public class HeartsGameFactory(
-    ChannelFanOutHandlerFactory channelFanOutHandlerFactory,
+    ChannelFanOutFactory channelFanOutFactory,
     IDealerFactory dealerFactory,
     IOptionsMonitor<HeartsSettings> settingsMonitor,
     ILogger<HeartsGame> logger)
@@ -49,10 +49,10 @@ public class HeartsGameFactory(
         var gameEvents = Channel.CreateUnbounded<GameEvent>();
         var dealer = dealerFactory.Make(gameEvents.Writer);
 
-        var channelFanOutHandler = channelFanOutHandlerFactory.Make(gameEvents.Reader);
+        var channelFanOut = channelFanOutFactory.Make(gameEvents.Reader);
         foreach (var user in users)
         {
-            var currUserCurrGameEventsChannel = channelFanOutHandler.CreateReader(name: user.AccountCard.ToString());
+            var currUserCurrGameEventsChannel = channelFanOut.CreateReader(name: user.AccountCard.ToString());
             user.CurrentGamesEvents = currUserCurrGameEventsChannel;
         }
 

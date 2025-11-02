@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CoolCardGames.XUnitTests.Library.Core.MiscUtils;
 
-public class ChannelFanOutHandlerTests
+public class ChannelFanOutTests
 {
     [Theory]
     [InlineData(0)]
@@ -22,7 +22,7 @@ public class ChannelFanOutHandlerTests
             SingleWriter = true,
             SingleReader = true,
         });
-        var sut = new ChannelFanOutHandler<string>(source.Reader, NullLogger<ChannelFanOutHandler<string>>.Instance);
+        var sut = new ChannelFanOut<string>(source.Reader, NullLogger<ChannelFanOut<string>>.Instance);
 
         var readers = new List<ChannelReader<string>>(capacity: numReaders);
         for (int i = 0; i < numReaders; i++)

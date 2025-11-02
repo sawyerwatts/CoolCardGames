@@ -7,11 +7,11 @@ namespace CoolCardGames.Library.Core.MiscUtils;
 
 /// <inheritdoc cref="HandleFanout"/>
 /// <remarks>
-/// It is intended to use <see cref="ChannelFanOutHandlerFactory"/> to instantiate this service.
+/// It is intended to use <see cref="ChannelFanOutFactory"/> to instantiate this service.
 /// </remarks>
-public class ChannelFanOutHandler<TMessage>(
+public class ChannelFanOut<TMessage>(
     ChannelReader<TMessage> sourceReader,
-    ILogger<ChannelFanOutHandler<TMessage>> logger)
+    ILogger<ChannelFanOut<TMessage>> logger)
 {
     private readonly ConcurrentBag<Destination> _destinations = [];
 
@@ -33,6 +33,8 @@ public class ChannelFanOutHandler<TMessage>(
     /// <summary>
     /// This will fanout/forward all messages from <see cref="sourceReader"/> to all the created
     /// destinations (via <see cref="CreateReader"/>) until <see cref="sourceReader"/> has been completed.
+    /// <br />
+    /// When the source channel is completed, the destination channels will be completed too.
     /// </summary>
     /// <param name="cancellationToken"></param>
     public async Task HandleFanout(CancellationToken cancellationToken)
