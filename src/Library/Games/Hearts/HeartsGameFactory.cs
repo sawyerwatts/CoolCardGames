@@ -36,6 +36,10 @@ public class HeartsGameFactory(
             }
         }
 
+        var eventEnvelopesChannel = Channel.CreateUnbounded<GameEventEnvelope>();
+        var eventEnvelopesPublisher = channelGameEventPublisherFactory.Make(eventEnvelopesChannel.Writer);
+        var dealer = dealerFactory.Make(eventEnvelopesPublisher);
+
         var gameState = new HeartsGameState();
         gameState.Players = Enumerable.Range(0, HeartsGame.NumPlayers)
             .Select(_ => new HeartsPlayerState())
@@ -43,21 +47,17 @@ public class HeartsGameFactory(
             .AsReadOnly();
 
         var prompters = players
-            .Select((player, i) => new HeartsPlayerPrompter(player, gameState, i))
+            .Select((player, i) => new HeartsPlayerPrompter(eventEnvelopesPublisher, player, gameState, i))
             .ToList()
             .AsReadOnly();
 
-        var gameEventsChannel = Channel.CreateUnbounded<GameEventEnvelope>();
-        var gameEventsPublisher = channelGameEventPublisherFactory.Make(gameEventsChannel.Writer);
-        var dealer = dealerFactory.Make(gameEventsPublisher);
-
-        var channelFanOut = channelFanOutFactory.Make(gameEventsChannel.Reader);
+        var channelFanOut = channelFanOutFactory.Make(eventEnvelopesChannel.Reader);
         foreach (var player in players)
         {
             var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
             player.CurrentGamesEvents = chanReader;
         }
 
-        return new HeartsGame(gameEventsPublisher, prompters, gameState, dealer, settings, logger);
+        return new HeartsGame(eventEnvelopesPublisher, prompters, gameState, dealer, settings, logger);
     }
 }

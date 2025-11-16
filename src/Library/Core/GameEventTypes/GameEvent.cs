@@ -7,4 +7,11 @@ namespace CoolCardGames.Library.Core.GameEventTypes;
 /// These are intended primarily for UI notifications, but they can definitely be used for
 /// other things like event-based game implementations or card-counting functionality.
 /// </remarks>
-public abstract partial record GameEvent(string Summary);
+public abstract partial record GameEvent(string Summary)
+{
+    private static string SerializeCards<TCard>(IEnumerable<TCard> cards)
+        where TCard : Card
+    {
+        return string.Join(", ", cards);
+    }
+}

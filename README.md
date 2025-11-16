@@ -1,5 +1,4 @@
 # CoolCardGames
-
 This repository implements a number of card games.
 
 ## Getting Started

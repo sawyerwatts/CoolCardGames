@@ -15,12 +15,12 @@ public class CliPlayer<TCard>(AccountCard accountCard) : IPlayer<TCard>
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
-    public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<List<int>> PromptForIndexesOfCardsToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

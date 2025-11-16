@@ -4,9 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core.GameEventUtils;
 
-// TODO: Then HeartsGame can send that ID to Prompter to forward to Player which can can ensure the UI is up to date
-// TODO: Impl (+doc?) the functionality to make sure UI is up to date when getting prompted
-
 /// <summary>
 /// Instead of having games and the dealer and other services writing directly to a channel, this
 /// interface decouples event publishers and the event publishing. This is done primarily to allow
@@ -35,6 +32,7 @@ public class ChannelGameEventPublisher(
         var envelope = new GameEventEnvelope(gameEvent, currId.ToString());
         logger.LogInformation("Publishing {Envelope}", envelope);
         await writer.WriteAsync(envelope, cancellationToken);
+        logger.LogInformation("Published");
         return envelope;
     }
 }
