@@ -5,11 +5,12 @@ namespace CoolCardGames.XUnitTests;
 
 public class ListGameEventPublisher : IGameEventPublisher
 {
-    public List<GameEvent> Events { get; } = [];
+    public List<GameEventEnvelope> Events { get; } = [];
 
-    public ValueTask Publish(GameEvent gameEvent, CancellationToken cancellationToken)
+    public ValueTask<GameEventEnvelope> Publish(GameEvent gameEvent, CancellationToken cancellationToken)
     {
-        Events.Add(gameEvent);
-        return ValueTask.CompletedTask;
+        var envelope = new GameEventEnvelope(gameEvent, Guid.NewGuid().ToString());
+        Events.Add(envelope);
+        return ValueTask.FromResult(envelope);
     }
 }

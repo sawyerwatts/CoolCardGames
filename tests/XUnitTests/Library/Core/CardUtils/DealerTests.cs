@@ -57,7 +57,7 @@ public sealed class DealerTests
         Assert.True(deck.Matches(expectedDeck));
 
         Assert.Single(_publisher.Events);
-        Assert.Equal(GameEvent.DeckCut.Singleton, _publisher.Events[0]);
+        Assert.Equal(GameEvent.DeckCut.Singleton, _publisher.Events[0].GameEvent);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public sealed class DealerTests
             prevDeck = new Cards<Card>(deck);
 
             Assert.Equal(i+1, _publisher.Events.Count);
-            Assert.Equal(GameEvent.DeckShuffled.Singleton, _publisher.Events[i]);
+            Assert.Equal(GameEvent.DeckShuffled.Singleton, _publisher.Events[i].GameEvent);
         }
 
         Assert.True(numChangedDecks > 3);
@@ -132,7 +132,7 @@ public sealed class DealerTests
         Assert.True(expectedHand3.Matches(hands[3]));
 
         Assert.Single(_publisher.Events);
-        Assert.Equal(new GameEvent.DeckDealt(4), _publisher.Events[0]);
+        Assert.Equal(new GameEvent.DeckDealt(4), _publisher.Events[0].GameEvent);
     }
 
     private class RngMock : Dealer.IRng

@@ -18,7 +18,7 @@ public class PlayerBridge<TCard>(IPlayer<TCard> player, AiPlayerFactory aiFactor
 {
     public AccountCard AccountCard => player.AccountCard;
 
-    public ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
+    public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
     public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {

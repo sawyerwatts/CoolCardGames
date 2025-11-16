@@ -15,7 +15,7 @@ public interface IPlayer<TCard>
     /// been initialized. Do note that once a game completes, this property may contain a non-null,
     /// but completed, channel reader.
     /// </remarks>
-    ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
+    ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
     /// <summary>
     /// This will ask the player for any card to play. Validation and removal from hand will be handled elsewhere.

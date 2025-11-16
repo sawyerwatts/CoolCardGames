@@ -13,7 +13,7 @@ public class CliPlayer<TCard>(AccountCard accountCard) : IPlayer<TCard>
 {
     public AccountCard AccountCard => accountCard;
 
-    public ChannelReader<GameEvent>? CurrentGamesEvents { get; set; }
+    public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
     public Task<int> PromptForIndexOfCardToPlay(Cards<TCard> cards, CancellationToken cancellationToken)
     {

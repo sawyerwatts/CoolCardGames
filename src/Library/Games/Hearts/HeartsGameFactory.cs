@@ -47,7 +47,7 @@ public class HeartsGameFactory(
             .ToList()
             .AsReadOnly();
 
-        var gameEventsChannel = Channel.CreateUnbounded<GameEvent>();
+        var gameEventsChannel = Channel.CreateUnbounded<GameEventEnvelope>();
         var gameEventsPublisher = channelGameEventPublisherFactory.Make(gameEventsChannel.Writer);
         var dealer = dealerFactory.Make(gameEventsPublisher);
 

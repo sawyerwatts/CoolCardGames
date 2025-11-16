@@ -6,7 +6,7 @@ namespace CoolCardGames.Library.Core.GameEventUtils;
 
 public class ChannelGameEventPublisherFactory(ILogger<ChannelGameEventPublisher> logger)
 {
-    public ChannelGameEventPublisher Make(ChannelWriter<GameEvent> writer)
+    public ChannelGameEventPublisher Make(ChannelWriter<GameEventEnvelope> writer)
     {
         return new ChannelGameEventPublisher(writer, logger);
     }
