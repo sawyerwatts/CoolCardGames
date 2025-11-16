@@ -20,6 +20,9 @@ max_line_length = 100
 max_line_length = off
 trim_trailing_whitespace = true
 
+# CA1034: Do not 'catch (Exception)' without rethrowing.
+dotnet_diagnostic.CA1031.severity = suggestion
+
 # CA1034: Do not nest types
 dotnet_diagnostic.CA1034.severity = none
 
