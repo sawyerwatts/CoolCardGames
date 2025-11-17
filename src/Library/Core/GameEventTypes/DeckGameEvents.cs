@@ -16,5 +16,5 @@ public abstract partial record GameEvent
 
     public record DeckDealt(int NumHands) : GameEvent($"The deck was dealt to {NumHands} hands");
 
-    public record HandGiven(AccountCard Recipient, int NumCardsInHand) : GameEvent($"{Recipient} was given a hand with {NumCardsInHand} cards");
+    public record HandGiven(PlayerAccountCard Recipient, int NumCardsInHand) : GameEvent($"{Recipient} was given a hand with {NumCardsInHand} cards");
 }

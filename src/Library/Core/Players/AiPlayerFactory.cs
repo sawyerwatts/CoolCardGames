@@ -2,9 +2,9 @@ namespace CoolCardGames.Library.Core.Players;
 
 public class AiPlayerFactory
 {
-    public AiPlayer<TCard> Make<TCard>(AccountCard accountCard)
+    public AiPlayer<TCard> Make<TCard>(PlayerAccountCard playerAccountCard)
         where TCard : Card
     {
-        return new AiPlayer<TCard>(accountCard);
+        return new AiPlayer<TCard>(playerAccountCard);
     }
 }

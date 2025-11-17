@@ -4,7 +4,7 @@ namespace CoolCardGames.Library.Core.GameEventTypes;
 
 public abstract partial record GameEvent
 {
-    public record Winner(AccountCard AccountCard) : GameEvent($"{AccountCard} won!");
+    public record Winner(PlayerAccountCard PlayerAccountCard) : GameEvent($"{PlayerAccountCard} won!");
 
-    public record Loser(AccountCard AccountCard) : GameEvent($"{AccountCard} lost");
+    public record Loser(PlayerAccountCard PlayerAccountCard) : GameEvent($"{PlayerAccountCard} lost");
 }

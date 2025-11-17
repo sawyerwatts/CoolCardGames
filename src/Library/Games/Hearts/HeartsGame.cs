@@ -76,7 +76,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         _logger.LogInformation("Beginning a hearts game");
 
         for (var i = 0; i < _players.Count; i++)
-            _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].AccountCard);
+            _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].PlayerAccountCard);
 
         var dealerPosition = new CircularCounter(4, startAtEnd: true);
         while (_gameState.Players.All(player => player.Score < _settings.EndOfGamePoints))
@@ -121,7 +121,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         for (int i = 0; i < NumPlayers; i++)
         {
             _gameState.Players[i].Hand = hands[i];
-            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].AccountCard, hands[i].Count), cancellationToken);
+            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].PlayerAccountCard, hands[i].Count), cancellationToken);
         }
 
         if (passDirection is PassDirection.Hold)
@@ -171,12 +171,12 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         var iTrickPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
         while (true) // TODO: at risk of infinite loop
         {
-            _logger.LogInformation("Getting trick's opening card from {AccountCard}", _players[iTrickPlayer.N].AccountCard);
+            _logger.LogInformation("Getting trick's opening card from {AccountCard}", _players[iTrickPlayer.N].PlayerAccountCard);
             if (!_gameState.IsHeartsBroken && _gameState.Players[_gameState.IndexTrickStartPlayer].Hand.All(card => card.Value.Suit is Suit.Hearts))
             {
                 _logger.LogInformation(
                     "Hearts has not been broken and {AccountCard} only has hearts, skipping to the next player",
-                    _players[iTrickPlayer.N].AccountCard);
+                    _players[iTrickPlayer.N].PlayerAccountCard);
                 iTrickPlayer.CycleClockwise();
             }
             else
@@ -209,7 +209,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
             if (!_gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
-                await _gameEventPublisher.Publish(new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].AccountCard, chosenCard), cancellationToken);
+                await _gameEventPublisher.Publish(new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].PlayerAccountCard, chosenCard), cancellationToken);
                 _gameState.IsHeartsBroken = true;
             }
         }
@@ -225,7 +225,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         int iNextTrickStartPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
             .Tick(delta: iTrickTakerOffsetFromStartPlayer);
         await _gameEventPublisher.Publish(
-            new GameEvent.ActorTookTrickWithCard<HeartsCard>(_players[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]),
+            new GameEvent.PlayerTookTrickWithCard<HeartsCard>(_players[iNextTrickStartPlayer].PlayerAccountCard, trick[iTrickTakerOffsetFromStartPlayer]),
             cancellationToken);
         _gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
         _gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
@@ -244,7 +244,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         if (roundScores.Count(score => score == 0) == 3)
         {
             int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
-            await _gameEventPublisher.Publish(new HeartsGameEvent.ShotTheMoon(_players[iPlayerShotTheMoon].AccountCard), cancellationToken);
+            await _gameEventPublisher.Publish(new HeartsGameEvent.ShotTheMoon(_players[iPlayerShotTheMoon].PlayerAccountCard), cancellationToken);
             const int totalPointsInDeck = 26;
             for (int i = 0; i < roundScores.Count; i++)
             {
@@ -256,7 +256,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         for (int i = 0; i < roundScores.Count; i++)
         {
             _gameState.Players[i].Score += roundScores[i];
-            await _gameEventPublisher.Publish(new HeartsGameEvent.TrickScored(_players[i].AccountCard, roundScores[i], _gameState.Players[i].Score), cancellationToken);
+            await _gameEventPublisher.Publish(new HeartsGameEvent.TrickScored(_players[i].PlayerAccountCard, roundScores[i], _gameState.Players[i].Score), cancellationToken);
         }
     }
 
@@ -268,7 +268,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             if (playerState.Score < _settings.EndOfGamePoints)
                 continue;
             _logger.LogInformation("{AccountCard} is at or over {EndOfGamePoints} points with {TotalPoints}",
-                _players[i].AccountCard, _settings.EndOfGamePoints, playerState.Score);
+                _players[i].PlayerAccountCard, _settings.EndOfGamePoints, playerState.Score);
         }
 
         int minScore = _gameState.Players.Min(player => player.Score);
@@ -277,12 +277,12 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             HeartsPlayerState playerState = _gameState.Players[i];
             if (playerState.Score != minScore)
             {
-                await _gameEventPublisher.Publish(new GameEvent.Loser(_players[i].AccountCard), cancellationToken);
+                await _gameEventPublisher.Publish(new GameEvent.Loser(_players[i].PlayerAccountCard), cancellationToken);
                 continue;
             }
 
-            _logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", _players[i].AccountCard, playerState.Score);
-            await _gameEventPublisher.Publish(new GameEvent.Winner(_players[i].AccountCard), cancellationToken);
+            _logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", _players[i].PlayerAccountCard, playerState.Score);
+            await _gameEventPublisher.Publish(new GameEvent.Winner(_players[i].PlayerAccountCard), cancellationToken);
         }
     }
 }

@@ -17,7 +17,7 @@ public class PlayerBridge<TCard>(IPlayer<TCard> player, AiPlayerFactory aiFactor
     : IPlayer<TCard>
     where TCard : Card
 {
-    public AccountCard AccountCard => player.AccountCard;
+    public PlayerAccountCard PlayerAccountCard => player.PlayerAccountCard;
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 

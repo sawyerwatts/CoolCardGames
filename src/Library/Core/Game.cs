@@ -69,7 +69,7 @@ public abstract class Game<TCard, TPlayerState>
     /// <remarks>
     /// This will take the selected card out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
     /// <br />
-    /// This will publish an <see cref="GameEvent.ActorHasTheAction"/> before prompting the player and an <see cref="GameEvent.ActorPlayedCard{TCard}"/>
+    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCard{TCard}"/>
     /// once the player selects a valid card.
     /// </remarks>
     /// <param name="iPlayer"></param>
@@ -87,7 +87,7 @@ public abstract class Game<TCard, TPlayerState>
         var hand = _gameState.Players[iPlayer].Hand;
 
         var syncEvent = await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.ActorHasTheAction(player.AccountCard),
+            gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
             cancellationToken: cancellationToken);
 
         bool validCardToPlay = false;
@@ -105,7 +105,7 @@ public abstract class Game<TCard, TPlayerState>
         hand.RemoveAt(iCardToPlay);
 
         await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.ActorPlayedCard<TCard>(player.AccountCard, cardToPlay),
+            gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.PlayerAccountCard, cardToPlay),
             cancellationToken: cancellationToken);
 
         return cardToPlay;
@@ -114,7 +114,7 @@ public abstract class Game<TCard, TPlayerState>
     /// <remarks>
     /// This will take the selected card(s) out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
     /// <br />
-    /// This will publish an <see cref="GameEvent.ActorHasTheAction"/> before prompting the player and an <see cref="GameEvent.ActorPlayedCards{TCard}"/>
+    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCards{TCard}"/>
     /// once the player selects valid card(s).
     /// </remarks>
     /// <param name="iPlayer"></param>
@@ -132,7 +132,7 @@ public abstract class Game<TCard, TPlayerState>
         var hand = _gameState.Players[iPlayer].Hand;
 
         var syncEvent = await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.ActorHasTheAction(player.AccountCard),
+            gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
             cancellationToken: cancellationToken);
 
         bool validCardsToPlay = false;
@@ -157,7 +157,7 @@ public abstract class Game<TCard, TPlayerState>
         }
 
         await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.ActorPlayedCards<TCard>(player.AccountCard, cardsToPlay),
+            gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.PlayerAccountCard, cardsToPlay),
             cancellationToken: cancellationToken);
 
         return cardsToPlay;
