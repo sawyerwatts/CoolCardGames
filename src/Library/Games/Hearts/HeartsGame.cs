@@ -133,7 +133,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
         for (int i = 0; i < NumPlayers; i++)
         {
-            Task<Cards<HeartsCard>> task = PlayCards(
+            Task<Cards<HeartsCard>> task = PromptAndPlayCards(
                 iPlayer: i,
                 validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
                 cancellationToken);
@@ -180,7 +180,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
                 break;
         }
 
-        var openingCard = await PlayCard(
+        var openingCard = await PromptAndPlayCard(
             iPlayer: _gameState.IndexTrickStartPlayer,
             validateChosenCard: (hand, iCardToPlay) => _gameState.IsFirstTrick
                 ? hand[iCardToPlay].Value is TwoOfClubs
@@ -191,7 +191,7 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
-            HeartsCard chosenCard = await PlayCard(
+            HeartsCard chosenCard = await PromptAndPlayCard(
                 iPlayer: iTrickPlayer.N,
                 validateChosenCard: (hand, iCardToPlay) =>
                 {

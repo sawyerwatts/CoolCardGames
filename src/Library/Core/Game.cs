@@ -78,7 +78,7 @@ public abstract class Game<TCard, TPlayerState>
     /// play, and return true iff it is valid to play that card.
     /// </param>
     /// <param name="cancellationToken"></param>
-    protected async Task<TCard> PlayCard(
+    protected async Task<TCard> PromptAndPlayCard(
         int iPlayer,
         Func<Cards<TCard>, int, bool> validateChosenCard,
         CancellationToken cancellationToken)
@@ -123,7 +123,7 @@ public abstract class Game<TCard, TPlayerState>
     /// the cards to play, and return true iff it is valid to play those cards.
     /// </param>
     /// <param name="cancellationToken"></param>
-    protected async Task<Cards<TCard>> PlayCards(
+    protected async Task<Cards<TCard>> PromptAndPlayCards(
         int iPlayer,
         Func<Cards<TCard>, List<int>, bool> validateChosenCards,
         CancellationToken cancellationToken)
