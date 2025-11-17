@@ -11,9 +11,6 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
-// TODO: GameEventEnvelope.Id
-//       Update both diagram (no more prompter); doc the functionality to make sure UI is up to date when getting prompted
-
 // TODO: unit test this class
 
 // TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)

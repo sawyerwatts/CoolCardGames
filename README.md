@@ -14,7 +14,7 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 
 ![appArchitecture.png](./docs/images/appArchitecture.png)
 
-### Game Top-Level Classes and Data Flow
+### High-level data flow within a game instance
 
 ![dataFlow](./docs/images/dataFlow.png)
 

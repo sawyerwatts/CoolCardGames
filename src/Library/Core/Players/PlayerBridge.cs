@@ -6,6 +6,8 @@ namespace CoolCardGames.Library.Core.Players;
 //       if prompt impl keeps throwing, swap?
 //       healthcheck on PlayerSession?
 //       timeouts on req prob too
+// TODO: it'd be slick to refactor CliPlayer's sync logic here
+//       maybe have players note what step they're on so this could tell if something's going haywire?
 
 /// <summary>
 /// This class exists so that if a player disconnects, they can be seamlessly swapped to an AI.
