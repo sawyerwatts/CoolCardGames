@@ -4,11 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: GameEventEnvelope.Id
-//       finish passing prePromptEventId through Prompt to Player and impl (ensure the UI is up to date)
-//       Update diagram (promptor pushes the HasAction and PlayedCard(s) events)
-//       Doc the functionality to make sure UI is up to date when getting prompted
-
 // TODO: merge PlayerPrompter into Game? It really is just a subordinate of Game anyways
 
 // TODO: since events are logged, is there anything else we'd wanna actually log (besides the log to add the game ID to the log scope)?
