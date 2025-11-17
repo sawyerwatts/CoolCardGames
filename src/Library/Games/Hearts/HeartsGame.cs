@@ -6,10 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: merge PlayerPrompter into Game? It really is just a subordinate of Game anyways
-
 // TODO: since events are logged, is there anything else we'd wanna actually log (besides the log to add the game ID to the log scope)?
+//       tldr: review all logs and see if they can/should be events
+
 // TODO: mv log scoping to base class? would need a settings base class too
+//       what about user vs system settings? support both in Game?
 
 // TODO: need to kick off chanFanOut
 //       only want to kick off if game starts tho, otherwise will leak channels
@@ -20,17 +21,13 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: the code is multi-braided-ish: it does something, and it pushes a notification to do it
 
-// TODO: review all logs and see if they can/should be events
-
-// TODO: put iTrickStartPlayer into gameState?
-
 // TODO: update the PlayCard(s) funcs to pass additional, human-readable validation info
 
 // TODO: how handle data visibility to diff players?
 
 // TODO: decompose Hearts class to make it easier to test
 
-// TODO: revisit HeartsGame and HeartsGameFactory and see how they can be reused
+// TODO: revisit HeartsGame and HeartsGameFactory and see how they can be reused n cleaned up
 
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
