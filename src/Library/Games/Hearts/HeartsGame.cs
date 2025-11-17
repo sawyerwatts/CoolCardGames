@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+using CoolCardGames.Library.Core.Players;
+
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
@@ -22,6 +24,8 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: put iTrickStartPlayer into gameState?
 
+// TODO: update the PlayCard(s) funcs to pass additional, human-readable validation info
+
 // TODO: how handle data visibility to diff players?
 
 // TODO: decompose Hearts class to make it easier to test
@@ -31,11 +35,11 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
-public class HeartsGame : Game
+public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 {
     private readonly IGameEventPublisher _gameEventPublisher;
-    private readonly IReadOnlyList<HeartsPlayerPrompter> _playerPrompters;
     private readonly HeartsGameState _gameState;
+    private readonly IReadOnlyList<IPlayer<HeartsCard>> _players;
     private readonly IDealer _dealer;
     private readonly HeartsSettings _settings;
     private readonly ILogger<HeartsGame> _logger;
@@ -45,16 +49,16 @@ public class HeartsGame : Game
     /// </remarks>
     public HeartsGame(
         IGameEventPublisher gameEventPublisher,
-        IReadOnlyList<HeartsPlayerPrompter> playerPrompters,
         HeartsGameState gameState,
+        IReadOnlyList<IPlayer<HeartsCard>> players,
         IDealer dealer,
         HeartsSettings settings,
         ILogger<HeartsGame> logger)
-        : base(gameEventPublisher, logger)
+        : base(gameEventPublisher, gameState, players, logger)
     {
         _gameEventPublisher = gameEventPublisher;
-        _playerPrompters = playerPrompters;
         _gameState = gameState;
+        _players = players;
         _dealer = dealer;
         _settings = settings;
         _logger = logger;
@@ -71,11 +75,8 @@ public class HeartsGame : Game
             Guid.NewGuid(), _settings);
         _logger.LogInformation("Beginning a hearts game");
 
-        foreach (HeartsPlayerPrompter playerPrompter in _playerPrompters)
-        {
-            _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}",
-                playerPrompter.GameStatePlayerIndex, playerPrompter.AccountCard);
-        }
+        for (var i = 0; i < _players.Count; i++)
+            _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].AccountCard);
 
         var dealerPosition = new CircularCounter(4, startAtEnd: true);
         while (_gameState.Players.All(player => player.Score < _settings.EndOfGamePoints))
@@ -100,8 +101,7 @@ public class HeartsGame : Game
             await ScoreTricks(cancellationToken);
         }
 
-        await WinnersAndLosers(cancellationToken);
-        _logger.LogInformation("Completed the hearts game");
+        await DetermineAndPublishWinnersAndLosers(cancellationToken);
         await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
     }
 
@@ -121,7 +121,7 @@ public class HeartsGame : Game
         for (int i = 0; i < NumPlayers; i++)
         {
             _gameState.Players[i].Hand = hands[i];
-            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_playerPrompters[i].AccountCard, hands[i].Count), cancellationToken);
+            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].AccountCard, hands[i].Count), cancellationToken);
         }
 
         if (passDirection is PassDirection.Hold)
@@ -136,7 +136,8 @@ public class HeartsGame : Game
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
         for (int i = 0; i < NumPlayers; i++)
         {
-            Task<Cards<HeartsCard>> task = _playerPrompters[i].PlayCards(
+            Task<Cards<HeartsCard>> task = PlayCards(
+                iPlayer: i,
                 validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
                 cancellationToken);
             takeCardsFromPlayerTasks.Add(task);
@@ -170,19 +171,20 @@ public class HeartsGame : Game
         var iTrickPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
         while (true) // TODO: at risk of infinite loop
         {
-            _logger.LogInformation("Getting trick's opening card from {AccountCard}", _playerPrompters[iTrickPlayer.N].AccountCard);
+            _logger.LogInformation("Getting trick's opening card from {AccountCard}", _players[iTrickPlayer.N].AccountCard);
             if (!_gameState.IsHeartsBroken && _gameState.Players[_gameState.IndexTrickStartPlayer].Hand.All(card => card.Value.Suit is Suit.Hearts))
             {
                 _logger.LogInformation(
                     "Hearts has not been broken and {AccountCard} only has hearts, skipping to the next player",
-                    _playerPrompters[iTrickPlayer.N].AccountCard);
+                    _players[iTrickPlayer.N].AccountCard);
                 iTrickPlayer.CycleClockwise();
             }
             else
                 break;
         }
 
-        var openingCard = await _playerPrompters[_gameState.IndexTrickStartPlayer].PlayCard(
+        var openingCard = await PlayCard(
+            iPlayer: _gameState.IndexTrickStartPlayer,
             validateChosenCard: (hand, iCardToPlay) => _gameState.IsFirstTrick
                 ? hand[iCardToPlay].Value is TwoOfClubs
                 : _gameState.IsHeartsBroken || hand[iCardToPlay].Value.Suit is not Suit.Hearts,
@@ -192,8 +194,8 @@ public class HeartsGame : Game
 
         while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
-            var playerWithAction = _playerPrompters[iTrickPlayer.N];
-            HeartsCard chosenCard = await _playerPrompters[iTrickPlayer.N].PlayCard(
+            HeartsCard chosenCard = await PlayCard(
+                iPlayer: iTrickPlayer.N,
                 validateChosenCard: (hand, iCardToPlay) =>
                 {
                     if (!CheckPlayedCard.IsSuitFollowedIfPossible(suitToFollow, hand, iCardToPlay))
@@ -207,7 +209,7 @@ public class HeartsGame : Game
 
             if (!_gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
-                await _gameEventPublisher.Publish(new HeartsGameEvent.HeartsHaveBeenBroken(playerWithAction.AccountCard, chosenCard), cancellationToken);
+                await _gameEventPublisher.Publish(new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].AccountCard, chosenCard), cancellationToken);
                 _gameState.IsHeartsBroken = true;
             }
         }
@@ -223,7 +225,7 @@ public class HeartsGame : Game
         int iNextTrickStartPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
             .Tick(delta: iTrickTakerOffsetFromStartPlayer);
         await _gameEventPublisher.Publish(
-            new GameEvent.ActorTookTrickWithCard<HeartsCard>(_playerPrompters[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]),
+            new GameEvent.ActorTookTrickWithCard<HeartsCard>(_players[iNextTrickStartPlayer].AccountCard, trick[iTrickTakerOffsetFromStartPlayer]),
             cancellationToken);
         _gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
         _gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
@@ -242,7 +244,7 @@ public class HeartsGame : Game
         if (roundScores.Count(score => score == 0) == 3)
         {
             int iPlayerShotTheMoon = roundScores.FindIndex(score => score != 0);
-            await _gameEventPublisher.Publish(new HeartsGameEvent.ShotTheMoon(_playerPrompters[iPlayerShotTheMoon].AccountCard), cancellationToken);
+            await _gameEventPublisher.Publish(new HeartsGameEvent.ShotTheMoon(_players[iPlayerShotTheMoon].AccountCard), cancellationToken);
             const int totalPointsInDeck = 26;
             for (int i = 0; i < roundScores.Count; i++)
             {
@@ -254,11 +256,11 @@ public class HeartsGame : Game
         for (int i = 0; i < roundScores.Count; i++)
         {
             _gameState.Players[i].Score += roundScores[i];
-            await _gameEventPublisher.Publish(new HeartsGameEvent.TrickScored(_playerPrompters[i].AccountCard, roundScores[i], _gameState.Players[i].Score), cancellationToken);
+            await _gameEventPublisher.Publish(new HeartsGameEvent.TrickScored(_players[i].AccountCard, roundScores[i], _gameState.Players[i].Score), cancellationToken);
         }
     }
 
-    private async Task WinnersAndLosers(CancellationToken cancellationToken)
+    private async Task DetermineAndPublishWinnersAndLosers(CancellationToken cancellationToken)
     {
         for (int i = 0; i < _gameState.Players.Count; i++)
         {
@@ -266,7 +268,7 @@ public class HeartsGame : Game
             if (playerState.Score < _settings.EndOfGamePoints)
                 continue;
             _logger.LogInformation("{AccountCard} is at or over {EndOfGamePoints} points with {TotalPoints}",
-                _playerPrompters[i].AccountCard, _settings.EndOfGamePoints, playerState.Score);
+                _players[i].AccountCard, _settings.EndOfGamePoints, playerState.Score);
         }
 
         int minScore = _gameState.Players.Min(player => player.Score);
@@ -275,12 +277,12 @@ public class HeartsGame : Game
             HeartsPlayerState playerState = _gameState.Players[i];
             if (playerState.Score != minScore)
             {
-                await _gameEventPublisher.Publish(new GameEvent.Loser(_playerPrompters[i].AccountCard), cancellationToken);
+                await _gameEventPublisher.Publish(new GameEvent.Loser(_players[i].AccountCard), cancellationToken);
                 continue;
             }
 
-            _logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", _playerPrompters[i].AccountCard, playerState.Score);
-            await _gameEventPublisher.Publish(new GameEvent.Winner(_playerPrompters[i].AccountCard), cancellationToken);
+            _logger.LogInformation("{AccountCard} is the winner with {TotalPoints}", _players[i].AccountCard, playerState.Score);
+            await _gameEventPublisher.Publish(new GameEvent.Winner(_players[i].AccountCard), cancellationToken);
         }
     }
 }

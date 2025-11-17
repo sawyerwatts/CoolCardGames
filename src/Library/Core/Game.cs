@@ -1,15 +1,27 @@
+using CoolCardGames.Library.Core.Players;
+
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core;
 
-public abstract class Game
+public abstract class Game<TCard, TPlayerState>
+    where TCard : Card
+    where TPlayerState : PlayerState<TCard>
 {
     private readonly IGameEventPublisher _gameEventPublisher;
-    private readonly ILogger<Game> _logger;
+    private readonly GameState<TCard, TPlayerState> _gameState;
+    private readonly IReadOnlyList<IPlayer<TCard>> _players;
+    private readonly ILogger<Game<TCard, TPlayerState>> _logger;
 
-    protected Game(IGameEventPublisher gameEventPublisher, ILogger<Game> logger)
+    protected Game(
+        IGameEventPublisher gameEventPublisher,
+        GameState<TCard, TPlayerState> gameState,
+        IReadOnlyList<IPlayer<TCard>> players,
+        ILogger<Game<TCard, TPlayerState>> logger)
     {
         _gameEventPublisher = gameEventPublisher;
+        _gameState = gameState;
+        _players = players;
         _logger = logger;
     }
 
@@ -53,4 +65,101 @@ public abstract class Game
     /// try/catch.
     /// </remarks>
     protected abstract Task ActuallyPlay(CancellationToken cancellationToken);
+
+    /// <remarks>
+    /// This will take the selected card out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// <br />
+    /// This will publish an <see cref="GameEvent.ActorHasTheAction"/> before prompting the player and an <see cref="GameEvent.ActorPlayedCard{TCard}"/>
+    /// once the player selects a valid card.
+    /// </remarks>
+    /// <param name="iPlayer"></param>
+    /// <param name="validateChosenCard">
+    /// This will take the player's hand and the pre-validated in-range index of the card to
+    /// play, and return true iff it is valid to play that card.
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    protected async Task<TCard> PlayCard(
+        int iPlayer,
+        Func<Cards<TCard>, int, bool> validateChosenCard,
+        CancellationToken cancellationToken)
+    {
+        var player = _players[iPlayer];
+        var hand = _gameState.Players[iPlayer].Hand;
+
+        var syncEvent = await _gameEventPublisher.Publish(
+            gameEvent: new GameEvent.ActorHasTheAction(player.AccountCard),
+            cancellationToken: cancellationToken);
+
+        bool validCardToPlay = false;
+        int iCardToPlay = -1;
+        while (!validCardToPlay)
+        {
+            iCardToPlay = await player.PromptForIndexOfCardToPlay(syncEvent.Id, hand, cancellationToken);
+            if (iCardToPlay < 0 || iCardToPlay >= hand.Count)
+                continue;
+
+            validCardToPlay = validateChosenCard(hand, iCardToPlay);
+        }
+
+        TCard cardToPlay = hand[iCardToPlay];
+        hand.RemoveAt(iCardToPlay);
+
+        await _gameEventPublisher.Publish(
+            gameEvent: new GameEvent.ActorPlayedCard<TCard>(player.AccountCard, cardToPlay),
+            cancellationToken: cancellationToken);
+
+        return cardToPlay;
+    }
+
+    /// <remarks>
+    /// This will take the selected card(s) out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// <br />
+    /// This will publish an <see cref="GameEvent.ActorHasTheAction"/> before prompting the player and an <see cref="GameEvent.ActorPlayedCards{TCard}"/>
+    /// once the player selects valid card(s).
+    /// </remarks>
+    /// <param name="iPlayer"></param>
+    /// <param name="validateChosenCards">
+    /// This will take the current player hand and the pre-validated in-range and unique indexes of
+    /// the cards to play, and return true iff it is valid to play those cards.
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    protected async Task<Cards<TCard>> PlayCards(
+        int iPlayer,
+        Func<Cards<TCard>, List<int>, bool> validateChosenCards,
+        CancellationToken cancellationToken)
+    {
+        var player = _players[iPlayer];
+        var hand = _gameState.Players[iPlayer].Hand;
+
+        var syncEvent = await _gameEventPublisher.Publish(
+            gameEvent: new GameEvent.ActorHasTheAction(player.AccountCard),
+            cancellationToken: cancellationToken);
+
+        bool validCardsToPlay = false;
+        List<int> iCardsToPlay = [];
+        while (!validCardsToPlay)
+        {
+            iCardsToPlay = await player.PromptForIndexesOfCardsToPlay(syncEvent.Id, hand, cancellationToken);
+            if (iCardsToPlay.Count != iCardsToPlay.Distinct().Count())
+                continue;
+
+            if (iCardsToPlay.Any(iCardToPlay => iCardToPlay < 0 || iCardToPlay >= hand.Count))
+                continue;
+
+            validCardsToPlay = validateChosenCards(hand, iCardsToPlay);
+        }
+
+        Cards<TCard> cardsToPlay = new(capacity: iCardsToPlay.Count);
+        foreach (int iCardToPlay in iCardsToPlay.OrderDescending())
+        {
+            cardsToPlay.Add(hand[iCardToPlay]);
+            hand.RemoveAt(iCardToPlay);
+        }
+
+        await _gameEventPublisher.Publish(
+            gameEvent: new GameEvent.ActorPlayedCards<TCard>(player.AccountCard, cardsToPlay),
+            cancellationToken: cancellationToken);
+
+        return cardsToPlay;
+    }
 }

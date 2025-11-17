@@ -17,7 +17,7 @@ public class HeartsGameFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public Game Make(List<IPlayer<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
+    public Game<HeartsCard, HeartsPlayerState> Make(List<IPlayer<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
     {
         if (players.Count != HeartsGame.NumPlayers)
             throw new ArgumentException($"{nameof(players)} must have {HeartsGame.NumPlayers} elements, but it has {players.Count} elements");
@@ -37,19 +37,8 @@ public class HeartsGameFactory(
         }
 
         var eventEnvelopesChannel = Channel.CreateUnbounded<GameEventEnvelope>();
-        var eventEnvelopesPublisher = channelGameEventPublisherFactory.Make(eventEnvelopesChannel.Writer);
-        var dealer = dealerFactory.Make(eventEnvelopesPublisher);
-
-        var gameState = new HeartsGameState();
-        gameState.Players = Enumerable.Range(0, HeartsGame.NumPlayers)
-            .Select(_ => new HeartsPlayerState())
-            .ToList()
-            .AsReadOnly();
-
-        var prompters = players
-            .Select((player, i) => new HeartsPlayerPrompter(eventEnvelopesPublisher, player, gameState, i))
-            .ToList()
-            .AsReadOnly();
+        var gameEventPublisher = channelGameEventPublisherFactory.Make(eventEnvelopesChannel.Writer);
+        var dealer = dealerFactory.Make(gameEventPublisher);
 
         var channelFanOut = channelFanOutFactory.Make(eventEnvelopesChannel.Reader);
         foreach (var player in players)
@@ -58,6 +47,6 @@ public class HeartsGameFactory(
             player.CurrentGamesEvents = chanReader;
         }
 
-        return new HeartsGame(eventEnvelopesPublisher, prompters, gameState, dealer, settings, logger);
+        return new HeartsGame(gameEventPublisher, new HeartsGameState(), players, dealer, settings, logger);
     }
 }
