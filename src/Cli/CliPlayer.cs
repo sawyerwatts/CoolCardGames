@@ -12,18 +12,19 @@ using Spectre.Console;
 namespace CoolCardGames.Cli;
 
 // TODO: GameEventEnvelope.Id
-//       finish passing prePromptEventId through Prompt to Player and impl (ensure the UI is up to date)
 //       Update diagram (prompter pushes the HasAction and PlayedCard(s) events)
 //       Doc the functionality to make sure UI is up to date when getting prompted
 
+// TODO: unit test this class (the semaphore and
+
 // TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
 
-public class CliPlayer<TCard>(
+public partial class CliPlayer<TCard>(
     AccountCard accountCard,
-    IOptions<CliPlayerSettings> settings,
+    IOptions<CliPlayerUserSettings> userSettings,
+    IOptions<CliPlayerSystemSettings> systemSettings,
     ILogger<CliPlayer<TCard>> logger)
-    : IPlayer<TCard>
-    where TCard : Card
+    : IPlayer<TCard> where TCard : Card
 {
     public AccountCard AccountCard => accountCard;
 
@@ -31,6 +32,18 @@ public class CliPlayer<TCard>(
 
     private readonly object _lastEventIdLock = new();
     private string _lastEventId = "";
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Attempting to grab lock in method {MethodName}")]
+    public partial void LogGrabbingLock(string methodName);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Grabbed lock in method {MethodName}")]
+    public partial void LogGrabbedLock(string methodName);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Released lock in method {MethodName}")]
+    public partial void LogReleasedLock(string methodName);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Delaying {Milliseconds} before trying to grab the lock again in method {MethodName}")]
+    public partial void LogDelayingBeforeGrabbingLock(int milliseconds, string methodName);
 
     /// <summary>
     /// This will complete once the game completes or <see cref="CurrentGamesEvents"/> is closed.
@@ -53,15 +66,18 @@ public class CliPlayer<TCard>(
         await foreach (var envelope in CurrentGamesEvents.ReadAllAsync(cancellationToken))
         {
             bool shouldReturn;
+            LogGrabbingLock(nameof(AttachSessionToCurrentGame));
             lock (_lastEventIdLock)
             {
+                LogGrabbedLock(nameof(AttachSessionToCurrentGame));
                 shouldReturn = Handle(envelope);
             }
+            LogReleasedLock(nameof(AttachSessionToCurrentGame));
 
             if (shouldReturn)
                 return;
 
-            await Task.Delay(new TimeSpan(settings.Value.MillisecondDelayBetweenWritingMessagesToConsole), cancellationToken);
+            await Task.Delay(userSettings.Value.MillisecondDelayBetweenWritingMessagesToConsole, cancellationToken);
         }
 
         LogAndAnsi("The current game events channel closed without the game ending normally; closing the attachment to this CLI session", LogLevel.Warning);
@@ -113,7 +129,8 @@ public class CliPlayer<TCard>(
 
     public async Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        // TODO: only prompt once the UI's last rendered event ID equals prePromptEventId
+        await WaitUntilLastEventIdEquals(prePromptEventId, cancellationToken);
+        logger.LogInformation("Prompting player for a card to play");
 
         TCard cardToPlay = await AnsiConsole.PromptAsync(
             new SelectionPrompt<TCard>()
@@ -130,7 +147,8 @@ public class CliPlayer<TCard>(
 
     public async Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        // TODO: only prompt once the UI's last rendered event ID equals prePromptEventId
+        await WaitUntilLastEventIdEquals(prePromptEventId, cancellationToken);
+        logger.LogInformation("Prompting player for card(s) to play");
 
         List<TCard> cardsToPlay = await AnsiConsole.PromptAsync(
             new MultiSelectionPrompt<TCard>()
@@ -154,5 +172,27 @@ public class CliPlayer<TCard>(
             logger.LogInformation("Playing card {CardToPlay} at index {IndexCardToPlay}", cards[iCardToPlay], iCardToPlay);
 
         return iCardsToPlay;
+    }
+
+    private async Task WaitUntilLastEventIdEquals(string prePromptEventId, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            LogGrabbingLock(nameof(WaitUntilLastEventIdEquals));
+            lock (_lastEventIdLock)
+            {
+                LogGrabbedLock(nameof(WaitUntilLastEventIdEquals));
+                logger.LogInformation(
+                    "Checking if last event ID ({LastEventId}) equals the expected pre-prompt event ID ({PrePromptEventId})",
+                    _lastEventId, prePromptEventId);
+                if (_lastEventId == prePromptEventId)
+                    return;
+            }
+
+            LogReleasedLock(nameof(WaitUntilLastEventIdEquals));
+            LogDelayingBeforeGrabbingLock(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, nameof(WaitUntilLastEventIdEquals));
+            await Task.Delay(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
     }
 }

@@ -25,7 +25,7 @@ public abstract class Game
         }
         catch (Exception exc)
         {
-            _logger.LogCritical(exc, "A game crashed due to an unexpected exception");
+            _logger.LogCritical(exc, "A game crashed due to an uncaught exception");
 
             Exception? publishFailureException = null;
             try
