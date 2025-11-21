@@ -125,10 +125,10 @@ public partial class CliPlayer<TCard>(
 
     public async Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        await WaitUntilLastEventIdEquals(prePromptEventId, cancellationToken);
+        await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for a card to play");
 
-        TCard cardToPlay = await AnsiConsole.PromptAsync(
+        var cardToPlay = await AnsiConsole.PromptAsync(
             new SelectionPrompt<TCard>()
                 .Title("Which card do you want to play?")
                 .PageSize(1024)
@@ -136,17 +136,17 @@ public partial class CliPlayer<TCard>(
                 .AddChoices(cards.ToArray()),
 #pragma warning restore CA1861
             cancellationToken);
-        int iCardToPlay = cards.FindIndex(card => card.Equals(cardToPlay));
-        logger.LogInformation("Playing card {CardToPlay} at index {IndexCardToPlay}", cardToPlay, iCardToPlay);
+        var iCardToPlay = cards.FindIndex(card => card.Equals(cardToPlay));
+        logger.LogInformation("Trying to play card {CardToPlay} at index {IndexCardToPlay}", cardToPlay, iCardToPlay);
         return iCardToPlay;
     }
 
     public async Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        await WaitUntilLastEventIdEquals(prePromptEventId, cancellationToken);
+        await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for card(s) to play");
 
-        List<TCard> cardsToPlay = await AnsiConsole.PromptAsync(
+        var cardsToPlay = await AnsiConsole.PromptAsync(
             new MultiSelectionPrompt<TCard>()
                 .Title("Which card do you want to play?")
                 .PageSize(1024)
@@ -158,26 +158,26 @@ public partial class CliPlayer<TCard>(
 #pragma warning restore CA1861
             cancellationToken);
 
-        List<int> iCardsToPlay = cards
+        var iCardsToPlay = cards
             .Select((card, iCard) => (Card: card, Index: iCard))
             .Where(x => cardsToPlay.Contains(x.Card))
             .Select(x => x.Index)
             .ToList();
 
-        foreach (int iCardToPlay in iCardsToPlay)
-            logger.LogInformation("Playing card {CardToPlay} at index {IndexCardToPlay}", cards[iCardToPlay], iCardToPlay);
+        foreach (var iCardToPlay in iCardsToPlay)
+            logger.LogInformation("Trying to play card {CardToPlay} at index {IndexCardToPlay}", cards[iCardToPlay], iCardToPlay);
 
         return iCardsToPlay;
     }
 
-    private async Task WaitUntilLastEventIdEquals(string prePromptEventId, CancellationToken cancellationToken)
+    private async Task WaitUntilUiIsSynced(string prePromptEventId, CancellationToken cancellationToken)
     {
         while (true)
         {
-            LogGrabbingLock(nameof(WaitUntilLastEventIdEquals));
+            LogGrabbingLock(nameof(WaitUntilUiIsSynced));
             lock (_lastEventIdLock)
             {
-                LogGrabbedLock(nameof(WaitUntilLastEventIdEquals));
+                LogGrabbedLock(nameof(WaitUntilUiIsSynced));
                 logger.LogInformation(
                     "Checking if last event ID ({LastEventId}) equals the expected pre-prompt event ID ({PrePromptEventId})",
                     _lastEventId, prePromptEventId);
@@ -185,8 +185,8 @@ public partial class CliPlayer<TCard>(
                     return;
             }
 
-            LogReleasedLock(nameof(WaitUntilLastEventIdEquals));
-            LogDelayingBeforeGrabbingLock(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, nameof(WaitUntilLastEventIdEquals));
+            LogReleasedLock(nameof(WaitUntilUiIsSynced));
+            LogDelayingBeforeGrabbingLock(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, nameof(WaitUntilUiIsSynced));
             await Task.Delay(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
         }

@@ -17,7 +17,7 @@ max_line_length = 100
 
 #### Sawyer additions
 
-max_line_length = off
+max_line_length = 256
 trim_trailing_whitespace = true
 
 # CA1034: Do not 'catch (Exception)' without rethrowing.

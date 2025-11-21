@@ -9,14 +9,14 @@ public static class CheckPlayedCard
         int iPlayerCardToPlay, Suit? trumpSuit = null)
         where TCard : Card
     {
-        TCard cardToPlay = playerHand[iPlayerCardToPlay];
+        var cardToPlay = playerHand[iPlayerCardToPlay];
         if (cardToPlay.Value.Suit == suitToFollow)
             return true;
 
         if (trumpSuit is not null && cardToPlay.Value.Suit == trumpSuit)
             return true;
 
-        bool canFollowSuit = playerHand.Any(card => card.Value.Suit == suitToFollow);
+        var canFollowSuit = playerHand.Any(card => card.Value.Suit == suitToFollow);
         return !canFollowSuit;
     }
 }

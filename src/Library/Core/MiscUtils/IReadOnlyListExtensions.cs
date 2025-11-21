@@ -6,7 +6,7 @@ public static class IReadOnlyListExtensions
     public static int FindIndex<T>(this IReadOnlyList<T> ts, Predicate<T> match)
     {
         ArgumentNullException.ThrowIfNull(match, nameof(match));
-        for (int i = 0; i < ts.Count; i++)
+        for (var i = 0; i < ts.Count; i++)
         {
             var t = ts[i];
             if (match(t))

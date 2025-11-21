@@ -29,10 +29,10 @@ public static class GetHighest
         if (enumsToCheck.Count == 0)
             throw new ArgumentException($"{nameof(enumsToCheck)} cannot be an empty list");
 
-        foreach (TEnum currEnumPriority in enumPriorities)
+        foreach (var currEnumPriority in enumPriorities)
         {
             TEnum? foundEnum = null;
-            foreach (TEnum enumToCheck in enumsToCheck)
+            foreach (var enumToCheck in enumsToCheck)
             {
                 if (!enumToCheck.Equals(currEnumPriority))
                     continue;

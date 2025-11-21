@@ -11,13 +11,13 @@ public class Cards<TCard> : List<TCard>
 
     public void RevealAll()
     {
-        foreach (TCard card in this)
+        foreach (var card in this)
             card.Hidden = false;
     }
 
     public void HideAll()
     {
-        foreach (TCard card in this)
+        foreach (var card in this)
             card.Hidden = true;
     }
 
@@ -25,7 +25,7 @@ public class Cards<TCard> : List<TCard>
     {
         var builder = new StringBuilder();
         builder.Append('[');
-        for (int i = 0; i < this.Count; i++)
+        for (var i = 0; i < this.Count; i++)
         {
             if (i == 0)
                 builder.AppendLine();
@@ -45,7 +45,7 @@ public class Cards<TCard> : List<TCard>
             return true;
         if (Count != other.Count)
             return false;
-        for (int i = 0; i < this.Count; i++)
+        for (var i = 0; i < this.Count; i++)
         {
             Card thisCard = this[i];
             Card otherCard = other[i];

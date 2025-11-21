@@ -25,7 +25,7 @@ public class ChannelFanOutTests
         var sut = new ChannelFanOut<string>(source.Reader, NullLogger<ChannelFanOut<string>>.Instance);
 
         var readers = new List<ChannelReader<string>>(capacity: numReaders);
-        for (int i = 0; i < numReaders; i++)
+        for (var i = 0; i < numReaders; i++)
         {
             var reader = sut.CreateReader($"reader {i}");
             readers.Add(reader);
@@ -43,16 +43,16 @@ public class ChannelFanOutTests
 
         foreach (var reader in readers)
         {
-            Assert.True(reader.TryRead(out string? actualMsg0));
+            Assert.True(reader.TryRead(out var actualMsg0));
             Assert.Equal(msg0, actualMsg0);
 
-            Assert.True(reader.TryRead(out string? actualMsg1));
+            Assert.True(reader.TryRead(out var actualMsg1));
             Assert.Equal(msg1, actualMsg1);
 
-            Assert.True(reader.TryRead(out string? actualMsg2));
+            Assert.True(reader.TryRead(out var actualMsg2));
             Assert.Equal(msg2, actualMsg2);
 
-            Assert.False(reader.TryRead(out string? _));
+            Assert.False(reader.TryRead(out var _));
         }
     }
 }

@@ -53,16 +53,16 @@ public record struct CircularCounter
         if (delta == 0)
             return N;
 
-        int n = N;
-        int move = delta switch
+        var n = N;
+        var move = delta switch
         {
             < 0 => -1,
             > 0 => 1,
             0 => throw new UnreachableException(),
         };
 
-        int absDelta = Math.Abs(delta);
-        for (int i = 0; i < absDelta; i++)
+        var absDelta = Math.Abs(delta);
+        for (var i = 0; i < absDelta; i++)
         {
             n += move;
             if (n == _maxExclusive)

@@ -3,7 +3,7 @@ using CoolCardGames.Library;
 
 using Serilog;
 
-HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateApplicationBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -14,8 +14,8 @@ Driver.RegisterTo(builder);
 
 builder.AddLibraryServices();
 
-IHost host = builder.Build();
-ILogger<Program> logger = host.Services.GetRequiredService<ILogger<Program>>();
+var host = builder.Build();
+var logger = host.Services.GetRequiredService<ILogger<Program>>();
 try
 {
     // Mimic the behavior supplied when running hosted services:
@@ -24,7 +24,7 @@ try
     //     1. Force-closing the app on second interception of interrupt signal.
     //     2. Else, after five seconds, force-close the app.
     using CancellationTokenSource source = new();
-    bool graceful = true;
+    var graceful = true;
     Console.CancelKeyPress += new ConsoleCancelEventHandler((
         _,
         cancelEvent) =>
@@ -57,7 +57,7 @@ try
     });
 
     logger.LogInformation("Instantiating app services");
-    Driver d = host.Services.GetRequiredService<Driver>();
+    var d = host.Services.GetRequiredService<Driver>();
     logger.LogInformation("Running app");
     await d.RunAsync(source.Token);
     logger.LogInformation("App completed");

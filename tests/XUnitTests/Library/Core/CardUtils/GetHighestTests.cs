@@ -14,7 +14,7 @@ public class GetHighestTests
             Rank.Three,
         ];
 
-        Rank highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Two, Rank.Four, Rank.Three, Rank.Ace]);
+        var highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Two, Rank.Four, Rank.Three, Rank.Ace]);
 
         Assert.Equal(Rank.Ace, highestGivenRank);
     }
@@ -29,7 +29,7 @@ public class GetHighestTests
             Rank.Three,
         ];
 
-        Rank highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Four, Rank.Three, Rank.Two, Rank.Three]);
+        var highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Four, Rank.Three, Rank.Two, Rank.Three]);
 
         Assert.Equal(Rank.Two, highestGivenRank);
     }
@@ -44,7 +44,7 @@ public class GetHighestTests
             Rank.Three,
         ];
 
-        Rank highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Four, Rank.Three]);
+        var highestGivenRank = GetHighest.Of(rankPriorities, [Rank.Four, Rank.Three]);
 
         Assert.Equal(Rank.Three, highestGivenRank);
     }

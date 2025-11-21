@@ -44,8 +44,8 @@ public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILo
     public async Task<List<Cards<TCard>>> ShuffleCutDeal<TCard>(Cards<TCard> deck, int numHands, CancellationToken cancellationToken)
         where TCard : Card
     {
-        Cards<TCard> shuffled = await Shuffle(deck, cancellationToken);
-        Cards<TCard> cut = await Cut(shuffled, cancellationToken);
+        var shuffled = await Shuffle(deck, cancellationToken);
+        var cut = await Cut(shuffled, cancellationToken);
         return await Deal(cut, numHands, cancellationToken);
     }
 
@@ -84,8 +84,8 @@ public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILo
                 $"The deck is too small to cut while not cutting the top or bottom {minNumCardsFromEdges}");
         }
 
-        IEnumerable<TCard> cardsBelowAndAtCut = deck.Take(newTopCardIndex + 1);
-        IEnumerable<TCard> cardsAboveCut = deck.Skip(newTopCardIndex + 1);
+        var cardsBelowAndAtCut = deck.Take(newTopCardIndex + 1);
+        var cardsAboveCut = deck.Skip(newTopCardIndex + 1);
         Cards<TCard> newCards = new(capacity: deck.Count);
         newCards.AddRange(cardsAboveCut);
         newCards.AddRange(cardsBelowAndAtCut);
@@ -102,11 +102,11 @@ public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILo
                 $"{nameof(numHands)} must be positive but given {numHands}");
 
         List<Cards<TCard>> hands = new(capacity: numHands);
-        for (int i = 0; i < numHands; i++)
+        for (var i = 0; i < numHands; i++)
             hands.Add([]);
 
         CircularCounter iCurrHand = new(numHands);
-        foreach (TCard currCard in deck)
+        foreach (var currCard in deck)
         {
             hands[iCurrHand.N].Add(currCard);
             iCurrHand.Tick();

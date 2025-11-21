@@ -15,4 +15,7 @@ public abstract partial record GameEvent
     public record PlayerTookTrickWithCard<TCard>(PlayerAccountCard PlayerCard, TCard Card) : GameEvent($"{PlayerCard} took the trick with card {Card}") where TCard : Card;
 
     public record PlayerTookTrickWithCards<TCard>(PlayerAccountCard PlayerCard, Cards<TCard> Cards) : GameEvent($"{PlayerCard} took the trick with card(s): {SerializeCards(Cards)}") where TCard : Card;
+
+    public record PlayerAtOrExceededMaxPoints(PlayerAccountCard PlayerAccountCard, int Points, int MaxPoints)
+        : GameEvent($"{PlayerAccountCard} has {Points} points, which is at or over max allowed points of {MaxPoints}");
 }

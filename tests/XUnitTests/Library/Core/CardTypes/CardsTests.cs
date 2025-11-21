@@ -5,14 +5,14 @@ public class CardsTests
     [Fact]
     public void TestMatchesWhenEqual()
     {
-        Cards<Card> deck = Card.MakeDeck(
+        var deck = Card.MakeDeck(
         [
             Joker0.Instance,
             AceOfSpades.Instance,
             NineOfHearts.Instance,
         ]);
 
-        Cards<Card> unexpectedDeck = Card.MakeDeck(
+        var unexpectedDeck = Card.MakeDeck(
         [
             Joker0.Instance,
             AceOfSpades.Instance,
@@ -25,14 +25,14 @@ public class CardsTests
     [Fact]
     public void TestMatchesWhenNotEqual()
     {
-        Cards<Card> deck = Card.MakeDeck(
+        var deck = Card.MakeDeck(
         [
             Joker0.Instance,
             AceOfSpades.Instance,
             NineOfHearts.Instance,
         ]);
 
-        Cards<Card> unexpectedDeck = Card.MakeDeck(
+        var unexpectedDeck = Card.MakeDeck(
         [
             NineOfHearts.Instance,
             AceOfSpades.Instance,

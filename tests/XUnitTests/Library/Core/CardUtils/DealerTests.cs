@@ -24,7 +24,7 @@ public sealed class DealerTests
     [Fact]
     public async Task TestCut()
     {
-        Cards<Card> deck = Card.MakeDeck(
+        var deck = Card.MakeDeck(
         [
             Joker0.Instance,
             AceOfHearts.Instance,
@@ -41,7 +41,7 @@ public sealed class DealerTests
         _rng.GetInt32Value = 3;
         deck = await _dealer.Cut(deck, CancellationToken.None);
 
-        Cards<Card> expectedDeck = Card.MakeDeck(
+        var expectedDeck = Card.MakeDeck(
         [
             FourOfHearts.Instance,
             FiveOfHearts.Instance,
@@ -63,11 +63,11 @@ public sealed class DealerTests
     [Fact]
     public async Task TestShuffle()
     {
-        Cards<Card> deck = Card.MakeDeck(Decks.Standard52());
+        var deck = Card.MakeDeck(Decks.Standard52());
         Cards<Card> prevDeck = new(deck);
 
-        int numChangedDecks = 0;
-        for (int i = 0; i < 5; i++)
+        var numChangedDecks = 0;
+        for (var i = 0; i < 5; i++)
         {
             deck = await _dealer.Shuffle(deck, CancellationToken.None);
             if (!deck.Matches(prevDeck))
@@ -84,7 +84,7 @@ public sealed class DealerTests
     [Fact]
     public async Task TestDeal()
     {
-        Cards<Card> deck = Card.MakeDeck(
+        var deck = Card.MakeDeck(
         [
             Joker0.Instance,
             AceOfHearts.Instance,
@@ -98,33 +98,33 @@ public sealed class DealerTests
             NineOfHearts.Instance,
         ]);
 
-        Cards<Card> expectedHand0 = Card.MakeDeck(
+        var expectedHand0 = Card.MakeDeck(
         [
             Joker0.Instance,
             FourOfHearts.Instance,
             EightOfHearts.Instance,
         ]);
 
-        Cards<Card> expectedHand1 = Card.MakeDeck(
+        var expectedHand1 = Card.MakeDeck(
         [
             AceOfHearts.Instance,
             FiveOfHearts.Instance,
             NineOfHearts.Instance,
         ]);
 
-        Cards<Card> expectedHand2 = Card.MakeDeck(
+        var expectedHand2 = Card.MakeDeck(
         [
             TwoOfHearts.Instance,
             SixOfHearts.Instance,
         ]);
 
-        Cards<Card> expectedHand3 = Card.MakeDeck(
+        var expectedHand3 = Card.MakeDeck(
         [
             ThreeOfHearts.Instance,
             SevenOfHearts.Instance,
         ]);
 
-        List<Cards<Card>> hands = await _dealer.Deal(deck, 4, CancellationToken.None);
+        var hands = await _dealer.Deal(deck, 4, CancellationToken.None);
         Assert.Equal(4, hands.Count);
         Assert.True(expectedHand0.Matches(hands[0]));
         Assert.True(expectedHand1.Matches(hands[1]));

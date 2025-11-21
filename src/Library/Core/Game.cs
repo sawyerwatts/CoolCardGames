@@ -27,10 +27,19 @@ public abstract class Game<TCard, TPlayerState>
 
     public abstract string Name { get; }
 
+    protected abstract object? SettingsToBeLogged { get; }
+
     public async Task<PlayResult> Play(CancellationToken cancellationToken)
     {
         try
         {
+            using var loggingScope = _logger.BeginScope(
+                "{GameName} game with ID {GameId} and settings {Settings}",
+                Name, Guid.NewGuid(), SettingsToBeLogged);
+            _logger.LogInformation("Beginning a game");
+            for (var i = 0; i < _players.Count; i++)
+                _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].PlayerAccountCard);
+
             await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
             return new PlayResult();
@@ -90,8 +99,8 @@ public abstract class Game<TCard, TPlayerState>
             gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
             cancellationToken: cancellationToken);
 
-        bool validCardToPlay = false;
-        int iCardToPlay = -1;
+        var validCardToPlay = false;
+        var iCardToPlay = -1;
         while (!validCardToPlay)
         {
             iCardToPlay = await player.PromptForIndexOfCardToPlay(syncEvent.Id, hand, cancellationToken);
@@ -101,7 +110,7 @@ public abstract class Game<TCard, TPlayerState>
             validCardToPlay = validateChosenCard(hand, iCardToPlay);
         }
 
-        TCard cardToPlay = hand[iCardToPlay];
+        var cardToPlay = hand[iCardToPlay];
         hand.RemoveAt(iCardToPlay);
 
         await _gameEventPublisher.Publish(
@@ -135,7 +144,7 @@ public abstract class Game<TCard, TPlayerState>
             gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
             cancellationToken: cancellationToken);
 
-        bool validCardsToPlay = false;
+        var validCardsToPlay = false;
         List<int> iCardsToPlay = [];
         while (!validCardsToPlay)
         {
@@ -150,7 +159,7 @@ public abstract class Game<TCard, TPlayerState>
         }
 
         Cards<TCard> cardsToPlay = new(capacity: iCardsToPlay.Count);
-        foreach (int iCardToPlay in iCardsToPlay.OrderDescending())
+        foreach (var iCardToPlay in iCardsToPlay.OrderDescending())
         {
             cardsToPlay.Add(hand[iCardToPlay]);
             hand.RemoveAt(iCardToPlay);

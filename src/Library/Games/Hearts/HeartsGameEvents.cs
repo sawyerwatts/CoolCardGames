@@ -22,16 +22,21 @@ public abstract record HeartsGameEvent(string Summary) : GameEvent(Summary)
     public record CardsPassed(PassDirection PassDirection) : HeartsGameEvent(
         PassDirection switch
         {
-            PassDirection.Left or PassDirection.Right or PassDirection.Across  => $"Passed three cards {PassDirection}",
+            PassDirection.Left or PassDirection.Right or PassDirection.Across => $"Passed three cards {PassDirection}",
             PassDirection.Hold => throw new ArgumentException("Could not have passed cards when holding"),
             _ => throw new UnreachableException($"Unknown {nameof(PassDirection)} given: {PassDirection}")
         });
 
-    public record ShotTheMoon(PlayerAccountCard PlayerAccountCard) : HeartsGameEvent($"{PlayerAccountCard} shot the moon!");
+    public record ShotTheMoon(PlayerAccountCard PlayerAccountCard)
+        : HeartsGameEvent($"{PlayerAccountCard} shot the moon!");
 
     public record TrickScored(PlayerAccountCard PlayerAccountCard, int RoundPoints, int TotalPoints)
         : HeartsGameEvent($"{PlayerAccountCard} scored {RoundPoints} point(s) this round and has a total of {TotalPoints} point(s)");
 
     public record HeartsHaveBeenBroken(PlayerAccountCard PlayerAccountCard, HeartsCard HeartsCard)
         : HeartsGameEvent($"Hearts have been broken by {PlayerAccountCard} with {HeartsCard}");
+
+    public record GettingOpeningCardFrom(PlayerAccountCard PlayerAccountCard) : GameEvent($"Getting trick's opening card from {PlayerAccountCard}");
+
+    public record CannotOpenPassingAction(PlayerAccountCard OpeningPlayerAccountCard) : GameEvent($"{OpeningPlayerAccountCard} cannot open, passing action to the next player");
 }
