@@ -12,10 +12,7 @@ namespace CoolCardGames.Library.Core.Players;
 /// <summary>
 /// This class exists so that if a player disconnects, they can be seamlessly swapped to an AI.
 /// </summary>
-/// <param name="player"></param>
-/// <param name="aiFactory"></param>
-/// <typeparam name="TCard"></typeparam>
-public class PlayerBridge<TCard>(IPlayer<TCard> player, AiPlayerFactory aiFactory)
+public class PlayerBridge<TCard>(IPlayer<TCard> player /*, AiPlayerFactory aiFactory */)
     : IPlayer<TCard>
     where TCard : Card
 {
