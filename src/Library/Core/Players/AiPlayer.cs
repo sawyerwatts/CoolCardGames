@@ -10,13 +10,13 @@ public class AiPlayer<TCard>(PlayerAccountCard playerAccountCard) : IPlayer<TCar
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
-    public Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return Task.FromResult(
             RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count));
     }
 
-    public Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return Task.FromResult<List<int>>(
         [

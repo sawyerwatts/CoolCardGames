@@ -20,12 +20,12 @@ public class PlayerBridge<TCard>(IPlayer<TCard> player /*, AiPlayerFactory aiFac
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
-    public Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return player.PromptForIndexOfCardToPlay(prePromptEventId, cards, cancellationToken);
     }
 
-    public Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return player.PromptForIndexesOfCardsToPlay(prePromptEventId, cards, cancellationToken);
     }

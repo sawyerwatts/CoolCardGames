@@ -45,15 +45,15 @@ public class ChannelFanOut<TMessage>(
             logger.LogInformation("Beginning fan out");
             await foreach (var msg in sourceReader.ReadAllAsync(cancellationToken))
             {
-                logger.LogInformation("Fanning out message: {Message}", msg);
+                logger.LogDebug("Fanning out message: {Message}", msg);
                 foreach (var destination in _destinations)
                 {
-                    logger.LogInformation("Fanning out message to destination {DestinationName}", destination.Name);
+                    logger.LogDebug("Fanning out message to destination {DestinationName}", destination.Name);
                     await destination.Channel.Writer.WriteAsync(msg, cancellationToken);
-                    logger.LogInformation("Fanned out message to destination {DestinationName}", destination.Name);
+                    logger.LogDebug("Fanned out message to destination {DestinationName}", destination.Name);
                 }
 
-                logger.LogInformation("Fanned out message");
+                logger.LogDebug("Fanned out message");
             }
 
             logger.LogInformation("Ending fan out");

@@ -52,7 +52,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
     protected override object? SettingsToBeLogged => new
     {
-        User = _settings
+        UserGameSettings = _settings
     };
 
     protected override async Task ActuallyPlay(CancellationToken cancellationToken)

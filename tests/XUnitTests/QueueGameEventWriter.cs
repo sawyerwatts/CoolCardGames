@@ -9,7 +9,7 @@ public class ListGameEventPublisher : IGameEventPublisher
 
     public ValueTask<GameEventEnvelope> Publish(GameEvent gameEvent, CancellationToken cancellationToken)
     {
-        var envelope = new GameEventEnvelope(gameEvent, Guid.NewGuid().ToString());
+        var envelope = new GameEventEnvelope(gameEvent, 1);
         Events.Add(envelope);
         return ValueTask.FromResult(envelope);
     }

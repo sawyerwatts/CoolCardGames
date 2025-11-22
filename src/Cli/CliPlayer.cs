@@ -28,7 +28,7 @@ public partial class CliPlayer<TCard>(
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
     private readonly object _lastEventIdLock = new();
-    private string _lastEventId = "";
+    private uint _lastEventId = 0;
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Attempting to grab lock in method {MethodName}")]
     public partial void LogGrabbingLock(string methodName);
@@ -87,7 +87,7 @@ public partial class CliPlayer<TCard>(
             if (envelope.GameEvent is GameEvent.GameEnded)
             {
                 LogAndAnsi("The game ended; closing the attachment to this CLI session");
-                _lastEventId = "";
+                _lastEventId = 0;
                 return true;
             }
 
@@ -125,7 +125,7 @@ public partial class CliPlayer<TCard>(
 #pragma warning restore CA2254
     }
 
-    public async Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for a card to play");
@@ -143,7 +143,7 @@ public partial class CliPlayer<TCard>(
         return iCardToPlay;
     }
 
-    public async Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    public async Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for card(s) to play");
@@ -172,7 +172,7 @@ public partial class CliPlayer<TCard>(
         return iCardsToPlay;
     }
 
-    private async Task WaitUntilUiIsSynced(string prePromptEventId, CancellationToken cancellationToken)
+    private async Task WaitUntilUiIsSynced(uint prePromptEventId, CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -183,7 +183,8 @@ public partial class CliPlayer<TCard>(
                 logger.LogInformation(
                     "Checking if last event ID ({LastEventId}) equals the expected pre-prompt event ID ({PrePromptEventId})",
                     _lastEventId, prePromptEventId);
-                if (_lastEventId == prePromptEventId)
+                // >= because when players make concurrent actions, the UI can pass the prePromptEventId
+                if (_lastEventId >= prePromptEventId)
                     return;
             }
 

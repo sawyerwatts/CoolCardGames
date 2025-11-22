@@ -20,10 +20,10 @@ public interface IPlayer<TCard>
     /// <summary>
     /// This will ask the player for any card to play. Validation and removal from hand will be handled elsewhere.
     /// </summary>
-    Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken);
+    Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken);
 
     /// <summary>
     /// This will ask the player for card(s) to play. Validation and removal from hand will be handled elsewhere.
     /// </summary>
-    Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken);
+    Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken);
 }

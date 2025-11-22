@@ -25,4 +25,8 @@
     <ProjectReference Include="..\Library\CoolCardGames.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Logs\On-20251122.json" />
+  </ItemGroup>
+
 </Project>

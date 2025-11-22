@@ -29,7 +29,7 @@ public class ChannelGameEventPublisher(
     public async ValueTask<GameEventEnvelope> Publish(GameEvent gameEvent, CancellationToken cancellationToken)
     {
         var currId = Interlocked.Increment(ref _id);
-        var envelope = new GameEventEnvelope(gameEvent, currId.ToString());
+        var envelope = new GameEventEnvelope(gameEvent, currId);
         logger.LogInformation("Publishing {Envelope}", envelope);
         await writer.WriteAsync(envelope, cancellationToken);
         logger.LogInformation("Published");
