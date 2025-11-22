@@ -19,5 +19,6 @@ public sealed class GameProxyChannelManager(
     public void Dispose()
     {
         eventChannel.Writer.Complete();
+        game.Dispose();
     }
 }

@@ -5,6 +5,8 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// TODO: the warning in this file
+
 // TODO: make this more dynamic instead of hardcoding hearts for everything
 
 public class Driver(
