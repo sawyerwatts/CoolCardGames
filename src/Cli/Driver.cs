@@ -5,6 +5,10 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// BUG: Cards.Sorted should take Card ordering
+
+// BUG: passing many cards still shows them (and says they're hidden)
+
 // TODO: prob want an event to tell that folks are receiving the passed cards
 
 // TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
