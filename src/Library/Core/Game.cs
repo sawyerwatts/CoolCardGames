@@ -191,10 +191,6 @@ public abstract class Game<TCard, TPlayerState> : IGame
             hand.RemoveAt(iCardToPlay);
         }
 
-        await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.PlayerAccountCard, cardsToPlay),
-            cancellationToken: cancellationToken);
-
         if (reveal)
         {
             foreach (var cardToPlay in cardsToPlay)
