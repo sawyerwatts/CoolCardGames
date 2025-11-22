@@ -28,7 +28,7 @@ public partial class CliPlayer<TCard>(
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
     private readonly object _lastEventIdLock = new();
-    private uint _lastEventId = 0;
+    private uint _lastRenderedEventId = 0;
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Attempting to grab lock in method {MethodName}")]
     public partial void LogGrabbingLock(string methodName);
@@ -87,7 +87,7 @@ public partial class CliPlayer<TCard>(
             if (envelope.GameEvent is GameEvent.GameEnded)
             {
                 LogAndAnsi("The game ended; closing the attachment to this CLI session");
-                _lastEventId = 0;
+                _lastRenderedEventId = 0;
                 return true;
             }
 
@@ -111,7 +111,7 @@ public partial class CliPlayer<TCard>(
             }
             finally
             {
-                _lastEventId = envelope.Id;
+                _lastRenderedEventId = envelope.Id;
             }
 
             return false;
@@ -181,10 +181,10 @@ public partial class CliPlayer<TCard>(
             {
                 LogGrabbedLock(nameof(WaitUntilUiIsSynced));
                 logger.LogInformation(
-                    "Checking if last event ID ({LastEventId}) equals the expected pre-prompt event ID ({PrePromptEventId})",
-                    _lastEventId, prePromptEventId);
+                    "Checking if the last rendered event ID ({LastRenderedEventId}) is at least as high as the pre-prompt event ID ({PrePromptEventId})",
+                    _lastRenderedEventId, prePromptEventId);
                 // >= because when players make concurrent actions, the UI can pass the prePromptEventId
-                if (_lastEventId >= prePromptEventId)
+                if (_lastRenderedEventId >= prePromptEventId)
                     return;
             }
 
