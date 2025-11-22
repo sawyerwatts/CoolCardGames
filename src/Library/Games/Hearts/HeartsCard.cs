@@ -15,6 +15,11 @@ public sealed record HeartsCard : Card
             Points = 0;
     }
 
+    public override string ToString()
+    {
+        return base.ToString();
+    }
+
     public new static Cards<HeartsCard> MakeDeck(IEnumerable<CardValue> seed) =>
         new(seed.Select(cardValue => new HeartsCard(cardValue)));
 }
