@@ -5,6 +5,9 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// BUG: the three cards that are passed are being displayed, need to keep them hidden
+//      only log value if card is not Hidden, so then playing would reveal if needed?
+
 // TODO: the warning in this file
 
 // TODO: make this more dynamic instead of hardcoding hearts for everything
