@@ -7,6 +7,9 @@ namespace CoolCardGames.Cli;
 
 // BUG: Cards.Sorted should take Card ordering
 
+// TODO: auto sorting hands would be nice, esp on additions
+//       sorting svc?
+
 // TODO: prob want an event to tell that folks are receiving the passed cards
 
 // TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)

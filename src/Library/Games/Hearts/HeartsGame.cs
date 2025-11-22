@@ -163,6 +163,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
             var cardsToPass = takeCardsFromPlayerTasks[iSourcePlayer].Result;
             _gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
+            _gameState.Players[iTargetPlayer].Hand = _gameState.Players[iTargetPlayer].Hand.Sorted();
         }
     }
 
