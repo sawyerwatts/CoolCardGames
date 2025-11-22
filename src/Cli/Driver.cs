@@ -6,11 +6,12 @@ using Spectre.Console;
 namespace CoolCardGames.Cli;
 
 // BUG: Cards.Sorted should take Card ordering
+//      auto sorting hands would be nice, esp on additions
+//      sorting svc?
 
-// TODO: auto sorting hands would be nice, esp on additions
-//       sorting svc?
+// TODO: prob want an event to tell that folks are having cards added to their hands
 
-// TODO: prob want an event to tell that folks are receiving the passed cards
+// TODO: could more hand events be auto generated instead of hardcoded in HeartsGame?
 
 // TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
 //       wanna see
