@@ -126,8 +126,9 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         for (var i = 0; i < NumPlayers; i++)
         {
-            _gameState.Players[i].Hand = hands[i].Sorted();
-            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].PlayerAccountCard, hands[i].Count),
+            var hand = hands[i].Sorted();
+            _gameState.Players[i].Hand = hand;
+            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].PlayerAccountCard, hand.Count),
                 cancellationToken);
         }
     }
