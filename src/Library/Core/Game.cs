@@ -100,7 +100,8 @@ public abstract class Game<TCard, TPlayerState> : IGame
     protected async Task<TCard> PromptForValidCardAndPlay(
         int iPlayer,
         Func<Cards<TCard>, int, bool> validateChosenCard,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool reveal = true)
     {
         var player = _players[iPlayer];
         var hand = _gameState.Players[iPlayer].Hand;
@@ -123,9 +124,23 @@ public abstract class Game<TCard, TPlayerState> : IGame
         var cardToPlay = hand[iCardToPlay];
         hand.RemoveAt(iCardToPlay);
 
-        await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.PlayerAccountCard, cardToPlay),
-            cancellationToken: cancellationToken);
+        if (reveal)
+        {
+            cardToPlay.Hidden = false;
+        }
+
+        if (cardToPlay.Hidden)
+        {
+            await _gameEventPublisher.Publish(
+                gameEvent: new GameEvent.PlayerPlayedHiddenCard<TCard>(player.PlayerAccountCard),
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await _gameEventPublisher.Publish(
+                gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.PlayerAccountCard, cardToPlay),
+                cancellationToken: cancellationToken);
+        }
 
         return cardToPlay;
     }
@@ -145,7 +160,8 @@ public abstract class Game<TCard, TPlayerState> : IGame
     protected async Task<Cards<TCard>> PromptForValidCardsAndPlay(
         int iPlayer,
         Func<Cards<TCard>, List<int>, bool> validateChosenCards,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool reveal = true)
     {
         var player = _players[iPlayer];
         var hand = _gameState.Players[iPlayer].Hand;
@@ -178,6 +194,28 @@ public abstract class Game<TCard, TPlayerState> : IGame
         await _gameEventPublisher.Publish(
             gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.PlayerAccountCard, cardsToPlay),
             cancellationToken: cancellationToken);
+
+        if (reveal)
+        {
+            foreach (var cardToPlay in cardsToPlay)
+            {
+                cardToPlay.Hidden = false;
+            }
+        }
+
+        if (cardsToPlay.Any(card => card.Hidden))
+        {
+            await _gameEventPublisher.Publish(
+                gameEvent: new GameEvent.PlayerPlayedHiddenCards<TCard>(player.PlayerAccountCard, cardsToPlay.Count(card => card.Hidden)),
+                cancellationToken: cancellationToken);
+        }
+
+        if (cardsToPlay.Any(card => !card.Hidden))
+        {
+            await _gameEventPublisher.Publish(
+                gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.PlayerAccountCard, new Cards<TCard>(cardsToPlay.Where(card => !card.Hidden))),
+                cancellationToken: cancellationToken);
+        }
 
         return cardsToPlay;
     }

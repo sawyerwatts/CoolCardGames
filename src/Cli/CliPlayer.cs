@@ -13,9 +13,6 @@ namespace CoolCardGames.Cli;
 
 // TODO: unit test this class
 
-// TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
-//       does Spectre support panels?
-
 public partial class CliPlayer<TCard>(
     PlayerAccountCard playerAccountCard,
     IOptionsMonitor<CliPlayerUserSettings> userSettings,

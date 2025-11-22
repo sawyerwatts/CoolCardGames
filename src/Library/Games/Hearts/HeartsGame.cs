@@ -141,7 +141,8 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             var task = PromptForValidCardsAndPlay(
                 iPlayer: i,
                 validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
-                cancellationToken);
+                cancellationToken,
+                reveal: false);
             takeCardsFromPlayerTasks.Add(task);
         }
 

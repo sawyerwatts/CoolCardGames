@@ -12,6 +12,10 @@ public abstract partial record GameEvent
 
     public record PlayerPlayedCards<TCard>(PlayerAccountCard PlayerCard, Cards<TCard> Cards) : GameEvent($"{PlayerCard} played card(s): {SerializeCards(Cards)}") where TCard : Card;
 
+    public record PlayerPlayedHiddenCard<TCard>(PlayerAccountCard PlayerCard) : GameEvent($"{PlayerCard} played a hidden card");
+
+    public record PlayerPlayedHiddenCards<TCard>(PlayerAccountCard PlayerCard, int numCards) : GameEvent($"{PlayerCard} played {numCards} hidden card(s)");
+
     public record PlayerTookTrickWithCard<TCard>(PlayerAccountCard PlayerCard, TCard Card) : GameEvent($"{PlayerCard} took the trick with card {Card}") where TCard : Card;
 
     public record PlayerTookTrickWithCards<TCard>(PlayerAccountCard PlayerCard, Cards<TCard> Cards) : GameEvent($"{PlayerCard} took the trick with card(s): {SerializeCards(Cards)}") where TCard : Card;

@@ -5,8 +5,17 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
-// BUG: the three cards that are passed are being displayed, need to keep them hidden
-//      only log value if card is not Hidden, so then playing would reveal if needed?
+// TODO: sort hand
+
+// TODO: prob want an event to tell that folks are receiving the passed cards
+
+// TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
+//       wanna see
+//           game settings
+//           cli user settings
+//           hearts game state (score, num cards in other people's hands, etc)
+//       does Spectre support panels?
+//       prob wanna impl in CliPlayer
 
 // TODO: the warning in this file
 
