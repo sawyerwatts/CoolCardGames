@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
@@ -11,11 +12,17 @@ public class AiPlayer<TCard>(PlayerAccountCard playerAccountCard) : IPlayer<TCar
 
     public Task<int> PromptForIndexOfCardToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(
+            RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count));
     }
 
     public Task<List<int>> PromptForIndexesOfCardsToPlay(string prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return Task.FromResult<List<int>>(
+        [
+            RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count),
+            RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count),
+            RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count),
+        ]);
     }
 }

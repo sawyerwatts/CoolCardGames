@@ -1,36 +1,51 @@
-using System.ComponentModel.DataAnnotations;
+using CoolCardGames.Library.Core.Players;
+using CoolCardGames.Library.Games.Hearts;
 
-using Microsoft.Extensions.Options;
+using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// TODO: make this more dynamic instead of hardcoding hearts for everything
+
 public class Driver(
-    IOptions<Driver.Settings> settings,
+    CliPlayerFactory cliPlayerFactory,
+    AiPlayerFactory aiPlayerFactory,
+    IServiceProvider services,
     ILogger<Driver> logger)
 {
-    public Task RunAsync(CancellationToken cancellationToken)
+    public async Task RunAsync(CancellationToken cancellationToken)
     {
-        // TODO: start coding here
-        logger.LogInformation("Start coding here");
-        return Task.CompletedTask;
-    }
+        string playerName = AnsiConsole.Prompt(new TextPrompt<string>("What is your name?"));
+        var accountCard = new PlayerAccountCard(Guid.NewGuid().ToString(), playerName);
 
-    public static void RegisterTo(
-        IHostApplicationBuilder builder)
-    {
-        builder.Services.AddTransient<Driver>();
-        builder.Services.AddSingleton<IValidateOptions<Settings>, ValidateDriverSettings>();
-        builder.Services.AddOptions<Settings>()
-            .Bind(builder.Configuration.GetRequiredSection("Driver"))
-            .ValidateOnStart();
-    }
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            // TODO: option to customize cli user settings
 
-    public class Settings
-    {
-        [Required]
-        public string Demo { get; set; } = "";
+            string gameName = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("What game do you want to play?")
+#pragma warning disable CA1861
+                    .AddChoices(new[] { "Hearts", })
+#pragma warning restore CA1861
+            );
+            logger.LogInformation("Initializing {Game}", gameName);
+
+            var cliPlayer = cliPlayerFactory.Make<HeartsCard>(accountCard);
+            var heartsFactory = services.GetRequiredService<HeartsGameFactory>(); // TODO: allow for customizing settings
+
+            using var game = heartsFactory.Make(
+                players:
+                [
+                    cliPlayer,
+                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
+                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
+                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
+                ],
+                cancellationToken: cancellationToken);
+
+            _ = Task.Run(async () => await game.Play(cancellationToken), cancellationToken);
+            await cliPlayer.AttachSessionToCurrentGame(cancellationToken);
+        }
     }
 }
-
-[OptionsValidator]
-public partial class ValidateDriverSettings : IValidateOptions<Driver.Settings>;

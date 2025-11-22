@@ -18,8 +18,8 @@ namespace CoolCardGames.Cli;
 
 public partial class CliPlayer<TCard>(
     PlayerAccountCard playerAccountCard,
-    IOptions<CliPlayerUserSettings> userSettings,
-    IOptions<CliPlayerSystemSettings> systemSettings,
+    IOptionsMonitor<CliPlayerUserSettings> userSettings,
+    IOptionsMonitor<CliPlayerSystemSettings> systemSettings,
     ILogger<CliPlayer<TCard>> logger)
     : IPlayer<TCard> where TCard : Card
 {
@@ -69,12 +69,13 @@ public partial class CliPlayer<TCard>(
                 LogGrabbedLock(nameof(AttachSessionToCurrentGame));
                 shouldReturn = Handle(envelope);
             }
+
             LogReleasedLock(nameof(AttachSessionToCurrentGame));
 
             if (shouldReturn)
                 return;
 
-            await Task.Delay(userSettings.Value.MillisecondDelayBetweenWritingMessagesToConsole, cancellationToken);
+            await Task.Delay(userSettings.CurrentValue.MillisecondDelayBetweenWritingMessagesToConsole, cancellationToken);
         }
 
         LogAndAnsi("The current game events channel closed without the game ending normally; closing the attachment to this CLI session", LogLevel.Warning);
@@ -187,8 +188,8 @@ public partial class CliPlayer<TCard>(
             }
 
             LogReleasedLock(nameof(WaitUntilUiIsSynced));
-            LogDelayingBeforeGrabbingLock(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, nameof(WaitUntilUiIsSynced));
-            await Task.Delay(systemSettings.Value.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, cancellationToken);
+            LogDelayingBeforeGrabbingLock(systemSettings.CurrentValue.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, nameof(WaitUntilUiIsSynced));
+            await Task.Delay(systemSettings.CurrentValue.MillisecondDelayBetweenCheckingIfCliIsUpToDateOnEvents, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
         }
     }

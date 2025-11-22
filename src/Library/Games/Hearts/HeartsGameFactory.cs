@@ -8,6 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+// TODO: since IPlayer is specific to a specific card type, need to construct one per game, so
+//       could inject the channel into the player n take a player factory
+
 public class HeartsGameFactory(
     ChannelFanOutFactory channelFanOutFactory,
     ChannelGameEventPublisherFactory channelGameEventPublisherFactory,

@@ -10,9 +10,8 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Services.AddSerilog();
 
-Driver.RegisterTo(builder);
-
 builder.AddLibraryServices();
+builder.AddCliServices();
 
 var host = builder.Build();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();

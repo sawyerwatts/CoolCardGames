@@ -6,8 +6,6 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 // TODO: helpers to prompt for card(s) from many/all players?
 
-// TODO: the code is multi-braided-ish: it does something, and it pushes a notification to do it
-
 // TODO: update the PlayCard(s) funcs to pass additional, human-readable validation info
 
 // TODO: how handle data visibility to diff players?
@@ -15,6 +13,8 @@ namespace CoolCardGames.Library.Games.Hearts;
 // TODO: decompose Hearts class to make it easier to test
 
 // TODO: revisit HeartsGame and HeartsGameFactory and see how they can be reused n cleaned up
+
+// TODO: cache settings somewhere?
 
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
