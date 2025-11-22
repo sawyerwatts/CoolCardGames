@@ -21,6 +21,11 @@ public class Cards<TCard> : List<TCard>
             card.Hidden = true;
     }
 
+    public Cards<TCard> Sorted()
+    {
+        return [.. this.OrderBy(card => card.Value.Suit).ThenBy(card => card.Value.Rank)];
+    }
+
     public override string ToString()
     {
         var builder = new StringBuilder();
