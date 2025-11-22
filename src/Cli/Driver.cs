@@ -5,6 +5,9 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// BUG: when everyone is passing three cards, if someone passes not 3, the reprompt infinite loops
+//      the logs show that this occurs because the prePromptEventId is behind _lastEventId
+
 // BUG: the three cards that are passed are being displayed, need to keep them hidden
 //      only log value if card is not Hidden, so then playing would reveal if needed?
 
