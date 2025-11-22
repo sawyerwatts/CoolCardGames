@@ -16,7 +16,7 @@ public class GameProxyChannelManagerTests
     public async Task TestHappy()
     {
         var game = Substitute.For<IGame>();
-        game.Play(CancellationToken.None).Returns(Task.FromResult(new GamePlayResult()));
+        game.Play(CancellationToken.None).Returns(Task.CompletedTask);
 
         var eventChannel = Channel.CreateUnbounded<GameEventEnvelope>();
         var channelFanOut = new ChannelFanOut<GameEventEnvelope>(eventChannel.Reader, NullLogger<ChannelFanOut<GameEventEnvelope>>.Instance);

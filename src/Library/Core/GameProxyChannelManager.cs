@@ -10,10 +10,10 @@ public sealed class GameProxyChannelManager(
 {
     public string Name => game.Name;
 
-    public async Task<GamePlayResult> Play(CancellationToken cancellationToken)
+    public async Task Play(CancellationToken cancellationToken)
     {
         _ = Task.Run(async () => await channelFanOut.HandleFanOut(cancellationToken), cancellationToken);
-        return await game.Play(cancellationToken);
+        await game.Play(cancellationToken);
     }
 
     public void Dispose()

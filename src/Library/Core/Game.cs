@@ -11,12 +11,8 @@ namespace CoolCardGames.Library.Core;
 public interface IGame : IDisposable
 {
     string Name { get; }
-    Task<GamePlayResult> Play(CancellationToken cancellationToken);
+    Task Play(CancellationToken cancellationToken);
 }
-
-public readonly record struct GamePlayResult(
-    Exception? ExceptionWhenPlayingGame = null,
-    Exception? ExceptionWhenFailedToPublishGameEventForFailure = null);
 
 public abstract class Game<TCard, TPlayerState> : IGame
     where TCard : Card
@@ -43,7 +39,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
 
     protected abstract object? SettingsToBeLogged { get; }
 
-    public async Task<GamePlayResult> Play(CancellationToken cancellationToken)
+    public async Task Play(CancellationToken cancellationToken)
     {
         try
         {
@@ -56,13 +52,11 @@ public abstract class Game<TCard, TPlayerState> : IGame
 
             await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
-            return new GamePlayResult();
         }
         catch (Exception exc)
         {
             _logger.LogCritical(exc, "A game crashed due to an uncaught exception");
 
-            Exception? publishFailureException = null;
             try
             {
                 await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: false), cancellationToken);
@@ -70,10 +64,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
             catch (Exception e)
             {
                 _logger.LogError(e, "Could not publish the game completion event");
-                publishFailureException = e;
             }
-
-            return new GamePlayResult(exc, publishFailureException);
         }
     }
 

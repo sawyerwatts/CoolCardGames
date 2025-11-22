@@ -21,7 +21,8 @@ namespace CoolCardGames.Cli;
 //       does Spectre support panels?
 //       prob wanna impl in CliPlayer
 
-// TODO: the warning in this file
+// TODO: revisit how game is kicked off, particularly if cliplayer craps out. don't wanna leak that thread
+//       make a game cancelToken and cancel at end of loop?
 
 // TODO: make this more dynamic instead of hardcoding hearts for everything
 
@@ -52,17 +53,20 @@ public class Driver(
             var cliPlayer = cliPlayerFactory.Make<HeartsCard>(accountCard);
             var heartsFactory = services.GetRequiredService<HeartsGameFactory>(); // TODO: allow for customizing settings
 
-            using var game = heartsFactory.Make(
-                players:
-                [
-                    cliPlayer,
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
-                ],
-                cancellationToken: cancellationToken);
+            _ = Task.Run(async () =>
+            {
+                using var game = heartsFactory.Make(
+                    players:
+                    [
+                        cliPlayer,
+                        aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
+                        aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
+                        aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
+                    ],
+                    cancellationToken: cancellationToken);
+                await game.Play(cancellationToken);
+            }, cancellationToken);
 
-            _ = Task.Run(async () => await game.Play(cancellationToken), cancellationToken);
             await cliPlayer.AttachSessionToCurrentGame(cancellationToken);
         }
     }
