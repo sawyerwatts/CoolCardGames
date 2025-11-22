@@ -171,15 +171,11 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         {
             var player = _players[iTrickPlayer.N];
             await _gameEventPublisher.Publish(new HeartsGameEvent.GettingOpeningCardFrom(player.PlayerAccountCard), cancellationToken);
-            if (!_gameState.IsHeartsBroken)
+            if (!_gameState.IsHeartsBroken && _gameState.Players[iTrickPlayer.N].Hand
+                    .All(card => card.Value.Suit is Suit.Hearts))
             {
-                var playerOnlyHasHearts = _gameState.Players[_gameState.IndexTrickStartPlayer].Hand
-                    .All(card => card.Value.Suit is Suit.Hearts);
-                if (playerOnlyHasHearts)
-                {
-                    await _gameEventPublisher.Publish(new HeartsGameEvent.CannotOpenPassingAction(player.PlayerAccountCard), cancellationToken);
-                    iTrickPlayer.CycleClockwise();
-                }
+                await _gameEventPublisher.Publish(new HeartsGameEvent.CannotOpenPassingAction(player.PlayerAccountCard), cancellationToken);
+                iTrickPlayer.CycleClockwise();
             }
             else
                 break;
