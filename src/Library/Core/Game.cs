@@ -4,7 +4,21 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core;
 
-public abstract class Game<TCard, TPlayerState>
+/// <remarks>
+/// If you want to actually code a game, you'll want to extend <see cref="Game{TCard,TPlayerState}"/>.
+/// This is more for ease of proxying n stuff.
+/// </remarks>
+public interface IGame : IDisposable
+{
+    string Name { get; }
+    Task<GamePlayResult> Play(CancellationToken cancellationToken);
+}
+
+public readonly record struct GamePlayResult(
+    Exception? ExceptionWhenPlayingGame = null,
+    Exception? ExceptionWhenFailedToPublishGameEventForFailure = null);
+
+public abstract class Game<TCard, TPlayerState> : IGame
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
 {
@@ -29,7 +43,7 @@ public abstract class Game<TCard, TPlayerState>
 
     protected abstract object? SettingsToBeLogged { get; }
 
-    public async Task<PlayResult> Play(CancellationToken cancellationToken)
+    public async Task<GamePlayResult> Play(CancellationToken cancellationToken)
     {
         try
         {
@@ -42,7 +56,7 @@ public abstract class Game<TCard, TPlayerState>
 
             await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
-            return new PlayResult();
+            return new GamePlayResult();
         }
         catch (Exception exc)
         {
@@ -59,13 +73,9 @@ public abstract class Game<TCard, TPlayerState>
                 publishFailureException = e;
             }
 
-            return new PlayResult(exc, publishFailureException);
+            return new GamePlayResult(exc, publishFailureException);
         }
     }
-
-    public readonly record struct PlayResult(
-        Exception? ExceptionWhenPlayingGame = null,
-        Exception? ExceptionWhenFailedToPublishGameEventForFailure = null);
 
     /// <remarks>
     /// Implementations should send <see cref="GameEvent"/>s via <see cref="IGameEventPublisher"/>.
@@ -171,4 +181,6 @@ public abstract class Game<TCard, TPlayerState>
 
         return cardsToPlay;
     }
+
+    public abstract void Dispose();
 }

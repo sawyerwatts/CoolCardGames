@@ -39,7 +39,7 @@ public class ChannelFanOutTests
         await source.Writer.WriteAsync(msg2);
         source.Writer.Complete();
 
-        await sut.HandleFanout(CancellationToken.None);
+        await sut.HandleFanOut(CancellationToken.None);
 
         foreach (var reader in readers)
         {

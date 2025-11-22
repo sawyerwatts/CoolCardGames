@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Core.MiscUtils;
 
-/// <inheritdoc cref="HandleFanout"/>
+/// <inheritdoc cref="HandleFanOut"/>
 /// <remarks>
 /// It is intended to use <see cref="ChannelFanOutFactory"/> to instantiate this service.
 /// </remarks>
@@ -14,6 +14,8 @@ public class ChannelFanOut<TMessage>(
     ILogger<ChannelFanOut<TMessage>> logger)
 {
     private readonly ConcurrentBag<Destination> _destinations = [];
+
+    public bool Completed { get; private set; } = false;
 
     public ChannelReader<TMessage> CreateReader(string name, bool singleReader = true)
     {
@@ -28,12 +30,14 @@ public class ChannelFanOut<TMessage>(
 
     /// <summary>
     /// This will fanout/forward all messages from <see cref="sourceReader"/> to all the created
-    /// destinations (via <see cref="CreateReader"/>) until <see cref="sourceReader"/> has been completed.
+    /// destinations (via <see cref="CreateReader"/>) until <see cref="sourceReader"/> has been
+    /// completed.
     /// <br />
-    /// When the source channel is completed, the destination channels will be completed too.
+    /// When the source channel is completed, the destination channels will be completed too, and
+    /// then this method will complete.
     /// </summary>
     /// <param name="cancellationToken"></param>
-    public async Task HandleFanout(CancellationToken cancellationToken)
+    public async Task HandleFanOut(CancellationToken cancellationToken)
     {
         Exception? exc = null;
         try
@@ -92,6 +96,7 @@ public class ChannelFanOut<TMessage>(
         }
 
         logger.LogInformation("Completed all the destination channels");
+        Completed = true;
     }
 
     protected readonly record struct Destination(string Name, Channel<TMessage> Channel);

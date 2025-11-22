@@ -4,13 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: need to kick off chanFanOut
-//       only want to kick off if game starts tho, otherwise will leak channels
-//       how will gameEventsChan get closed?
-//       make a GameHarness proxy that kicks off all svcs and handles closing everything down?
-//           make Game disposable and have GameHarness have startup+disposal Func<Task> lists?
-//           merge GameHarness and HeartsGameFactory?
-
 // TODO: helpers to prompt for card(s) from many/all players?
 
 // TODO: the code is multi-braided-ish: it does something, and it pushes a notification to do it
@@ -26,7 +19,7 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
-public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
+public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 {
     private readonly IGameEventPublisher _gameEventPublisher;
     private readonly HeartsGameState _gameState;
@@ -93,6 +86,8 @@ public class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         await DetermineAndPublishWinnersAndLosers(cancellationToken);
         await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
     }
+
+    public override void Dispose() { }
 
     private async Task SetupRound(PassDirection passDirection, CancellationToken cancellationToken)
     {
