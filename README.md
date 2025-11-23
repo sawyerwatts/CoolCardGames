@@ -35,8 +35,8 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
   that in players
 - Create `Hand` and `Trick` types (with factories)
     - This way, more events can be pushed automatically, as well as auto-sorting hands
-    - track the playing index with the card(s) played
-    - see `DetermineTrickTakerIndexRelativeToStartPlayer` for something to be added
+    - Track the playing index with the card(s) played
+    - See `DetermineTrickTakerIndexRelativeToStartPlayer` for something to be added
 - How handle data visibility to diff players?
 - CLI updates
     - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
