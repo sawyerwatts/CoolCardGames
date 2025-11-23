@@ -13,6 +13,10 @@ public static class CliServicesRegistration
     private static void AddDriver(IHostApplicationBuilder builder)
     {
         builder.Services.AddTransient<Driver>();
+        builder.Services.AddOptions<Driver.Settings>()
+            .BindConfiguration($"{CliSectionName}:Driver")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
     }
 
     private static void AddCliPlayer(IHostApplicationBuilder builder)

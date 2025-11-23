@@ -104,7 +104,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         await SetupRoundPlayersPassCards(passDirection, cancellationToken);
 
-        await _gameEventPublisher.Publish(new HeartsGameEvent.CardsPassed(passDirection), cancellationToken);
         await _gameEventPublisher.Publish(GameEvent.BeginningNewRound.Singleton, cancellationToken);
     }
 
@@ -164,7 +163,10 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             var cardsToPass = takeCardsFromPlayerTasks[iSourcePlayer].Result;
             _gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
             _gameState.Players[iTargetPlayer].Hand = _gameState.Players[iTargetPlayer].Hand.Sorted();
+            // TODO: push events for the new cards
         }
+
+        await _gameEventPublisher.Publish(new HeartsGameEvent.CardsPassed(passDirection), cancellationToken);
     }
 
     private async Task PlayOutTrick(CancellationToken cancellationToken)

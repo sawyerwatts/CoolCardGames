@@ -1,3 +1,4 @@
+using System.Diagnostics.Eventing.Reader;
 using System.Threading.Channels;
 
 using CoolCardGames.Library.Core.CardTypes;
@@ -55,7 +56,7 @@ public partial class CliPlayer<TCard>(
         if (CurrentGamesEvents is null)
             throw new NoCurrentGameToAttachException($"Cannot attach the terminal's session to this CLI player because {nameof(CurrentGamesEvents)} is not ready to receive game events");
         using var loggingScope = logger.BeginScope("Account card {AccountCard}", PlayerAccountCard);
-        LogAndAnsi("Attaching current game's events to this CLI session");
+        logger.LogInformation("Attaching current game's events to this CLI session");
 
         await foreach (var envelope in CurrentGamesEvents.ReadAllAsync(cancellationToken))
         {
@@ -75,7 +76,7 @@ public partial class CliPlayer<TCard>(
             await Task.Delay(userSettings.CurrentValue.MillisecondDelayBetweenWritingMessagesToConsole, cancellationToken);
         }
 
-        LogAndAnsi("The current game events channel closed without the game ending normally; closing the attachment to this CLI session", LogLevel.Warning);
+        logger.LogWarning("The current game events channel closed without the game ending normally; closing the attachment to this CLI session");
 
         return;
 
@@ -83,7 +84,7 @@ public partial class CliPlayer<TCard>(
         {
             if (envelope.GameEvent is GameEvent.GameEnded)
             {
-                LogAndAnsi("The game ended; closing the attachment to this CLI session");
+                logger.LogInformation("The game ended; closing the attachment to this CLI session");
                 _lastRenderedEventId = 0;
                 return true;
             }
@@ -113,13 +114,6 @@ public partial class CliPlayer<TCard>(
 
             return false;
         }
-    }
-
-    private void LogAndAnsi(string message, LogLevel level = LogLevel.Information)
-    {
-#pragma warning disable CA2254
-        logger.Log(level, message);
-#pragma warning restore CA2254
     }
 
     public async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
