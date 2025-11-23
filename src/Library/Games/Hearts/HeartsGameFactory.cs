@@ -46,7 +46,7 @@ public class HeartsGameFactory(
         var channelFanOut = channelFanOutFactory.Make(eventChannel.Reader);
         foreach (var player in players)
         {
-            var chanReader = channelFanOut.CreateReader(name: player.PlayerAccountCard.ToString());
+            var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
             player.CurrentGamesEvents = chanReader;
         }
 

@@ -8,7 +8,7 @@ namespace CoolCardGames.Library.Core.Players;
 public interface IPlayer<TCard>
     where TCard : Card
 {
-    PlayerAccountCard PlayerAccountCard { get; }
+    PlayerAccountCard AccountCard { get; }
 
     /// <remarks>
     /// This is nullable because if the player has not yet been in a game, then this will not have

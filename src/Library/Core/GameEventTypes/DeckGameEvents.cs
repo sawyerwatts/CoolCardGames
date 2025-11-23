@@ -1,5 +1,3 @@
-using CoolCardGames.Library.Core.Players;
-
 namespace CoolCardGames.Library.Core.GameEventTypes;
 
 public abstract partial record GameEvent
@@ -15,6 +13,4 @@ public abstract partial record GameEvent
     }
 
     public record DeckDealt(int NumHands) : GameEvent($"The deck was dealt to {NumHands} hands");
-
-    public record HandGiven(PlayerAccountCard Recipient, int NumCardsInHand) : GameEvent($"{Recipient} was given a hand with {NumCardsInHand} cards");
 }

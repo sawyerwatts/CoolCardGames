@@ -21,7 +21,7 @@ public partial class CliPlayer<TCard>(
     ILogger<CliPlayer<TCard>> logger)
     : IPlayer<TCard> where TCard : Card
 {
-    public PlayerAccountCard PlayerAccountCard => playerAccountCard;
+    public PlayerAccountCard AccountCard => playerAccountCard;
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
@@ -55,7 +55,7 @@ public partial class CliPlayer<TCard>(
     {
         if (CurrentGamesEvents is null)
             throw new NoCurrentGameToAttachException($"Cannot attach the terminal's session to this CLI player because {nameof(CurrentGamesEvents)} is not ready to receive game events");
-        using var loggingScope = logger.BeginScope("Account card {AccountCard}", PlayerAccountCard);
+        using var loggingScope = logger.BeginScope("Account card {AccountCard}", AccountCard);
         logger.LogInformation("Attaching current game's events to this CLI session");
 
         await foreach (var envelope in CurrentGamesEvents.ReadAllAsync(cancellationToken))

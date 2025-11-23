@@ -48,7 +48,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
                 Name, Guid.NewGuid(), SettingsToBeLogged);
             _logger.LogInformation("Beginning a game");
             for (var i = 0; i < _players.Count; i++)
-                _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].PlayerAccountCard);
+                _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].AccountCard);
 
             await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
@@ -98,7 +98,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
         var hand = _gameState.Players[iPlayer].Hand;
 
         var syncEvent = await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
+            gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),
             cancellationToken: cancellationToken);
 
         var validCardToPlay = false;
@@ -123,13 +123,13 @@ public abstract class Game<TCard, TPlayerState> : IGame
         if (cardToPlay.Hidden)
         {
             await _gameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedHiddenCard<TCard>(player.PlayerAccountCard),
+                gameEvent: new GameEvent.PlayerPlayedHiddenCard(player.AccountCard),
                 cancellationToken: cancellationToken);
         }
         else
         {
             await _gameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.PlayerAccountCard, cardToPlay),
+                gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.AccountCard, cardToPlay),
                 cancellationToken: cancellationToken);
         }
 
@@ -158,7 +158,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
         var hand = _gameState.Players[iPlayer].Hand;
 
         var syncEvent = await _gameEventPublisher.Publish(
-            gameEvent: new GameEvent.PlayerHasTheAction(player.PlayerAccountCard),
+            gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),
             cancellationToken: cancellationToken);
 
         var validCardsToPlay = false;
@@ -193,14 +193,14 @@ public abstract class Game<TCard, TPlayerState> : IGame
         if (cardsToPlay.Any(card => card.Hidden))
         {
             await _gameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedHiddenCards<TCard>(player.PlayerAccountCard, cardsToPlay.Count(card => card.Hidden)),
+                gameEvent: new GameEvent.PlayerPlayedHiddenCards(player.AccountCard, cardsToPlay.Count(card => card.Hidden)),
                 cancellationToken: cancellationToken);
         }
 
         if (cardsToPlay.Any(card => !card.Hidden))
         {
             await _gameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.PlayerAccountCard, new Cards<TCard>(cardsToPlay.Where(card => !card.Hidden))),
+                gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.AccountCard, new Cards<TCard>(cardsToPlay.Where(card => !card.Hidden))),
                 cancellationToken: cancellationToken);
         }
 
