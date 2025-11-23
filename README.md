@@ -30,10 +30,10 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
-- Finish implementing `Hearts.cs` w/ improvement ideas
 - See floating TODOs
 - Make CLI entrypoint (offline only, for now)
 - Update docs and architecture diagram to better detail interactions (and setup?)
+- Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
 
 #### Improvement Ideas from Prototype
 
