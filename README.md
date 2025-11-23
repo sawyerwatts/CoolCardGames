@@ -1,4 +1,5 @@
 # CoolCardGames
+
 This repository implements a number of card games.
 
 ## Getting Started
@@ -30,46 +31,28 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
-- See floating TODOs
-- Make CLI entrypoint (offline only, for now)
+- Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
+  that in players
+- Create `Hand` and `Trick` types (with factories)
+    - This way, more events can be pushed automatically, as well as auto-sorting hands
+    - track the playing index with the card(s) played
+    - see `DetermineTrickTakerIndexRelativeToStartPlayer` for something to be added
+- How handle data visibility to diff players?
+- CLI updates
+    - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
+    - Update `Driver` to be more dynamic than just hardcoding hearts stuff
+    - support configuring settings, like for the game n cli itself
 - Update docs and architecture diagram to better detail interactions (and setup?)
-- Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
-
-#### Improvement Ideas from Prototype
-
-1. Pushing events for each game action seems like a good idea. That way, different players can be
-   notified of changes and handle rendering of changes to their player's UI, and it'd be helpful for
-   a card counting feature.
-    - A `Players : List<Player>` mediator could be beneficial for this reason, especially because
-      when needing to ask all players for card(s) in parallel.
-2. When prompting for card(s), having more human-readable and computer-readable details (esp
-   rejection details) would be helpful.
-3. The current division between `Player` and `IPlayerInterface` is awkward since the player only
-   knows what cards they have when they are prompted to play something. See the next item for more.
-4. Game state needs a pass, especially in regards to visibility. In Hearts, a player can know any
-   other player's score whenever, and in other games, a player can know how many cards another
-   player has, but seeing the hand is not allowed. Going one step further, no players can look at
-   the contents of taken tricks (except the last, if you're feeling kind).
-    - Make `GameState` and `PlayerState` w/ visibility modifiers on all properties so everyone can
-      see everything
-    - Diff levels of visibility:
-        - Public: total score, number of cards in a player's hand, number of tricks a player has
-          taken, etc
-        - Private (to owning player): contents of hand, card counting tracker
-        - Hidden (from all players): contents of played tricks
-    - Merge `IPlayerInterface` into `Player`, and inject `GameState` and this player's
-      `PlayerState` (or index w/in `GameState.Players`)
-    - Implement:
-        - `HeartsGameState : GameState`
-        - `HeartsPlayerState : PlayerState`
-        - `CliPlayer : Player`
-        - `AiPlayer : Player`
-    - For (1), have message channels for each player that the implementations can consume as a part
-      of rendering updates, like if got disconnected and needed to replay?
-    - Altho a god state object could have weird mutators causing bugs. Have the game state be
-      immutable or otherwise lock down mutations to specific classes? This might be too much tho
-5. As a combo of previous ideas, have a `GameState` and a `ReadonlyGameState` for players (that also
-   applies the appropriate data authorization filtering)?
+- Misc
+    - Decompose `HeartsGame` to be more testable
+    - Since `IPlayer` is specific to a specific card type, need to construct one per game, so could
+      inject the channel into the player n take a player factory
+    - revisit `HeartsGame` and `HeartsGameFactory` and see how they can be reused n cleaned up
+    - Unit test `CliPlayer`
+    - helpers to prompt for card(s) from many/all players?
+- Actually impl `PlayerBridge`
+    - Timeout requests probably
+    - It'd be slick to refactor `CliPlayer`'s sync logic here (or "in" `IPlayer`)
 
 ### Other Platforms and Online Mode
 

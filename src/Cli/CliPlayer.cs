@@ -11,8 +11,6 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
-// TODO: unit test this class
-
 public partial class CliPlayer<TCard>(
     PlayerAccountCard playerAccountCard,
     IOptionsMonitor<CliPlayerUserSettings> userSettings,

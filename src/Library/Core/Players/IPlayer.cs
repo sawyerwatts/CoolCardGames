@@ -2,9 +2,6 @@ using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
 
-// TODO: update these methods to take whole game state?
-// TODO: update these funcs to pass additional, human-readable validation info
-
 public interface IPlayer<TCard>
     where TCard : Card
 {

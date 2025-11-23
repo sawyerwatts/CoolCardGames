@@ -6,18 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: helpers to prompt for card(s) from many/all players?
-
-// TODO: update the PlayCard(s) funcs to pass additional, human-readable validation info
-
-// TODO: how handle data visibility to diff players?
-
-// TODO: decompose Hearts class to make it easier to test
-
-// TODO: revisit HeartsGame and HeartsGameFactory and see how they can be reused n cleaned up
-
-// TODO: cache settings somewhere?
-
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
@@ -237,9 +225,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         return;
 
-        // TODO: make this reusable (allow for suit prioritization)
-        //       may want a real Trick type so it can track the playing index with the card(s) played
-        //       Chimera would particularly make this weird
         static int DetermineTrickTakerIndexRelativeToStartPlayer(Cards<HeartsCard> trick, Suit suitToFollow)
         {
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);

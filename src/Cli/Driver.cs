@@ -7,27 +7,6 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
-// BUG:  Cards.Sorted should take Card ordering
-//       auto sorting hands would be nice, esp on additions
-//       sorting svc?
-// TODO: could more hand events be auto generated instead of hardcoded in HeartsGame?
-//       make a HandSvc to handle all hand ops n event pushing?
-// TODO: have Hand and Trick types that publish events (and HandFactory + TrickFactory)?
-//       hand played+revealed a card, trick given a card from player, etc
-//           track the playing index with the card(s) played
-//       hand could have sorting policy to be applied upon card addition
-//       see DetermineTrickTakerIndexRelativeToStartPlayer for something to be added
-
-// TODO: want the ability to see an overview of everything and/or refresh everything (refresh everything on attachment)
-//       wanna see
-//           game settings
-//           cli user settings
-//           hearts game state (score, num cards in other people's hands, etc)
-//       does Spectre support panels?
-//       prob wanna impl in CliPlayer
-
-// TODO: make this more dynamic instead of hardcoding hearts for everything
-
 public class Driver(
     CliPlayerFactory cliPlayerFactory,
     AiPlayerFactory aiPlayerFactory,
@@ -44,8 +23,6 @@ public class Driver(
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            // TODO: option to customize cli user settings
-
             if (string.IsNullOrWhiteSpace(gameName))
             {
                 gameName = AnsiConsole.Prompt(
@@ -68,7 +45,7 @@ public class Driver(
         try
         {
             var cliPlayer = cliPlayerFactory.Make<HeartsCard>(accountCard);
-            var heartsFactory = services.GetRequiredService<HeartsGameFactory>(); // TODO: allow for customizing settings
+            var heartsFactory = services.GetRequiredService<HeartsGameFactory>();
 
             // Ensure the game gets canceled when the player's session ends.
             using var gameCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
