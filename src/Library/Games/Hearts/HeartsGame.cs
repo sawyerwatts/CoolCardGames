@@ -59,6 +59,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         var dealerPosition = new CircularCounter(4, startAtEnd: true);
         while (_gameState.Players.All(player => player.Score < _settings.EndOfGamePoints))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await SetupRound((PassDirection)dealerPosition.Tick(), cancellationToken);
 
             _gameState.IndexTrickStartPlayer = _gameState.Players.FindIndex(player =>
@@ -171,6 +172,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
     private async Task PlayOutTrick(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var iTrickPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
         while (true) // TODO: at risk of infinite loop
         {
