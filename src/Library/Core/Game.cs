@@ -6,7 +6,7 @@ namespace CoolCardGames.Library.Core;
 
 /// <remarks>
 /// If you want to actually code a game, you'll want to extend <see cref="Game{TCard,TPlayerState}"/>.
-/// This is more for ease of proxying n stuff.
+/// This interface is more for ease of proxying n stuff.
 /// </remarks>
 public interface IGame : IDisposable
 {
@@ -52,6 +52,7 @@ public abstract class Game<TCard, TPlayerState> : IGame
 
             await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
+            await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
         }
         catch (Exception exc)
         {

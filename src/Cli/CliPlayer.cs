@@ -1,4 +1,3 @@
-using System.Diagnostics.Eventing.Reader;
 using System.Threading.Channels;
 
 using CoolCardGames.Library.Core.CardTypes;

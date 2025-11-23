@@ -1,5 +1,7 @@
 using System.Diagnostics;
+
 using CoolCardGames.Library.Core.Players;
+
 using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
@@ -50,10 +52,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
     public override string Name => "Hearts";
 
-    protected override object? SettingsToBeLogged => new
-    {
-        UserGameSettings = _settings
-    };
+    protected override object? SettingsToBeLogged => new { UserGameSettings = _settings };
 
     protected override async Task ActuallyPlay(CancellationToken cancellationToken)
     {
@@ -84,7 +83,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         }
 
         await DetermineAndPublishWinnersAndLosers(cancellationToken);
-        await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
     }
 
     public override void Dispose() { }
@@ -177,9 +175,9 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         while (true) // TODO: at risk of infinite loop
         {
             var player = _players[iTrickPlayer.N];
+            var playerState = _gameState.Players[iTrickPlayer.N];
             await _gameEventPublisher.Publish(new HeartsGameEvent.GettingOpeningCardFrom(player.AccountCard), cancellationToken);
-            if (!_gameState.IsHeartsBroken && _gameState.Players[iTrickPlayer.N].Hand
-                    .All(card => card.Value.Suit is Suit.Hearts))
+            if (!_gameState.IsHeartsBroken && playerState.Hand.All(card => card.Value.Suit is Suit.Hearts))
             {
                 await _gameEventPublisher.Publish(new HeartsGameEvent.CannotOpenPassingAction(player.AccountCard), cancellationToken);
                 iTrickPlayer.CycleClockwise();
@@ -225,23 +223,35 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
                 $"After playing a trick, the trick has {trick.Count} cards but expected {NumPlayers} cards");
         }
 
-        var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
-        var highestOnSuitRank =
-            GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
-        var iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card =>
-            card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
-        if (iTrickTakerOffsetFromStartPlayer == -1)
-            throw new InvalidOperationException(
-                $"Could not find a card in the trick with suit {suitToFollow} and rank {highestOnSuitRank}");
-        var iNextTrickStartPlayer =
-            new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
-                .Tick(delta: iTrickTakerOffsetFromStartPlayer);
+        int iTrickTakerOffsetFromStartPlayer = DetermineTrickTakerIndexRelativeToStartPlayer(trick, suitToFollow);
+        var iNextTrickStartPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
+            .Tick(delta: iTrickTakerOffsetFromStartPlayer);
         await _gameEventPublisher.Publish(
             new GameEvent.PlayerTookTrickWithCard<HeartsCard>(_players[iNextTrickStartPlayer].AccountCard,
                 trick[iTrickTakerOffsetFromStartPlayer]),
             cancellationToken);
         _gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
         _gameState.IndexTrickStartPlayer = iNextTrickStartPlayer;
+
+        return;
+
+        // TODO: make this reusable (allow for suit prioritization)
+        //       may want a real Trick type so it can track the playing index with the card(s) played
+        //       Chimera would particularly make this weird
+        static int DetermineTrickTakerIndexRelativeToStartPlayer(Cards<HeartsCard> trick, Suit suitToFollow)
+        {
+            var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
+            var highestOnSuitRank =
+                GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
+            var iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card =>
+                card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
+            if (iTrickTakerOffsetFromStartPlayer == -1)
+            {
+                throw new InvalidOperationException($"Could not find a card in the trick with suit {suitToFollow} and rank {highestOnSuitRank}");
+            }
+
+            return iTrickTakerOffsetFromStartPlayer;
+        }
     }
 
     private async Task ScoreTricks(CancellationToken cancellationToken)
