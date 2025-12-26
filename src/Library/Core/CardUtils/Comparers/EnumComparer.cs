@@ -14,20 +14,25 @@ public class EnumComparer<TEnum>(List<TEnum> suitPriorities) : IComparer<TEnum>
 {
     public int Compare(TEnum x, TEnum y)
     {
-        var xPriority = suitPriorities.FindIndex(suit => suit.Equals(x));
-        if (xPriority == -1)
+        var xIndex = suitPriorities.FindIndex(suit => suit.Equals(x));
+        if (xIndex == -1)
         {
-            xPriority = int.MaxValue;
+            xIndex = int.MaxValue;
         }
 
-        var yPriority = suitPriorities.FindIndex(suit => suit.Equals(y));
-        if (yPriority == -1)
+        var yIndex = suitPriorities.FindIndex(suit => suit.Equals(y));
+        if (yIndex == -1)
         {
-            yPriority = int.MaxValue;
+            yIndex = int.MaxValue;
         }
 
-        return xPriority < yPriority ? -1
-            : xPriority > yPriority ? 1
+        if (xIndex < yIndex)
+        {
+            return -1;
+        }
+
+        return xIndex > yIndex
+            ? 1
             : 0;
     }
 }
