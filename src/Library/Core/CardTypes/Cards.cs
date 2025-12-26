@@ -1,13 +1,43 @@
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CoolCardGames.Library.Core.CardTypes;
 
-public class Cards<TCard> : List<TCard>
+// TODO: don't sort?
+//      I like sorting so it's easier to view when debugging
+//      but then diff games would need to sort differently
+//      maybe have SortedCards which always auto-sorts?
+//      could maybe also want to let players sort differently, but could make a PlayerView or
+//      something to manage that elsewhere. Within a game, there is usually a de facto sorting style
+// TODO: sorting
+//      don't want to duplicate the sorting logic everywhere w/in a game
+//      give Cards<T> something so it auto-sorts? have nullable so opt-in/-out?
+//          this would be real awkward as-is, would need to have Cards not extend List
+// TODO: implement sorting functionality
+
+public partial class Cards<TCard> : IList<TCard>
     where TCard : Card
 {
-    public Cards(int capacity = 0) : base(capacity) { }
+    private readonly List<TCard> _cards;
 
-    public Cards(IEnumerable<TCard> seed) : base(seed) { }
+    public Cards(int capacity = 0)
+    {
+        _cards = new List<TCard>(capacity);
+    }
+
+    public Cards(IEnumerable<TCard> seed)
+    {
+        _cards = [..seed];
+    }
+
+    /// <summary>
+    /// This returns a span to the underlying cards.
+    /// </summary>
+    /// <returns></returns>
+    public Span<TCard> AsSpan()
+    {
+        return CollectionsMarshal.AsSpan(_cards);
+    }
 
     public void RevealAll()
     {
@@ -19,11 +49,6 @@ public class Cards<TCard> : List<TCard>
     {
         foreach (var card in this)
             card.Hidden = true;
-    }
-
-    public Cards<TCard> Sorted()
-    {
-        return [.. this.OrderBy(card => card.Value.Suit).ThenBy(card => card.Value.Rank)];
     }
 
     public override string ToString()

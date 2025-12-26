@@ -6,17 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
-// TODO: don't sort?
-//      I like sorting so it's easier to view when debugging
-//      but then diff games would need to sort differently
-//      maybe have SortedCards which always auto-sorts?
-//      could maybe also want to let players sort differently, but could make a PlayerView or
-//      something to manage that elsewhere. Within a game, there is usually a de facto sorting style
-// TODO: sorting
-//      don't want to duplicate the sorting logic everywhere w/in a game
-//      give Cards<T> something so it auto-sorts? have nullable so opt-in/-out?
-//          this would be real awkward as-is, would need to have Cards not extend List
-
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
@@ -68,13 +57,13 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
                 throw new InvalidOperationException($"Could not find a player with the {nameof(TwoOfClubs)}");
             }
 
-            while (_gameState.Players[0].Hand.Any())
+            while (_gameState.Players[0].Hand.Count != 0)
             {
                 await PlayOutTrick(cancellationToken);
                 _gameState.IsFirstTrick = false;
             }
 
-            if (_gameState.Players.Any(player => player.Hand.Any()))
+            if (_gameState.Players.Any(player => player.Hand.Count != 0))
             {
                 throw new InvalidOperationException("Some players have cards left despite the 0th player having none");
             }
@@ -123,7 +112,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         for (var i = 0; i < NumPlayers; i++)
         {
-            var hand = hands[i].Sorted();
+            var hand = hands[i];
             _gameState.Players[i].Hand = hand;
             await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].AccountCard, hand.Count),
                 cancellationToken);
@@ -160,7 +149,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
             var cardsToPass = takeCardsFromPlayerTasks[iSourcePlayer].Result;
             _gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
-            _gameState.Players[iTargetPlayer].Hand = _gameState.Players[iTargetPlayer].Hand.Sorted();
+            _gameState.Players[iTargetPlayer].Hand = _gameState.Players[iTargetPlayer].Hand;
             await _gameEventPublisher.Publish(
                 new GameEvent.PlayerReceivedHiddenCards(_players[iTargetPlayer].AccountCard, cardsToPass.Count),
                 cancellationToken);
@@ -241,6 +230,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
             var highestOnSuitRank =
                 GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
+            var xs = new List<int>();
             var iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card =>
                 card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
             if (iTrickTakerOffsetFromStartPlayer == -1)

@@ -53,7 +53,7 @@ public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILo
         where TCard : Card
     {
         logger.LogInformation("Shuffling the deck");
-        rng.Shuffle(CollectionsMarshal.AsSpan(deck));
+        rng.Shuffle(deck.AsSpan());
         await gameEventPublisher.Publish(GameEvent.DeckShuffled.Singleton, cancellationToken);
         return deck;
     }
