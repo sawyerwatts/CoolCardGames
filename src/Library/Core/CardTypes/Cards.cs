@@ -13,7 +13,7 @@ namespace CoolCardGames.Library.Core.CardTypes;
 //      don't want to duplicate the sorting logic everywhere w/in a game
 //      give Cards<T> something so it auto-sorts? have nullable so opt-in/-out?
 //          this would be real awkward as-is, would need to have Cards not extend List
-// TODO: implement sorting functionality
+// TODO: implement sorting functionality (IComparer?)
 
 public partial class Cards<TCard> : IList<TCard>
     where TCard : Card
