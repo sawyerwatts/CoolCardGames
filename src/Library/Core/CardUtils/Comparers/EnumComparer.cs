@@ -7,7 +7,7 @@ namespace CoolCardGames.Library.Core.CardUtils.Comparers;
 /// <param name="suitPriorities">
 /// Elements that are earlier in the list are considered a higher priority than elements later in the list.
 /// <br />
-/// If a item is not in this list, it is considered lower in priority than anything in the list.
+/// If an item is not in this list, it is considered lower in priority than anything in the list.
 /// </param>
 public class EnumComparer<TEnum>(List<TEnum> suitPriorities) : IComparer<TEnum>
     where TEnum : struct, Enum
