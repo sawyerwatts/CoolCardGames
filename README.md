@@ -17,6 +17,8 @@ Here is the ***planned*** architecture (we'll see how long it takes for me to lo
 
 ### High-level data flow within a game instance
 
+Note that unbound channels are used like an event bus.
+
 ![dataFlow](./docs/images/dataFlow.png)
 
 ### Build and Test
