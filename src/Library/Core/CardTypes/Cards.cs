@@ -3,8 +3,6 @@ using System.Text;
 
 namespace CoolCardGames.Library.Core.CardTypes;
 
-// TODO: how does trick comparison work again? might wanna incorporate; DetermineTrickTakerIndexRelativeToStartPlayer
-
 public partial class Cards<TCard> : IList<TCard>
     where TCard : Card
 {

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 
+using CoolCardGames.Library.Core.CardUtils.Comparers;
 using CoolCardGames.Library.Core.Players;
 
 using Microsoft.Extensions.Logging;
@@ -17,15 +18,15 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     private readonly IDealer _dealer;
     private readonly HeartsSettings _settings;
 
-    private static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparer<HeartsCard>(
-        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList(),
+    private static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
         suitPriorities:
         [
             Suit.Spades,
             Suit.Hearts,
             Suit.Clubs,
             Suit.Diamonds,
-        ]);
+        ],
+        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList());
 
     /// <remarks>
     /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
@@ -236,6 +237,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         return;
 
+        // TODO: pull into a helper or something?
         static int DetermineTrickTakerIndexRelativeToStartPlayer(Cards<HeartsCard> trick, Suit suitToFollow)
         {
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
