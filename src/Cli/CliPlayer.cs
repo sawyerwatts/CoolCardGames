@@ -11,6 +11,8 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// TODO: rename CardValue and Card.Value to CardFace
+
 // TODO: make left split for history and right split for prompts
 // https://spectreconsole.net/widgets/layout
 

@@ -1,7 +1,5 @@
 namespace CoolCardGames.Library.Core.CardUtils.Comparers;
 
-// TODO: rename CardValue and Card.Value to CardFace
-
 /// <summary>
 /// </summary>
 /// <param name="suitPriorities">
