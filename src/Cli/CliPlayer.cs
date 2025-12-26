@@ -11,6 +11,9 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
+// TODO: make left split for history and right split for prompts
+// https://spectreconsole.net/widgets/layout
+
 public partial class CliPlayer<TCard>(
     PlayerAccountCard playerAccountCard,
     IOptionsMonitor<CliPlayerUserSettings> userSettings,

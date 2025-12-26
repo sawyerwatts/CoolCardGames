@@ -6,6 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library.Games.Hearts;
 
+// TODO: don't sort?
+//      I like sorting so it's easier to view when debugging
+//      but then diff games would need to sort differently
+//      maybe have SortedCards which always auto-sorts?
+//      could maybe also want to let players sort differently, but could make a PlayerView or
+//      something to manage that elsewhere. Within a game, there is usually a de facto sorting style
+// TODO: sorting
+//      don't want to duplicate the sorting logic everywhere w/in a game
+//      give Cards<T> something so it auto-sorts? have nullable so opt-in/-out?
+//          this would be real awkward as-is, would need to have Cards not extend List
+
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
