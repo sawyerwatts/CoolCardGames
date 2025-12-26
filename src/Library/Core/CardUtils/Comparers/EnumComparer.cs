@@ -1,5 +1,7 @@
 namespace CoolCardGames.Library.Core.CardUtils.Comparers;
 
+// TODO: test this and the other comparer
+
 /// <summary>
 /// </summary>
 /// <param name="suitPriorities">
