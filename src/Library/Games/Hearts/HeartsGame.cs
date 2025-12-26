@@ -17,6 +17,16 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     private readonly IDealer _dealer;
     private readonly HeartsSettings _settings;
 
+    private static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparer<HeartsCard>(
+        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList(),
+        suitPriorities:
+        [
+            Suit.Spades,
+            Suit.Hearts,
+            Suit.Clubs,
+            Suit.Diamonds,
+        ]);
+
     /// <remarks>
     /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
     /// </remarks>
@@ -113,6 +123,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         for (var i = 0; i < NumPlayers; i++)
         {
             var hand = hands[i];
+            hand.CardComparer = HandSortingComparer;
             _gameState.Players[i].Hand = hand;
             await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].AccountCard, hand.Count),
                 cancellationToken);
@@ -185,7 +196,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         var trick = new Cards<HeartsCard>(capacity: NumPlayers) { openingCard };
         var suitToFollow = openingCard.Value.Suit;
 
-        while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
+       while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
             var chosenCard = await PromptForValidCardAndPlay(
                 iPlayer: iTrickPlayer.N,
@@ -230,7 +241,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
             var highestOnSuitRank =
                 GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
-            var xs = new List<int>();
             var iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card =>
                 card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
             if (iTrickTakerOffsetFromStartPlayer == -1)

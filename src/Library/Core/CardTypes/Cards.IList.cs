@@ -21,11 +21,19 @@ public partial class Cards<TCard>
     public void Add(TCard item)
     {
         _cards.Add(item);
+        if (_cardComparer is not null)
+        {
+            _cards.Sort(_cardComparer);
+        }
     }
 
     public void AddRange(IEnumerable<TCard> items)
     {
         _cards.AddRange(items);
+        if (_cardComparer is not null)
+        {
+            _cards.Sort(_cardComparer);
+        }
     }
 
     public void Clear()
@@ -59,6 +67,10 @@ public partial class Cards<TCard>
 
     public void Insert(int index, TCard item)
     {
+        if (_cardComparer is not null)
+        {
+            throw new NotSupportedException($"Cannot insert a card ({item}) into an arbitrary index ({index}) while card sorting is enabled");
+        }
         _cards.Insert(index, item);
     }
 
@@ -70,7 +82,14 @@ public partial class Cards<TCard>
     public TCard this[int index]
     {
         get => _cards[index];
-        set => _cards[index] = value;
+        set
+        {
+            if (_cardComparer is not null)
+            {
+                throw new NotSupportedException($"Cannot insert a card ({value}) into an arbitrary index ({index}) while card sorting is enabled");
+            }
+            _cards[index] = value;
+        }
     }
 
     public int FindIndex(Predicate<TCard> match) => _cards.FindIndex(match);

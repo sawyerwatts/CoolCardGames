@@ -3,21 +3,33 @@ using System.Text;
 
 namespace CoolCardGames.Library.Core.CardTypes;
 
-// TODO: don't sort?
-//      I like sorting so it's easier to view when debugging
-//      but then diff games would need to sort differently
-//      maybe have SortedCards which always auto-sorts?
-//      could maybe also want to let players sort differently, but could make a PlayerView or
-//      something to manage that elsewhere. Within a game, there is usually a de facto sorting style
-// TODO: sorting
-//      don't want to duplicate the sorting logic everywhere w/in a game
-//      give Cards<T> something so it auto-sorts? have nullable so opt-in/-out?
-//          this would be real awkward as-is, would need to have Cards not extend List
-// TODO: implement sorting functionality (IComparer?)
+// TODO: how does trick comparison work again? might wanna incorporate; DetermineTrickTakerIndexRelativeToStartPlayer
 
 public partial class Cards<TCard> : IList<TCard>
     where TCard : Card
 {
+    /// <summary>
+    /// When this value is not null, inserted cards will be sorted by comparer.
+    /// <br />
+    /// When this value is set to a non-null value, the existing cards will be sorted.
+    /// </summary>
+    public IComparer<TCard>? CardComparer
+    {
+        get => _cardComparer;
+        set
+        {
+            _cardComparer = value;
+            if (value is null)
+            {
+                return;
+            }
+
+            _cards.Sort(_cardComparer);
+        }
+    }
+
+    private IComparer<TCard>? _cardComparer = null;
+
     private readonly List<TCard> _cards;
 
     public Cards(int capacity = 0)
