@@ -33,6 +33,8 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
+- `HeartsGameFactory` needs to be refactored into a `GameHarness` proxy or similar so that the
+  resources can be cleaned up post-game completion
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
   that in players
 - Create `Hand` and `Trick` types (with factories)
