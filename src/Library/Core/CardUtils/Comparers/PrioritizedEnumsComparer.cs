@@ -1,26 +1,24 @@
 namespace CoolCardGames.Library.Core.CardUtils.Comparers;
 
-// TODO: test this and the other comparer
-
 /// <summary>
 /// </summary>
-/// <param name="suitPriorities">
+/// <param name="priorities">
 /// Elements that are earlier in the list are considered a higher priority than elements later in the list.
 /// <br />
 /// If an item is not in this list, it is considered lower in priority than anything in the list.
 /// </param>
-public class EnumComparer<TEnum>(List<TEnum> suitPriorities) : IComparer<TEnum>
+public class PrioritizedEnumsComparer<TEnum>(List<TEnum> priorities) : IComparer<TEnum>
     where TEnum : struct, Enum
 {
     public int Compare(TEnum x, TEnum y)
     {
-        var xIndex = suitPriorities.FindIndex(suit => suit.Equals(x));
+        var xIndex = priorities.FindIndex(suit => suit.Equals(x));
         if (xIndex == -1)
         {
             xIndex = int.MaxValue;
         }
 
-        var yIndex = suitPriorities.FindIndex(suit => suit.Equals(y));
+        var yIndex = priorities.FindIndex(suit => suit.Equals(y));
         if (yIndex == -1)
         {
             yIndex = int.MaxValue;
