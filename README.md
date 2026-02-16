@@ -57,7 +57,6 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 - Actually impl `PlayerBridge`
     - Timeout requests probably
     - It'd be slick to refactor `CliPlayer`'s sync logic here (or "in" `IPlayer`)
-- Invert the Priority lists to go from highToLow to lowToHigh?
 
 ### Other Platforms and Online Mode
 
