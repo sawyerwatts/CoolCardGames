@@ -47,6 +47,12 @@ dotnet_diagnostic.CA1848.severity = none
 # CA1805: indicate when a property is explicitly initialized to its default value.
 dotnet_diagnostic.CA1805.severity = none
 
+# CA1873: Evaluation of this argument may be expensive and unnecessary if logging is disabled
+dotnet_diagnostic.CA1873.severity = none
+
+# CA1515: Because an application's API isn't typically referenced from outside the assembly, types can be made internal
+dotnet_diagnostic.CA1515.severity = none
+
 # CS9113: Parameter is unread
 dotnet_diagnostic.CS9113.severity = suggestion
 
