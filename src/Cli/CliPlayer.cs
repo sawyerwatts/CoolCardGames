@@ -25,7 +25,7 @@ public partial class CliPlayer<TCard>(
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
-    private readonly object _lastEventIdLock = new();
+    private readonly Lock _lastEventIdLock = new();
     private uint _lastRenderedEventId = 0;
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Attempting to grab lock in method {MethodName}")]
