@@ -35,6 +35,8 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 - `HeartsGameFactory` needs to be refactored into a `GameHarness` proxy or similar so that the
   resources can be cleaned up post-game completion
+- Decompose `HeartsGame` to be more testable
+- Update TUI: make left split for history and right split for prompts ([docs](https://spectreconsole.net/widgets/layout))
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
   that in players
 - Create `Hand` and `Trick` types (with factories)
@@ -48,7 +50,6 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
     - support configuring settings, like for the game n cli itself
 - Update docs and architecture diagram to better detail interactions (and setup?)
 - Misc
-    - Decompose `HeartsGame` to be more testable
     - Since `IPlayer` is specific to a specific card type, need to construct one per game, so could
       inject the channel into the player n take a player factory
     - revisit `HeartsGame` and `HeartsGameFactory` and see how they can be reused n cleaned up
