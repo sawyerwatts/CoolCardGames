@@ -33,8 +33,6 @@ Here's the [prototype repo](https://github.com/sawyerwatts/CardGamesPrototype).
 
 ### Short-Term
 
-- `HeartsGameFactory` needs to be refactored into a `GameHarness` proxy or similar so that the
-  resources can be cleaned up post-game completion
 - Decompose `HeartsGame` to be more testable
 - Update TUI: make left split for history and right split for prompts ([docs](https://spectreconsole.net/widgets/layout))
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
