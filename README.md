@@ -21,7 +21,7 @@ Note that unbound channels are used like an event bus.
 
 It's definitely a lil weird (at least for .NET) to use channels and threads this way, but I have
 ambitions of making a cli app (and maybe also a desktop app) for this, so keeping everything in a
-single binary is desired.t
+single binary is desired.
 
 ![dataFlow](./docs/images/dataFlow.png)
 
