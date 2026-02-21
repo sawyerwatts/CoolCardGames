@@ -60,17 +60,7 @@ public class Driver(
                     aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
                 ],
                 cancellationToken: gameCancellationToken);
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await game.Play(gameCancellationToken);
-                }
-                finally
-                {
-                    game.Dispose();
-                }
-            }, gameCancellationToken);
+            game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
 
             await cliPlayer.AttachSessionToCurrentGame(gameCancellationToken);
         }

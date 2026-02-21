@@ -38,6 +38,11 @@ public partial class CliPlayer<TCard>(
     public partial void LogDelayingBeforeGrabbingLock(int milliseconds, string methodName);
 
     /// <summary>
+    /// Since players receive game events to their <see cref="CurrentGamesEvents"/> channel once
+    /// they are associated with a game and that game begins running, this method will "attach"
+    /// the current thread to that channel and allow the player to view events and respond to
+    /// prompts.
+    /// <br />
     /// This will complete once the game completes or <see cref="CurrentGamesEvents"/> is closed.
     /// </summary>
     /// <param name="cancellationToken"></param>
@@ -74,43 +79,41 @@ public partial class CliPlayer<TCard>(
         }
 
         logger.LogWarning("The current game events channel closed without the game ending normally; closing the attachment to this CLI session");
+    }
 
-        return;
-
-        bool Handle(GameEventEnvelope envelope)
+    private bool Handle(GameEventEnvelope envelope)
+    {
+        if (envelope.GameEvent is GameEvent.GameEnded)
         {
-            if (envelope.GameEvent is GameEvent.GameEnded)
-            {
-                logger.LogInformation("The game ended; closing the attachment to this CLI session");
-                _lastRenderedEventId = 0;
-                return true;
-            }
+            logger.LogInformation("The game ended; closing the attachment to this CLI session");
+            _lastRenderedEventId = 0;
+            return true;
+        }
 
+        try
+        {
+            AnsiConsole.WriteLine(envelope.GameEvent.Summary);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "An exception occurred while rendering {GameEventEnvelope} to CLI", envelope);
             try
             {
-                AnsiConsole.WriteLine(envelope.GameEvent.Summary);
+                AnsiConsole.WriteLine("An unexpected error");
             }
-            catch (Exception exc)
+            catch (Exception e)
             {
-                logger.LogError(exc, "An exception occurred while rendering {GameEventEnvelope} to CLI", envelope);
-                try
-                {
-                    AnsiConsole.WriteLine("An unexpected error");
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e, "Could not write failure message to CLI");
-                }
-
-                throw new FailedToApplyGameEventToSessionException(envelope, "An exception occurred while rendering to CLI", exc);
-            }
-            finally
-            {
-                _lastRenderedEventId = envelope.Id;
+                logger.LogError(e, "Could not write failure message to CLI");
             }
 
-            return false;
+            throw new FailedToApplyGameEventToSessionException(envelope, "An exception occurred while rendering to CLI", exc);
         }
+        finally
+        {
+            _lastRenderedEventId = envelope.Id;
+        }
+
+        return false;
     }
 
     public async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)

@@ -12,59 +12,68 @@ public interface IGame : IDisposable
 {
     string Name { get; }
     Task Play(CancellationToken cancellationToken);
+    void PlayAndDisposeInBackgroundThread(CancellationToken cancellationToken);
 }
 
-public abstract class Game<TCard, TPlayerState> : IGame
+public abstract class Game<TCard, TPlayerState>(
+    IGameEventPublisher gameEventPublisher,
+    GameState<TCard, TPlayerState> gameState,
+    IReadOnlyList<IPlayer<TCard>> players,
+    ILogger<Game<TCard, TPlayerState>> logger)
+    : IGame
     where TCard : Card
     where TPlayerState : PlayerState<TCard>
 {
-    private readonly IGameEventPublisher _gameEventPublisher;
-    private readonly GameState<TCard, TPlayerState> _gameState;
-    private readonly IReadOnlyList<IPlayer<TCard>> _players;
-    private readonly ILogger<Game<TCard, TPlayerState>> _logger;
-
-    protected Game(
-        IGameEventPublisher gameEventPublisher,
-        GameState<TCard, TPlayerState> gameState,
-        IReadOnlyList<IPlayer<TCard>> players,
-        ILogger<Game<TCard, TPlayerState>> logger)
-    {
-        _gameEventPublisher = gameEventPublisher;
-        _gameState = gameState;
-        _players = players;
-        _logger = logger;
-    }
-
     public abstract string Name { get; }
 
     protected abstract object? SettingsToBeLogged { get; }
+
+    public void PlayAndDisposeInBackgroundThread(CancellationToken cancellationToken)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Play(cancellationToken);
+            }
+            // Play() logs if an exception occurs so this doesn't need to.
+            finally
+            {
+                try
+                {
+                    Dispose();
+                }
+                catch (Exception exc)
+                {
+                    logger.LogCritical(exc, "Game instance of {GameName} encountered an uncaught exception while disposing", Name);
+                }
+            }
+        }, cancellationToken);
+    }
 
     public async Task Play(CancellationToken cancellationToken)
     {
         try
         {
-            using var loggingScope = _logger.BeginScope(
-                "{GameName} game with ID {GameId} and settings {Settings}",
-                Name, Guid.NewGuid(), SettingsToBeLogged);
-            _logger.LogInformation("Beginning a game");
-            for (var i = 0; i < _players.Count; i++)
-                _logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, _players[i].AccountCard);
+            logger.LogInformation("Beginning a game with settings {Settings}", SettingsToBeLogged);
+            for (var i = 0; i < players.Count; i++)
+                logger.LogInformation("Player at index {PlayerIndex} is {PlayerCard}", i, players[i].AccountCard);
 
-            await _gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
+            await gameEventPublisher.Publish(new GameEvent.GameStarted(Name), cancellationToken);
             await ActuallyPlay(cancellationToken);
-            await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
+            await gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: true), cancellationToken);
         }
         catch (Exception exc)
         {
-            _logger.LogCritical(exc, "A game crashed due to an uncaught exception");
+            logger.LogCritical(exc, "A game crashed due to an uncaught exception");
 
             try
             {
-                await _gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: false), cancellationToken);
+                await gameEventPublisher.Publish(new GameEvent.GameEnded(Name, CompletedNormally: false), cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Could not publish the game completion event");
+                logger.LogError(e, "Could not publish the game completion event");
             }
         }
     }
@@ -95,10 +104,10 @@ public abstract class Game<TCard, TPlayerState> : IGame
         CancellationToken cancellationToken,
         bool reveal = true)
     {
-        var player = _players[iPlayer];
-        var hand = _gameState.Players[iPlayer].Hand;
+        var player = players[iPlayer];
+        var hand = gameState.Players[iPlayer].Hand;
 
-        var syncEvent = await _gameEventPublisher.Publish(
+        var syncEvent = await gameEventPublisher.Publish(
             gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),
             cancellationToken: cancellationToken);
 
@@ -123,13 +132,13 @@ public abstract class Game<TCard, TPlayerState> : IGame
 
         if (cardToPlay.Hidden)
         {
-            await _gameEventPublisher.Publish(
+            await gameEventPublisher.Publish(
                 gameEvent: new GameEvent.PlayerPlayedHiddenCard(player.AccountCard),
                 cancellationToken: cancellationToken);
         }
         else
         {
-            await _gameEventPublisher.Publish(
+            await gameEventPublisher.Publish(
                 gameEvent: new GameEvent.PlayerPlayedCard<TCard>(player.AccountCard, cardToPlay),
                 cancellationToken: cancellationToken);
         }
@@ -155,10 +164,10 @@ public abstract class Game<TCard, TPlayerState> : IGame
         CancellationToken cancellationToken,
         bool reveal = true)
     {
-        var player = _players[iPlayer];
-        var hand = _gameState.Players[iPlayer].Hand;
+        var player = players[iPlayer];
+        var hand = gameState.Players[iPlayer].Hand;
 
-        var syncEvent = await _gameEventPublisher.Publish(
+        var syncEvent = await gameEventPublisher.Publish(
             gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),
             cancellationToken: cancellationToken);
 
@@ -193,14 +202,14 @@ public abstract class Game<TCard, TPlayerState> : IGame
 
         if (cardsToPlay.Any(card => card.Hidden))
         {
-            await _gameEventPublisher.Publish(
+            await gameEventPublisher.Publish(
                 gameEvent: new GameEvent.PlayerPlayedHiddenCards(player.AccountCard, cardsToPlay.Count(card => card.Hidden)),
                 cancellationToken: cancellationToken);
         }
 
         if (cardsToPlay.Any(card => !card.Hidden))
         {
-            await _gameEventPublisher.Publish(
+            await gameEventPublisher.Publish(
                 gameEvent: new GameEvent.PlayerPlayedCards<TCard>(player.AccountCard, new Cards<TCard>(cardsToPlay.Where(card => !card.Hidden))),
                 cancellationToken: cancellationToken);
         }

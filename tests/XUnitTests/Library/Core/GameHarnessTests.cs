@@ -10,20 +10,20 @@ using NSubstitute.ExceptionExtensions;
 
 namespace CoolCardGames.XUnitTests.Library.Core;
 
-public class GameProxyChannelManagerTests
+public class GameHarnessTests
 {
     [Fact]
-    public async Task TestHappy()
+    public async Task TestThatChannelFanOutCompletesWhenGameCompletesNormally()
     {
         var game = Substitute.For<IGame>();
         game.Play(CancellationToken.None).Returns(Task.CompletedTask);
 
         var eventChannel = Channel.CreateUnbounded<GameEventEnvelope>();
         var channelFanOut = new ChannelFanOut<GameEventEnvelope>(eventChannel.Reader, NullLogger<ChannelFanOut<GameEventEnvelope>>.Instance);
-        using (var proxy = new GameProxyChannelManager(game, eventChannel, channelFanOut))
+        using (var harness = new GameHarness(game, eventChannel, channelFanOut, NullLogger<GameHarness>.Instance, []))
         {
             Assert.False(channelFanOut.Completed);
-            await proxy.Play(CancellationToken.None);
+            await harness.Play(CancellationToken.None);
         }
 
         // It may take a bit for the disposal to complete.
@@ -41,17 +41,17 @@ public class GameProxyChannelManagerTests
     }
 
     [Fact]
-    public async Task TestBad()
+    public async Task TestThatChannelFanOutCompletesWhenGameCrashes()
     {
         var game = Substitute.For<IGame>();
         game.Play(CancellationToken.None).ThrowsAsync(new InvalidOperationException("Uh oh"));
 
         var eventChannel = Channel.CreateUnbounded<GameEventEnvelope>();
         var channelFanOut = new ChannelFanOut<GameEventEnvelope>(eventChannel.Reader, NullLogger<ChannelFanOut<GameEventEnvelope>>.Instance);
-        using (var proxy = new GameProxyChannelManager(game, eventChannel, channelFanOut))
+        using (var harness = new GameHarness(game, eventChannel, channelFanOut, NullLogger<GameHarness>.Instance, []))
         {
             Assert.False(channelFanOut.Completed);
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await proxy.Play(CancellationToken.None));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await harness.Play(CancellationToken.None));
         }
 
         // It may take a bit for the disposal to complete.

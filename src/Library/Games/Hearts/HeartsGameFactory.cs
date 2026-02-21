@@ -13,7 +13,8 @@ public class HeartsGameFactory(
     ChannelGameEventPublisherFactory channelGameEventPublisherFactory,
     IDealerFactory dealerFactory,
     IOptionsMonitor<HeartsSettings> settingsMonitor,
-    ILogger<HeartsGame> logger)
+    ILogger<HeartsGame> gameLogger,
+    ILogger<GameHarness> harnessLogger)
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
@@ -47,8 +48,8 @@ public class HeartsGameFactory(
             player.CurrentGamesEvents = chanReader;
         }
 
-        var hearts = new HeartsGame(eventPublisher, new HeartsGameState(), players, dealer, settings, logger);
-        var manager = new GameProxyChannelManager(hearts, eventChannel, channelFanOut);
-        return manager;
+        var hearts = new HeartsGame(eventPublisher, new HeartsGameState(), players, dealer, settings, gameLogger);
+        var harness = new GameHarness(hearts, eventChannel, channelFanOut, harnessLogger, resourceCleanUpActions: []);
+        return harness;
     }
 }
