@@ -50,13 +50,33 @@ public class GameHarness(
     public void Dispose()
     {
         logger.LogInformation("Disposing of an instance of game {GameName}", game.Name);
-        eventChannel.Writer.Complete();
+        var exceptionsAndNulls = new List<Exception?>();
+        exceptionsAndNulls.Add(Catcher(() => eventChannel.Writer.Complete()));
         foreach (Action resourceCleanUpAction in resourceCleanUpActions)
         {
-            resourceCleanUpAction();
+            exceptionsAndNulls.Add(Catcher(() => resourceCleanUpAction()));
         }
 
-        game.Dispose();
+        exceptionsAndNulls.Add(Catcher(game.Dispose));
         GC.SuppressFinalize(this);
+
+        IEnumerable<Exception> exceptions = exceptionsAndNulls.Where(e => e is not null)!;
+        if (exceptions.Any())
+            throw new AggregateException("Could not dispose of all resources", exceptions);
+
+        return;
+
+        static Exception? Catcher(Action action)
+        {
+            try
+            {
+                action();
+                return null;
+            }
+            catch (Exception exc)
+            {
+                return exc;
+            }
+        }
     }
 }
