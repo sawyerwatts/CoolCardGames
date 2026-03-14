@@ -12,7 +12,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     private readonly IGameEventPublisher _gameEventPublisher;
     private readonly HeartsGameState _gameState;
     private readonly IHeartsSetupRound _setupRound;
-    private readonly IReadOnlyList<IPlayer<HeartsCard>> _players;
+    private readonly IReadOnlyList<Player<HeartsCard>> _players;
     private readonly HeartsSettings _settings;
 
     /// <remarks>
@@ -22,7 +22,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         IGameEventPublisher gameEventPublisher,
         HeartsGameState gameState,
         IHeartsSetupRound setupRound,
-        IReadOnlyList<IPlayer<HeartsCard>> players,
+        IReadOnlyList<Player<HeartsCard>> players,
         HeartsSettings settings,
         ILogger<HeartsGame> logger)
         : base(gameEventPublisher, gameState, players, logger)
@@ -92,8 +92,8 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
                 break;
         }
 
-        var openingCard = await PromptForValidCardAndPlay(
-            iPlayer: _gameState.IndexTrickStartPlayer,
+        var openingCard = await _players[_gameState.IndexTrickStartPlayer].PromptForValidCardAndPlay(
+            cards: _gameState.Players[_gameState.IndexTrickStartPlayer].Hand,
             validateChosenCard: (hand, iCardToPlay) => _gameState.IsFirstTrick
                 ? hand[iCardToPlay].Value is TwoOfClubs
                 : _gameState.IsHeartsBroken || hand[iCardToPlay].Value.Suit is not Suit.Hearts,
@@ -101,10 +101,10 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         var trick = new Cards<HeartsCard>(capacity: NumPlayers) { openingCard };
         var suitToFollow = openingCard.Value.Suit;
 
-       while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
+        while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
-            var chosenCard = await PromptForValidCardAndPlay(
-                iPlayer: iTrickPlayer.N,
+            var chosenCard = await _players[iTrickPlayer.N].PromptForValidCardAndPlay(
+                cards: _gameState.Players[iTrickPlayer.N].Hand,
                 validateChosenCard: (hand, iCardToPlay) =>
                 {
                     if (!CheckPlayedCard.IsSuitFollowedIfPossible(suitToFollow, hand, iCardToPlay))

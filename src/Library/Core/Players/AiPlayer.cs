@@ -3,20 +3,20 @@ using System.Threading.Channels;
 
 namespace CoolCardGames.Library.Core.Players;
 
-public class AiPlayer<TCard>(PlayerAccountCard playerAccountCard) : IPlayer<TCard>
+public class AiPlayer<TCard>(PlayerAccountCard playerAccountCard) : Player<TCard>
     where TCard : Card
 {
-    public PlayerAccountCard AccountCard => playerAccountCard;
+    public override PlayerAccountCard AccountCard => playerAccountCard;
 
     public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
 
-    public Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return Task.FromResult(
             RandomNumberGenerator.GetInt32(fromInclusive: 0, toExclusive: cards.Count));
     }
 
-    public Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         return Task.FromResult<List<int>>(
         [

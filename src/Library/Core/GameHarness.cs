@@ -17,13 +17,13 @@ namespace CoolCardGames.Library.Core;
 /// <param name="game"></param>
 /// <param name="eventChannel"></param>
 /// <param name="channelFanOut"></param>
-/// <param name="resourceCleanUpActions"></param>
+/// <param name="disposals"></param>
 public class GameHarness(
     IGame game,
     Channel<GameEventEnvelope> eventChannel,
     ChannelFanOut<GameEventEnvelope> channelFanOut,
     ILogger<GameHarness> logger,
-    IEnumerable<Action> resourceCleanUpActions)
+    IEnumerable<IDisposable> disposals)
     : IGame
 {
     public string Name => game.Name;
@@ -52,9 +52,9 @@ public class GameHarness(
         logger.LogInformation("Disposing of an instance of game {GameName}", game.Name);
         var exceptionsAndNulls = new List<Exception?>();
         exceptionsAndNulls.Add(Catcher(() => eventChannel.Writer.Complete()));
-        foreach (Action resourceCleanUpAction in resourceCleanUpActions)
+        foreach (IDisposable resourceCleanUpAction in disposals)
         {
-            exceptionsAndNulls.Add(Catcher(() => resourceCleanUpAction()));
+            exceptionsAndNulls.Add(Catcher(() => resourceCleanUpAction.Dispose()));
         }
 
         exceptionsAndNulls.Add(Catcher(game.Dispose));

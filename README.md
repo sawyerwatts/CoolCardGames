@@ -36,6 +36,7 @@ single binary is desired.
 ### Short-Term
 
 - Decompose `HeartsGame` to be more testable
+  - TODO: Will need to update diagrams, Player now validates card
 - Update TUI: make left split for history and right split for prompts ([docs](https://spectreconsole.net/widgets/layout))
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
   that in players

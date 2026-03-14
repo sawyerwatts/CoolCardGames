@@ -10,7 +10,7 @@ public interface IHeartsSetupRound
     Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken);
 }
 
-public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<IPlayer<HeartsCard>> players) : IHeartsSetupRound
+public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<Player<HeartsCard>> players) : IHeartsSetupRound
 {
     public static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
         suitPriorities:
@@ -72,8 +72,8 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);
         for (var i = 0; i < HeartsGame.NumPlayers; i++)
         {
-            var task = PromptForValidCardsAndPlay(
-                iPlayer: i,
+            var task = players[i].PromptForValidCardsAndPlay(
+                cards: gameState.Players[i].Hand,
                 validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
                 cancellationToken,
                 reveal: false);

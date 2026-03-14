@@ -18,7 +18,7 @@ public class HeartsGameFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public IGame Make(List<IPlayer<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
+    public IGame Make(List<Player<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
     {
         if (players.Count != HeartsGame.NumPlayers)
             throw new ArgumentException($"{nameof(players)} must have {HeartsGame.NumPlayers} elements, but it has {players.Count} elements");
@@ -37,6 +37,8 @@ public class HeartsGameFactory(
             }
         }
 
+        List<IDisposable> disposals = [];
+
         var eventChannel = Channel.CreateUnbounded<GameEventEnvelope>();
         var eventPublisher = channelGameEventPublisherFactory.Make(eventChannel.Writer);
         var dealer = dealerFactory.Make(eventPublisher);
@@ -45,12 +47,13 @@ public class HeartsGameFactory(
         foreach (var player in players)
         {
             var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
-            player.CurrentGamesEvents = chanReader;
+            var disposal = player.JoinGame(eventChannel.Reader, eventPublisher);
+            disposals.Add(disposal);
         }
 
         var setupRound = new HeartsSetupRound(dealer, eventPublisher, players);
         var hearts = new HeartsGame(eventPublisher, new HeartsGameState(), setupRound, players, settings, gameLogger);
-        var harness = new GameHarness(hearts, eventChannel, channelFanOut, harnessLogger, resourceCleanUpActions: []);
+        var harness = new GameHarness(hearts, eventChannel, channelFanOut, harnessLogger, disposals);
         return harness;
     }
 }

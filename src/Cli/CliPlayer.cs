@@ -16,11 +16,9 @@ public partial class CliPlayer<TCard>(
     IOptionsMonitor<CliPlayerUserSettings> userSettings,
     IOptionsMonitor<CliPlayerSystemSettings> systemSettings,
     ILogger<CliPlayer<TCard>> logger)
-    : IPlayer<TCard> where TCard : Card
+    : Player<TCard> where TCard : Card
 {
-    public PlayerAccountCard AccountCard => playerAccountCard;
-
-    public ChannelReader<GameEventEnvelope>? CurrentGamesEvents { get; set; }
+    public override PlayerAccountCard AccountCard => playerAccountCard;
 
     private readonly Lock _lastEventIdLock = new();
     private uint _lastRenderedEventId = 0;
@@ -55,12 +53,12 @@ public partial class CliPlayer<TCard>(
     /// </exception>
     public async Task AttachSessionToCurrentGame(CancellationToken cancellationToken)
     {
-        if (CurrentGamesEvents is null)
-            throw new NoCurrentGameToAttachException($"Cannot attach the terminal's session to this CLI player because {nameof(CurrentGamesEvents)} is not ready to receive game events");
+        if (CurrGameEvents is null)
+            throw new NoCurrentGameToAttachException($"Cannot attach the terminal's session to this CLI player because {nameof(CurrGameEvents)} is not ready to receive game events");
         using var loggingScope = logger.BeginScope("Account card {AccountCard}", AccountCard);
         logger.LogInformation("Attaching current game's events to this CLI session");
 
-        await foreach (var envelope in CurrentGamesEvents.ReadAllAsync(cancellationToken))
+        await foreach (var envelope in CurrGameEvents.ReadAllAsync(cancellationToken))
         {
             bool shouldReturn;
             LogGrabbingLock(nameof(AttachSessionToCurrentGame));
@@ -116,7 +114,7 @@ public partial class CliPlayer<TCard>(
         return false;
     }
 
-    public async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for a card to play");
@@ -134,7 +132,7 @@ public partial class CliPlayer<TCard>(
         return iCardToPlay;
     }
 
-    public async Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override async Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for card(s) to play");
