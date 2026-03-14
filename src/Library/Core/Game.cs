@@ -98,15 +98,18 @@ public abstract class Game<TCard, TPlayerState>(
     /// play, and return true iff it is valid to play that card.
     /// </param>
     /// <param name="cancellationToken"></param>
-    protected async Task<TCard> PromptForValidCardAndPlay(
-        int iPlayer,
+    protected static async Task<TCard> PromptForValidCardAndPlay(
+        IPlayer<TCard> player,
+        Cards<TCard> hand,
         Func<Cards<TCard>, int, bool> validateChosenCard,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
-        var player = players[iPlayer];
-        var hand = gameState.Players[iPlayer].Hand;
+        // var player = players[iPlayer];
+        // var hand = gameState.Players[iPlayer].Hand;
 
+        // TODO: refactoring off SetupRound; need this method in that svc, but unclear where best to put
+        //      player seems reasonable. make it an abstract class and make Index methods protected abstract?
         var syncEvent = await gameEventPublisher.Publish(
             gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),
             cancellationToken: cancellationToken);
@@ -158,14 +161,15 @@ public abstract class Game<TCard, TPlayerState>(
     /// the cards to play, and return true iff it is valid to play those cards.
     /// </param>
     /// <param name="cancellationToken"></param>
-    protected async Task<Cards<TCard>> PromptForValidCardsAndPlay(
-        int iPlayer,
+    protected static async Task<Cards<TCard>> PromptForValidCardsAndPlay(
+        IPlayer<TCard> player,
+        Cards<TCard> hand,
         Func<Cards<TCard>, List<int>, bool> validateChosenCards,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
-        var player = players[iPlayer];
-        var hand = gameState.Players[iPlayer].Hand;
+        // var player = players[iPlayer];
+        // var hand = gameState.Players[iPlayer].Hand;
 
         var syncEvent = await gameEventPublisher.Publish(
             gameEvent: new GameEvent.PlayerHasTheAction(player.AccountCard),

@@ -48,7 +48,8 @@ public class HeartsGameFactory(
             player.CurrentGamesEvents = chanReader;
         }
 
-        var hearts = new HeartsGame(eventPublisher, new HeartsGameState(), players, dealer, settings, gameLogger);
+        var setupRound = new HeartsSetupRound(dealer, eventPublisher, players);
+        var hearts = new HeartsGame(eventPublisher, new HeartsGameState(), setupRound, players, settings, gameLogger);
         var harness = new GameHarness(hearts, eventChannel, channelFanOut, harnessLogger, resourceCleanUpActions: []);
         return harness;
     }

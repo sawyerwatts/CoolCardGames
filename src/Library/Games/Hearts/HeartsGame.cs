@@ -1,6 +1,3 @@
-using System.Diagnostics;
-
-using CoolCardGames.Library.Core.CardUtils.Comparers;
 using CoolCardGames.Library.Core.Players;
 
 using Microsoft.Extensions.Logging;
@@ -14,19 +11,9 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 {
     private readonly IGameEventPublisher _gameEventPublisher;
     private readonly HeartsGameState _gameState;
+    private readonly IHeartsSetupRound _setupRound;
     private readonly IReadOnlyList<IPlayer<HeartsCard>> _players;
-    private readonly IDealer _dealer;
     private readonly HeartsSettings _settings;
-
-    private static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
-        suitPriorities:
-        [
-            Suit.Spades,
-            Suit.Hearts,
-            Suit.Clubs,
-            Suit.Diamonds,
-        ],
-        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList());
 
     /// <remarks>
     /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
@@ -34,16 +21,16 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     public HeartsGame(
         IGameEventPublisher gameEventPublisher,
         HeartsGameState gameState,
+        IHeartsSetupRound setupRound,
         IReadOnlyList<IPlayer<HeartsCard>> players,
-        IDealer dealer,
         HeartsSettings settings,
         ILogger<HeartsGame> logger)
         : base(gameEventPublisher, gameState, players, logger)
     {
         _gameEventPublisher = gameEventPublisher;
         _gameState = gameState;
+        _setupRound = setupRound;
         _players = players;
-        _dealer = dealer;
         _settings = settings;
     }
 
@@ -59,7 +46,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         while (_gameState.Players.All(player => player.Score < _settings.EndOfGamePoints))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await SetupRound((PassDirection)dealerPosition.Tick(), cancellationToken);
+            await _setupRound.Go(_gameState, (PassDirection)dealerPosition.Tick(), cancellationToken);
 
             _gameState.IndexTrickStartPlayer = _gameState.Players.FindIndex(player =>
                 player.Hand.Any(card => card.Value is TwoOfClubs));
@@ -86,89 +73,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     }
 
     public override void Dispose() { }
-
-    private async Task SetupRound(PassDirection passDirection, CancellationToken cancellationToken)
-    {
-        await _gameEventPublisher.Publish(GameEvent.SettingUpNewRound.Singleton, cancellationToken);
-
-        SetupRoundResetState();
-        await SetupRoundInitHands(cancellationToken);
-
-        if (passDirection is PassDirection.Hold)
-        {
-            await _gameEventPublisher.Publish(HeartsGameEvent.HoldEmRound.Singleton, cancellationToken);
-            return;
-        }
-
-        await SetupRoundPlayersPassCards(passDirection, cancellationToken);
-
-        await _gameEventPublisher.Publish(GameEvent.BeginningNewRound.Singleton, cancellationToken);
-    }
-
-    private void SetupRoundResetState()
-    {
-        _gameState.IsFirstTrick = true;
-        _gameState.IsHeartsBroken = false;
-        foreach (var playerState in _gameState.Players)
-            playerState.TricksTaken.Clear();
-    }
-
-    private async Task SetupRoundInitHands(CancellationToken cancellationToken)
-    {
-        // TODO: could preserve and reshuffle cards instead of reinstantiating every round
-        var hands = await _dealer.ShuffleCutDeal(
-            deck: HeartsCard.MakeDeck(Decks.Standard52()),
-            numHands: NumPlayers,
-            cancellationToken);
-
-        for (var i = 0; i < NumPlayers; i++)
-        {
-            var hand = hands[i];
-            hand.CardComparer = HandSortingComparer;
-            _gameState.Players[i].Hand = hand;
-            await _gameEventPublisher.Publish(new GameEvent.HandGiven(_players[i].AccountCard, hand.Count),
-                cancellationToken);
-        }
-    }
-
-    private async Task SetupRoundPlayersPassCards(PassDirection passDirection, CancellationToken cancellationToken)
-    {
-        await _gameEventPublisher.Publish(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
-        List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: NumPlayers);
-        for (var i = 0; i < NumPlayers; i++)
-        {
-            var task = PromptForValidCardsAndPlay(
-                iPlayer: i,
-                validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
-                cancellationToken,
-                reveal: false);
-            takeCardsFromPlayerTasks.Add(task);
-        }
-
-        await Task.WhenAll(takeCardsFromPlayerTasks).WaitAsync(cancellationToken);
-
-        for (var iSourcePlayer = 0; iSourcePlayer < NumPlayers; iSourcePlayer++)
-        {
-            CircularCounter sourcePlayerPosition = new(iSourcePlayer, NumPlayers);
-            var iTargetPlayer = passDirection switch
-            {
-                PassDirection.Left => sourcePlayerPosition.CycleClockwise(updateInstance: false),
-                PassDirection.Right => sourcePlayerPosition.CycleCounterClockwise(updateInstance: false),
-                PassDirection.Across => sourcePlayerPosition.CycleClockwise(times: 2, updateInstance: false),
-                _ => throw new UnreachableException(
-                    $"Passing {passDirection} from {nameof(iSourcePlayer)} {iSourcePlayer}"),
-            };
-
-            var cardsToPass = takeCardsFromPlayerTasks[iSourcePlayer].Result;
-            _gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
-            _gameState.Players[iTargetPlayer].Hand = _gameState.Players[iTargetPlayer].Hand;
-            await _gameEventPublisher.Publish(
-                new GameEvent.PlayerReceivedHiddenCards(_players[iTargetPlayer].AccountCard, cardsToPass.Count),
-                cancellationToken);
-        }
-
-        await _gameEventPublisher.Publish(new HeartsGameEvent.CardsPassed(passDirection), cancellationToken);
-    }
 
     private async Task PlayOutTrick(CancellationToken cancellationToken)
     {

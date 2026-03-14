@@ -1,0 +1,108 @@
+using System.Diagnostics;
+
+using CoolCardGames.Library.Core.CardUtils.Comparers;
+using CoolCardGames.Library.Core.Players;
+
+namespace CoolCardGames.Library.Games.Hearts;
+
+public interface IHeartsSetupRound
+{
+    Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken);
+}
+
+public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<IPlayer<HeartsCard>> players) : IHeartsSetupRound
+{
+    public static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
+        suitPriorities:
+        [
+            Suit.Spades,
+            Suit.Hearts,
+            Suit.Clubs,
+            Suit.Diamonds,
+        ],
+        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList());
+
+    public async Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
+    {
+        await gameEventPublisher.Publish(GameEvent.SettingUpNewRound.Singleton, cancellationToken);
+
+        ResetState(gameState);
+        await InitHands(gameState, cancellationToken);
+
+        if (passDirection is PassDirection.Hold)
+        {
+            await gameEventPublisher.Publish(HeartsGameEvent.HoldEmRound.Singleton, cancellationToken);
+            return;
+        }
+
+        await HavePlayersPassCards(gameState, passDirection, cancellationToken);
+
+        await gameEventPublisher.Publish(GameEvent.BeginningNewRound.Singleton, cancellationToken);
+    }
+
+    private void ResetState(HeartsGameState gameState)
+    {
+        gameState.IsFirstTrick = true;
+        gameState.IsHeartsBroken = false;
+        foreach (var playerState in gameState.Players)
+            playerState.TricksTaken.Clear();
+    }
+
+    private async Task InitHands(HeartsGameState gameState, CancellationToken cancellationToken)
+    {
+        // TODO: could preserve and reshuffle cards instead of reinstantiating every round
+        var hands = await dealer.ShuffleCutDeal(
+            deck: HeartsCard.MakeDeck(Decks.Standard52()),
+            numHands: HeartsGame.NumPlayers,
+            cancellationToken);
+
+        for (var i = 0; i < HeartsGame.NumPlayers; i++)
+        {
+            var hand = hands[i];
+            hand.CardComparer = HandSortingComparer;
+            gameState.Players[i].Hand = hand;
+            await gameEventPublisher.Publish(new GameEvent.HandGiven(players[i].AccountCard, hand.Count),
+                cancellationToken);
+        }
+    }
+
+    private async Task HavePlayersPassCards(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
+    {
+        await gameEventPublisher.Publish(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
+        List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);
+        for (var i = 0; i < HeartsGame.NumPlayers; i++)
+        {
+            var task = PromptForValidCardsAndPlay(
+                iPlayer: i,
+                validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
+                cancellationToken,
+                reveal: false);
+            takeCardsFromPlayerTasks.Add(task);
+        }
+
+        await Task.WhenAll(takeCardsFromPlayerTasks).WaitAsync(cancellationToken);
+
+        for (var iSourcePlayer = 0; iSourcePlayer < HeartsGame.NumPlayers; iSourcePlayer++)
+        {
+            CircularCounter sourcePlayerPosition = new(iSourcePlayer, HeartsGame.NumPlayers);
+            var iTargetPlayer = passDirection switch
+            {
+                PassDirection.Left => sourcePlayerPosition.CycleClockwise(updateInstance: false),
+                PassDirection.Right => sourcePlayerPosition.CycleCounterClockwise(updateInstance: false),
+                PassDirection.Across => sourcePlayerPosition.CycleClockwise(times: 2, updateInstance: false),
+                _ => throw new UnreachableException(
+                    $"Passing {passDirection} from {nameof(iSourcePlayer)} {iSourcePlayer}"),
+            };
+
+            var cardsToPass = takeCardsFromPlayerTasks[iSourcePlayer].Result;
+            gameState.Players[iTargetPlayer].Hand.AddRange(cardsToPass);
+            gameState.Players[iTargetPlayer].Hand = gameState.Players[iTargetPlayer].Hand;
+            await gameEventPublisher.Publish(
+                new GameEvent.PlayerReceivedHiddenCards(players[iTargetPlayer].AccountCard, cardsToPass.Count),
+                cancellationToken);
+        }
+
+        await gameEventPublisher.Publish(new HeartsGameEvent.CardsPassed(passDirection), cancellationToken);
+    }
+
+}
