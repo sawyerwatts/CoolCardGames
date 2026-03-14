@@ -32,10 +32,11 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
         if (passDirection is PassDirection.Hold)
         {
             await gameEventPublisher.Publish(HeartsGameEvent.HoldEmRound.Singleton, cancellationToken);
-            return;
         }
-
-        await HavePlayersPassCards(gameState, passDirection, cancellationToken);
+        else
+        {
+            await HavePlayersPassCards(gameState, passDirection, cancellationToken);
+        }
 
         await gameEventPublisher.Publish(GameEvent.BeginningNewRound.Singleton, cancellationToken);
     }
