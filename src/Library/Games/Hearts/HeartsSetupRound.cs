@@ -10,7 +10,7 @@ public interface IHeartsSetupRound
     Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken);
 }
 
-public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<Player<HeartsCard>> players) : IHeartsSetupRound
+public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<IPlayer<HeartsCard>> players) : IHeartsSetupRound
 {
     public static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
         suitPriorities:
@@ -41,7 +41,7 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
         await gameEventPublisher.Publish(GameEvent.BeginningNewRound.Singleton, cancellationToken);
     }
 
-    private void ResetState(HeartsGameState gameState)
+    public void ResetState(HeartsGameState gameState)
     {
         gameState.IsFirstTrick = true;
         gameState.IsHeartsBroken = false;
@@ -49,7 +49,7 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
             playerState.TricksTaken.Clear();
     }
 
-    private async Task InitHands(HeartsGameState gameState, CancellationToken cancellationToken)
+    public async Task InitHands(HeartsGameState gameState, CancellationToken cancellationToken)
     {
         // TODO: could preserve and reshuffle cards instead of reinstantiating every round
         var hands = await dealer.ShuffleCutDeal(
@@ -67,7 +67,7 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
         }
     }
 
-    private async Task HavePlayersPassCards(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
+    public async Task HavePlayersPassCards(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
     {
         await gameEventPublisher.Publish(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);

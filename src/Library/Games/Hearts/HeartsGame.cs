@@ -12,7 +12,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
     private readonly IGameEventPublisher _gameEventPublisher;
     private readonly HeartsGameState _gameState;
     private readonly IHeartsSetupRound _setupRound;
-    private readonly IReadOnlyList<Player<HeartsCard>> _players;
+    private readonly IReadOnlyList<IPlayer<HeartsCard>> _players;
     private readonly HeartsSettings _settings;
 
     /// <remarks>
@@ -22,7 +22,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         IGameEventPublisher gameEventPublisher,
         HeartsGameState gameState,
         IHeartsSetupRound setupRound,
-        IReadOnlyList<Player<HeartsCard>> players,
+        IReadOnlyList<IPlayer<HeartsCard>> players,
         HeartsSettings settings,
         ILogger<HeartsGame> logger)
         : base(gameEventPublisher, gameState, players, logger)

@@ -65,6 +65,7 @@ single binary is desired.
 - Actually impl `PlayerBridge`
     - Timeout requests probably
     - It'd be slick to refactor `CliPlayer`'s sync logic here (or "in" `IPlayer`)
+- More unit tests!
 
 ### Other Platforms and Online Mode
 
