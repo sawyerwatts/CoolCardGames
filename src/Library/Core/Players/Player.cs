@@ -19,10 +19,8 @@ public interface IPlayer<TCard>
     /// <returns></returns>
     Disposable JoinGame(ChannelReader<GameEventEnvelope> currGamesEvents, IGameEventPublisher currGameEventPublisher);
 
-    // TODO: update these docs
-
     /// <remarks>
-    /// This will take the selected card out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// This will modify the passed <paramref name="cards"/> and return the <see cref="TCard"/> removed.
     /// <br />
     /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCard{TCard}"/>
     /// once the player selects a valid card.
@@ -41,7 +39,7 @@ public interface IPlayer<TCard>
         bool reveal = true);
 
     /// <remarks>
-    /// This will take the selected card(s) out of the appropriate <see cref="GameState{TCard,TPlayerState}.Players"/>' <see cref="PlayerState{TCard}.Hand"/>.
+    /// This will modify the passed <paramref name="cards"/> and return the <see cref="TCard"/>(s) removed.
     /// <br />
     /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCards{TCard}"/>
     /// once the player selects valid card(s).

@@ -18,7 +18,7 @@ public interface IGame : IDisposable
 public abstract class Game<TCard, TPlayerState>(
     IGameEventPublisher gameEventPublisher,
     GameState<TCard, TPlayerState> gameState,
-    IReadOnlyList<Player<TCard>> players,
+    IReadOnlyList<IPlayer<TCard>> players,
     ILogger<Game<TCard, TPlayerState>> logger)
     : IGame
     where TCard : Card

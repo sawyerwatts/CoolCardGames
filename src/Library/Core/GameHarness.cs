@@ -52,9 +52,9 @@ public class GameHarness(
         logger.LogInformation("Disposing of an instance of game {GameName}", game.Name);
         var exceptionsAndNulls = new List<Exception?>();
         exceptionsAndNulls.Add(Catcher(() => eventChannel.Writer.Complete()));
-        foreach (IDisposable resourceCleanUpAction in disposals)
+        foreach (IDisposable disposable in disposals)
         {
-            exceptionsAndNulls.Add(Catcher(() => resourceCleanUpAction.Dispose()));
+            exceptionsAndNulls.Add(Catcher(() => disposable.Dispose()));
         }
 
         exceptionsAndNulls.Add(Catcher(game.Dispose));

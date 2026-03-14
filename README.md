@@ -11,6 +11,12 @@ which contains reusable classes (like `Dealer`), interfaces/abstract classes (li
 classes that can be extended or left as-is (like `Card` and `Cards`). Beyond that, there can/will be
 other root directories in `Library.csproj` for other features, like account management n stuff.
 
+From there, `Library.csproj` contains `Games/`, which has subdirectories for different game
+implementations. For example, the initial game is `src/Library/Games/Hearts/`.
+
+Since there are ambitions to having different UIs, there are also different entrypoint projects in
+`src/`, starting with `src/Cli/`.
+
 Here is the ***planned*** architecture (we'll see how long it takes for me to lose interest):
 
 ![appArchitecture.png](./docs/images/appArchitecture.png)
@@ -27,16 +33,16 @@ single binary is desired.
 
 ### Build and Test
 
-`dotnet build`
-
-`dotnet test`
+1. Install .NET 10
+1. `dotnet build`
+1. `dotnet test`
 
 ## TODO
 
 ### Short-Term
 
-- Decompose `HeartsGame` to be more testable
-  - TODO: Will need to update diagrams, Player now validates card
+- Now that `HeartsGame` has been more decomposed to (hopefully) improve testability, go test it and
+  `HeartsSetupRound`
 - Update TUI: make left split for history and right split for prompts ([docs](https://spectreconsole.net/widgets/layout))
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
   that in players
