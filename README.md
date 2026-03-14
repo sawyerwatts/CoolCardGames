@@ -43,7 +43,6 @@ single binary is desired.
 
 - Now that `HeartsGame` has been more decomposed to (hopefully) improve testability, go test it and
   `HeartsSetupRound`
-- Update TUI: make left split for history and right split for prompts ([docs](https://spectreconsole.net/widgets/layout))
 - Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
   that in players
 - Create `Hand` and `Trick` types (with factories)
@@ -53,6 +52,7 @@ single binary is desired.
 - How handle data visibility to diff players?
 - CLI updates
     - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
+      - ([docs](https://spectreconsole.net/widgets/layout))
     - Update `Driver` to be more dynamic than just hardcoding hearts stuff
     - support configuring settings, like for the game n cli itself
 - Update docs and architecture diagram to better detail interactions (and setup?)
