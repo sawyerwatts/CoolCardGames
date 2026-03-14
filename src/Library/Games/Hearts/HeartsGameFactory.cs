@@ -47,7 +47,7 @@ public class HeartsGameFactory(
         foreach (var player in players)
         {
             var chanReader = channelFanOut.CreateReader(name: player.AccountCard.ToString());
-            var disposal = player.JoinGame(eventChannel.Reader, eventPublisher);
+            var disposal = player.JoinGame(chanReader, eventPublisher);
             disposals.Add(disposal);
         }
 
