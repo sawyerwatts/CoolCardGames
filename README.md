@@ -42,7 +42,6 @@ single binary is desired.
 ### Short-Term
 
 - More unit tests!
-  - `CardSelectionRules`/etc
   - `CircularCounter`
   - `IReadOnlyListExtensions.FindIndex`
   - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
