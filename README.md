@@ -43,6 +43,7 @@ single binary is desired.
 
 - More unit tests!
   - `CommonRules`
+  - Card rules
   - `CircularCounter`
   - `IReadOnlyListExtensions.FindIndex`
   - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`

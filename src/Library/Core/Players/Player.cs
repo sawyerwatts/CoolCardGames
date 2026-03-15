@@ -143,9 +143,17 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
             var rulesNotFollowed = new List<string>();
             foreach (var cardSelectionRule in cardSelectionRules)
             {
-                var valid = cardSelectionRule.ValidateCard(cards, iCardToPlay);
-                if (!valid)
-                    rulesNotFollowed.Add(cardSelectionRule.Description);
+                try
+                {
+                    var valid = cardSelectionRule.ValidateCard(cards, iCardToPlay);
+                    if (!valid)
+                        rulesNotFollowed.Add(cardSelectionRule.Description);
+                }
+                catch (ArgumentException exc)
+                {
+                    rulesNotFollowed.Add(exc.Message);
+                    break;
+                }
             }
 
             if (rulesNotFollowed.Count == 0)
@@ -215,9 +223,17 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
             var rulesNotFollowed = new List<string>();
             foreach (var cardComboSelectionRule in cardComboSelectionRules)
             {
-                var valid = cardComboSelectionRule.ValidateCards(cards, iCardsToPlay);
-                if (!valid)
-                    rulesNotFollowed.Add(cardComboSelectionRule.Description);
+                try
+                {
+                    var valid = cardComboSelectionRule.ValidateCards(cards, iCardsToPlay);
+                    if (!valid)
+                        rulesNotFollowed.Add(cardComboSelectionRule.Description);
+                }
+                catch (ArgumentException exc)
+                {
+                    rulesNotFollowed.Add(exc.Message);
+                    break;
+                }
             }
 
             if (rulesNotFollowed.Count == 0)

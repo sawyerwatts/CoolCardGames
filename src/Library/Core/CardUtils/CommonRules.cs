@@ -16,8 +16,8 @@ public static class CommonRules
         where TCard : Card
     {
         return new CardSelectionRule<TCard>(
-            Description: $"If possible, play a {suitToFollow}",
-            ValidateCard: (hand, iCardToPlay) =>
+            description: $"If possible, play a {suitToFollow}",
+            validateCard: (hand, iCardToPlay) =>
             {
                 var cardToPlay = hand[iCardToPlay];
                 if (cardToPlay.Value.Suit == suitToFollow)
@@ -42,10 +42,10 @@ public static class CommonRules
         if (minCardsToPlay > maxCardsToPlay)
             throw new ArgumentException($"{nameof(minCardsToPlay)} ({minCardsToPlay}) is higher than {nameof(maxCardsToPlay)} ({maxCardsToPlay})");
         return new CardComboSelectionRule<TCard>(
-            Description: minCardsToPlay == maxCardsToPlay
+            description: minCardsToPlay == maxCardsToPlay
                 ? $"Select exactly {minCardsToPlay} card(s)"
                 : $"Select between {minCardsToPlay} and {maxCardsToPlay} cards (inclusive)",
-            ValidateCards: (_, iCardsToPlay) =>
+            validateCards: (_, iCardsToPlay) =>
             {
                 if (iCardsToPlay.Count < minCardsToPlay)
                     return false;
