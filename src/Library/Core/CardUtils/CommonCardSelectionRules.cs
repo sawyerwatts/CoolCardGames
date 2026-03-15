@@ -1,6 +1,6 @@
 namespace CoolCardGames.Library.Core.CardUtils;
 
-public static class CommonRules
+public static class CommonCardSelectionRules
 {
     /// <summary>
     /// This returns a rule that will this will return true if the played card's suit is following the

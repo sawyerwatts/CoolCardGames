@@ -15,7 +15,8 @@ public readonly struct CardSelectionRule<TCard>(
     public string Description { get; } = description;
 
     /// <remarks>
-    /// This will pre-validate <paramref name="iCardToPlay"/> before executing the injected <see cref="CardSelectionValidation{TCard}"/>.
+    /// This will pre-validate that <paramref name="iCardToPlay"/> is in bounds before executing the
+    /// injected <see cref="CardSelectionValidation{TCard}"/>.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Throw when <paramref name="iCardToPlay"/> is out of range of <paramref name="cards"/>.
@@ -50,7 +51,8 @@ public readonly struct CardComboSelectionRule<TCard>(
     public string Description { get; } = description;
 
     /// <remarks>
-    /// This will pre-validate <paramref name="iCardsToPlay"/> before executing the injected <see cref="CardComboSelectionValidation{TCard}"/>.
+    /// This will pre-validate that <paramref name="iCardsToPlay"/> are unique and all in bounds
+    /// before executing the injected <see cref="CardComboSelectionValidation{TCard}"/>.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Throw when <paramref name="iCardsToPlay"/> is out of range of <paramref name="cards"/>.

@@ -42,13 +42,12 @@ single binary is desired.
 ### Short-Term
 
 - More unit tests!
-  - `CommonRules`
-  - Card rules
+  - `CardSelectionRules`/etc
   - `CircularCounter`
   - `IReadOnlyListExtensions.FindIndex`
   - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
   - `ChannelGameEventPublisher`
-  - All of Hearts
+  - Most of Hearts
   - CLI
 - If game crashes, display game ID so users could report
 - How handle data visibility to diff players?
