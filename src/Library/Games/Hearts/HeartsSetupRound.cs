@@ -71,11 +71,12 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
     {
         await gameEventPublisher.Publish(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
         List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);
+        var ruleSelectThreeCards = CommonCardSelectionRules.LimitNumberOfCardsSelected<HeartsCard>(exactNumberOfCardsToPlay: 3);
         for (var i = 0; i < HeartsGame.NumPlayers; i++)
         {
             var task = players[i].PromptForValidCardsAndPlay(
                 cards: gameState.Players[i].Hand,
-                validateChosenCards: (_, iCardsToPlay) => iCardsToPlay.Count == 3,
+                cardComboSelectionRule: ruleSelectThreeCards,
                 cancellationToken,
                 reveal: false);
             takeCardsFromPlayerTasks.Add(task);

@@ -41,16 +41,16 @@ single binary is desired.
 
 ### Short-Term
 
+- If game crashes, display game ID so users could report
 - Now that `HeartsGame` has been more decomposed to (hopefully) improve testability, go test it and
   `HeartsSetupRound`
-- Update the PlayCard(s) funcs to pass additional, human-readable validation info n actually use
-  that in players
-- Create `Hand` and `Trick` types (with factories)
+- Create `Hand` and `Trick` types (with factories)?
     - This way, more events can be pushed automatically, as well as auto-sorting hands
     - Track the playing index with the card(s) played
     - See `DetermineTrickTakerIndexRelativeToStartPlayer` for something to be added
 - How handle data visibility to diff players?
 - CLI updates
+    - Add a rules section to wireframe
     - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
       - ([docs](https://spectreconsole.net/widgets/layout))
     - Update `Driver` to be more dynamic than just hardcoding hearts stuff

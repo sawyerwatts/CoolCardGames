@@ -31,4 +31,8 @@
     <ProjectReference Include="..\..\src\Library\CoolCardGames.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Library\Games\Hearts\" />
+  </ItemGroup>
+
 </Project>

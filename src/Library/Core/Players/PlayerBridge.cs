@@ -17,13 +17,23 @@ public class PlayerBridge<TCard>(IPlayer<TCard> player /*, AiPlayerFactory aiFac
         return player.JoinGame(currGamesEvents, currGameEventPublisher);
     }
 
-    public Task<TCard> PromptForValidCardAndPlay(Cards<TCard> cards, Func<Cards<TCard>, int, bool> validateChosenCard, CancellationToken cancellationToken, bool reveal = true)
+    public Task<TCard> PromptForValidCardAndPlay(Cards<TCard> cards, CardSelectionRule<TCard> cardSelectionRule, CancellationToken cancellationToken, bool reveal = true)
     {
-        return player.PromptForValidCardAndPlay(cards, validateChosenCard, cancellationToken, reveal);
+        return player.PromptForValidCardAndPlay(cards, cardSelectionRule, cancellationToken, reveal);
     }
 
-    public Task<Cards<TCard>> PromptForValidCardsAndPlay(Cards<TCard> cards, Func<Cards<TCard>, List<int>, bool> validateChosenCards, CancellationToken cancellationToken, bool reveal = true)
+    public Task<TCard> PromptForValidCardAndPlay(Cards<TCard> cards, List<CardSelectionRule<TCard>> cardSelectionRules, CancellationToken cancellationToken, bool reveal = true)
     {
-        return player.PromptForValidCardsAndPlay(cards, validateChosenCards, cancellationToken, reveal);
+        return player.PromptForValidCardAndPlay(cards, cardSelectionRules, cancellationToken, reveal);
+    }
+
+    public Task<Cards<TCard>> PromptForValidCardsAndPlay(Cards<TCard> cards, CardComboSelectionRule<TCard> cardComboSelectionRule, CancellationToken cancellationToken, bool reveal = true)
+    {
+        return player.PromptForValidCardsAndPlay(cards, cardComboSelectionRule, cancellationToken, reveal);
+    }
+
+    public Task<Cards<TCard>> PromptForValidCardsAndPlay(Cards<TCard> cards, List<CardComboSelectionRule<TCard>> cardComboSelectionRules, CancellationToken cancellationToken, bool reveal = true)
+    {
+        return player.PromptForValidCardsAndPlay(cards, cardComboSelectionRules, cancellationToken, reveal);
     }
 }

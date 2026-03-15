@@ -92,25 +92,30 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
                 break;
         }
 
+        var openingRule = _gameState.IsFirstTrick
+            ? HeartsGameCardSelectionRules.FirstTrickOpeningCardMustBeTwoOfClubs
+            : HeartsGameCardSelectionRules.HeartsCanOnlyBeLeadOnceBroken(_gameState.IsHeartsBroken);
         var openingCard = await _players[_gameState.IndexTrickStartPlayer].PromptForValidCardAndPlay(
             cards: _gameState.Players[_gameState.IndexTrickStartPlayer].Hand,
-            validateChosenCard: (hand, iCardToPlay) => _gameState.IsFirstTrick
-                ? hand[iCardToPlay].Value is TwoOfClubs
-                : _gameState.IsHeartsBroken || hand[iCardToPlay].Value.Suit is not Suit.Hearts,
+            cardSelectionRule: openingRule,
             cancellationToken);
         var trick = new Cards<HeartsCard>(capacity: NumPlayers) { openingCard };
         var suitToFollow = openingCard.Value.Suit;
+
+        List<CardSelectionRule<HeartsCard>> followingRules =
+        [
+            CommonCardSelectionRules.IsSuitFollowedIfPossible<HeartsCard>(suitToFollow),
+        ];
+        if (_gameState.IsFirstTrick)
+        {
+            followingRules.Add(HeartsGameCardSelectionRules.FirstTrickCannotHavePoints);
+        }
 
         while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
             var chosenCard = await _players[iTrickPlayer.N].PromptForValidCardAndPlay(
                 cards: _gameState.Players[iTrickPlayer.N].Hand,
-                validateChosenCard: (hand, iCardToPlay) =>
-                {
-                    if (!CheckPlayedCard.IsSuitFollowedIfPossible(suitToFollow, hand, iCardToPlay))
-                        return false;
-                    return !_gameState.IsFirstTrick || hand[iCardToPlay].Points == 0;
-                },
+                cardSelectionRules: followingRules,
                 cancellationToken);
             trick.Add(chosenCard);
 

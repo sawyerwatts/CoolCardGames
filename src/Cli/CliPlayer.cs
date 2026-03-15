@@ -1,6 +1,7 @@
-using System.Threading.Channels;
+using System.Text;
 
 using CoolCardGames.Library.Core.CardTypes;
+using CoolCardGames.Library.Core.CardUtils;
 using CoolCardGames.Library.Core.GameEventTypes;
 using CoolCardGames.Library.Core.GameSessionExceptions;
 using CoolCardGames.Library.Core.Players;
@@ -16,7 +17,7 @@ public partial class CliPlayer<TCard>(
     IOptionsMonitor<CliPlayerUserSettings> userSettings,
     IOptionsMonitor<CliPlayerSystemSettings> systemSettings,
     ILogger<CliPlayer<TCard>> logger)
-    : Player<TCard> where TCard : Card
+    : Player<TCard>(logger) where TCard : Card
 {
     public override PlayerAccountCard AccountCard => playerAccountCard;
 
@@ -114,14 +115,24 @@ public partial class CliPlayer<TCard>(
         return false;
     }
 
-    protected override async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override async Task<int> PromptForIndexOfCardToPlay(
+        uint prePromptEventId,
+        Cards<TCard> cards,
+        List<CardSelectionRule<TCard>> cardSelectionRules,
+        CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for a card to play");
 
+        AnsiConsole.Write("Which card do you want to play?");
+        if (cardSelectionRules.Count > 0)
+            WriteRulesToConsole(cardSelectionRules.Select(rule => rule.Description));
+        else
+            AnsiConsole.WriteLine();
+
         var cardToPlay = await AnsiConsole.PromptAsync(
             new SelectionPrompt<TCard>()
-                .Title("Which card do you want to play?")
+                // .Title(title)
                 .PageSize(1024)
 #pragma warning disable CA1861
                 .AddChoices(cards.ToArray()),
@@ -132,14 +143,23 @@ public partial class CliPlayer<TCard>(
         return iCardToPlay;
     }
 
-    protected override async Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, CancellationToken cancellationToken)
+    protected override async Task<List<int>> PromptForIndexesOfCardsToPlay(
+        uint prePromptEventId,
+        Cards<TCard> cards,
+        List<CardComboSelectionRule<TCard>> cardComboSelectionRules,
+        CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
         logger.LogInformation("Prompting player for card(s) to play");
 
+        AnsiConsole.Write("Which card do you want to play?");
+        if (cardComboSelectionRules.Count > 0)
+            WriteRulesToConsole(cardComboSelectionRules.Select(rule => rule.Description));
+        else
+            AnsiConsole.WriteLine();
+
         var cardsToPlay = await AnsiConsole.PromptAsync(
             new MultiSelectionPrompt<TCard>()
-                .Title("Which card do you want to play?")
                 .PageSize(1024)
                 .InstructionsText(
                     "[grey](Press [blue]<space>[/] to toggle a card, " +
@@ -159,6 +179,36 @@ public partial class CliPlayer<TCard>(
             logger.LogInformation("Trying to play card {CardToPlay} at index {IndexCardToPlay}", cards[iCardToPlay], iCardToPlay);
 
         return iCardsToPlay;
+    }
+
+    private static void WriteRulesToConsole(IEnumerable<string> rules)
+    {
+        AnsiConsole.WriteLine(" Here are the rules to follow:");
+        foreach (var rule in rules)
+        {
+            AnsiConsole.Write("\t- ");
+            AnsiConsole.WriteLine(rule);
+        }
+    }
+
+    protected override Task CardSelectedWasNotValid(Cards<TCard> cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    {
+        if (rulesFailed.Count == 0)
+            throw new ArgumentException($"{nameof(rulesFailed)} should not be empty");
+        AnsiConsole.WriteLine("The card selected was not valid for the following reason(s):");
+        foreach (var ruleFailed in rulesFailed)
+            AnsiConsole.WriteLine($"\t- {ruleFailed}");
+        return Task.CompletedTask;
+    }
+
+    protected override Task CardsSelectedWereNotValid(Cards<TCard> cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    {
+        if (rulesFailed.Count == 0)
+            throw new ArgumentException($"{nameof(rulesFailed)} should not be empty");
+        AnsiConsole.WriteLine("The card(s) selected were not valid for the following reason(s):");
+        foreach (var ruleFailed in rulesFailed)
+            AnsiConsole.WriteLine($"\t- {ruleFailed}");
+        return Task.CompletedTask;
     }
 
     private async Task WaitUntilUiIsSynced(uint prePromptEventId, CancellationToken cancellationToken)
