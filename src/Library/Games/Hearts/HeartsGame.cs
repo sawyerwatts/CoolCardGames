@@ -40,6 +40,8 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
     protected override object? SettingsToBeLogged => new { UserGameSettings = _settings };
 
+    public override void Dispose() { }
+
     protected override async Task ActuallyPlay(CancellationToken cancellationToken)
     {
         var dealerPosition = new CircularCounter(4, startAtEnd: true);
@@ -71,8 +73,6 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
         await DetermineAndPublishWinnersAndLosers(cancellationToken);
     }
-
-    public override void Dispose() { }
 
     private async Task PlayOutTrick(CancellationToken cancellationToken)
     {
