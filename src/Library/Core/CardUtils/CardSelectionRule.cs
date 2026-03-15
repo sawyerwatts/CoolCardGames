@@ -1,5 +1,8 @@
 namespace CoolCardGames.Library.Core.CardUtils;
 
+/// <param name="iCardToPlay">
+/// This can be assumed to be a valid index within <paramref name="cards"/>.
+/// </param>
 public delegate bool CardSelectionValidation<TCard>(
     Cards<TCard> cards,
     int iCardToPlay)
@@ -12,6 +15,9 @@ public readonly record struct CardSelectionRule<TCard>(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// <param name="iCardsToPlay">
+/// These can be assumed to be unique, valid indexes within <paramref name="cards"/>.
+/// </param>
 public delegate bool CardComboSelectionValidation<TCard>(
     Cards<TCard> cards,
     List<int> iCardsToPlay)

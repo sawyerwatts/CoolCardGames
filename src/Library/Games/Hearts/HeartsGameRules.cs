@@ -1,6 +1,6 @@
 namespace CoolCardGames.Library.Games.Hearts;
 
-public static class HeartsGameCardSelectionRules
+public static class HeartsGameRules
 {
     public static readonly CardSelectionRule<HeartsCard> FirstTrickOpeningCardMustBeTwoOfClubs = new(
         Description: "The first trick must be opened with the two of clubs",
