@@ -12,8 +12,7 @@ public record struct CircularCounter
     public CircularCounter(int maxExclusive, bool startAtEnd = false)
     {
         if (maxExclusive < 0)
-            throw new ArgumentException(
-                $"A non-negative {nameof(maxExclusive)} is required but given {maxExclusive}");
+            throw new ArgumentException($"A non-negative {nameof(maxExclusive)} is required but given {maxExclusive}");
         _maxExclusive = maxExclusive;
 
         if (startAtEnd)
@@ -23,13 +22,11 @@ public record struct CircularCounter
     public CircularCounter(int seed, int maxExclusive)
     {
         if (maxExclusive < 0)
-            throw new ArgumentException(
-                $"A non-negative {nameof(maxExclusive)} is required but given {maxExclusive}");
+            throw new ArgumentException($"A non-negative {nameof(maxExclusive)} is required but given {maxExclusive}");
         _maxExclusive = maxExclusive;
 
         if (seed < 0 || seed >= maxExclusive)
-            throw new ArgumentException(
-                $"{nameof(seed)} must be non-negative and less than {nameof(maxExclusive)}, but given {nameof(seed)} of {seed} and {nameof(maxExclusive)} of {maxExclusive}");
+            throw new ArgumentException($"{nameof(seed)} must be non-negative and less than {nameof(maxExclusive)}, but given {nameof(seed)} of {seed} and {nameof(maxExclusive)} of {maxExclusive}");
         N = seed;
     }
 

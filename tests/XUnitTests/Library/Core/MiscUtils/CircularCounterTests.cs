@@ -5,6 +5,12 @@ namespace CoolCardGames.XUnitTests.Library.Core.MiscUtils;
 public class CircularCounterTests
 {
     [Fact]
+    public void TestThatDefaultConstructorIsNotSupported()
+    {
+        Assert.Throws<NotSupportedException>(() => new CircularCounter());
+    }
+
+    [Fact]
     public void TestCyclingUp()
     {
         CircularCounter sut = new(3);
@@ -21,6 +27,22 @@ public class CircularCounterTests
     }
 
     [Fact]
+    public void TestCyclingClockwise()
+    {
+        CircularCounter sut = new(3);
+        Assert.Equal(0, sut.N);
+
+        Assert.Equal(1, sut.CycleClockwise());
+        Assert.Equal(1, sut.N);
+
+        Assert.Equal(2, sut.CycleClockwise());
+        Assert.Equal(2, sut.N);
+
+        Assert.Equal(0, sut.CycleClockwise());
+        Assert.Equal(0, sut.N);
+    }
+
+    [Fact]
     public void TestCyclingDown()
     {
         CircularCounter sut = new(3, startAtEnd: true);
@@ -33,6 +55,22 @@ public class CircularCounterTests
         Assert.Equal(0, sut.N);
 
         Assert.Equal(2, sut.Tick(-1));
+        Assert.Equal(2, sut.N);
+    }
+
+    [Fact]
+    public void TestCyclingCounterClockwise()
+    {
+        CircularCounter sut = new(3, startAtEnd: true);
+        Assert.Equal(2, sut.N);
+
+        Assert.Equal(1, sut.CycleCounterClockwise());
+        Assert.Equal(1, sut.N);
+
+        Assert.Equal(0, sut.CycleCounterClockwise());
+        Assert.Equal(0, sut.N);
+
+        Assert.Equal(2, sut.CycleCounterClockwise());
         Assert.Equal(2, sut.N);
     }
 
