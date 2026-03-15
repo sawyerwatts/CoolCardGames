@@ -20,7 +20,7 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
             Suit.Clubs,
             Suit.Diamonds,
         ],
-        rankPriorities: Enumerable.Reverse(HeartsRankPriorities.Value).ToList());
+        rankPriorities: CommonRankPriorities.AceHighAscending);
 
     public async Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
     {

@@ -151,7 +151,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         {
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
             var highestOnSuitRank =
-                GetHighest.Of(HeartsRankPriorities.Value, onSuitCards.Select(card => card.Value.Rank).ToList());
+                GetHighest.Of(CommonRankPriorities.AceHighDescending, onSuitCards.Select(card => card.Value.Rank).ToList());
             var iTrickTakerOffsetFromStartPlayer = trick.FindIndex(card =>
                 card.Value.Suit == suitToFollow && card.Value.Rank == highestOnSuitRank);
             if (iTrickTakerOffsetFromStartPlayer == -1)

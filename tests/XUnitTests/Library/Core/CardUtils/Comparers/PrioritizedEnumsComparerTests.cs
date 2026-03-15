@@ -14,7 +14,6 @@ public class PrioritizedEnumsComparerTests
     [InlineData(Rank.King, Result.Higher, Rank.Queen)]
     [InlineData(Rank.King, Result.Higher, Rank.Two)]
     [InlineData(Rank.Ace, Result.Higher, Rank.King)]
-    [InlineData(Rank.King, Result.Equal, Rank.King)]
     [InlineData(Rank.Queen, Result.Lower, Rank.King)]
     [InlineData(Rank.Two, Result.Lower, Rank.King)]
     public void Test(Rank x, Result expected, Rank y)

@@ -1,7 +1,37 @@
+using CoolCardGames.Library.Core.CardUtils.Comparers;
+
 namespace CoolCardGames.XUnitTests.Library.Core.CardTypes;
 
 public class CardsTests
 {
+
+    [Fact]
+    public void TestToStringNoElements()
+    {
+        var cards = new Cards<Card>();
+        var actual = cards.ToString();
+        Assert.Equal("[]", actual);
+    }
+
+    [Fact]
+    public void TestToStringOneElement()
+    {
+        var cards = new Cards<Card>();
+        cards.Add(new Card(AceOfClubs.Instance));
+        var actual = cards.ToString();
+        Assert.Equal("[\n  0: Ace of Clubs\n]", actual);
+    }
+
+    [Fact]
+    public void TestToStringTwoElements()
+    {
+        var cards = new Cards<Card>();
+        cards.Add(new Card(AceOfClubs.Instance));
+        cards.Add(new Card(QueenOfSpades.Instance));
+        var actual = cards.ToString();
+        Assert.Equal("[\n  0: Ace of Clubs\n  1: Queen of Spades\n]", actual);
+    }
+
     [Fact]
     public void TestMatchesWhenEqual()
     {
@@ -40,5 +70,100 @@ public class CardsTests
         ]);
 
         Assert.False(deck.Matches(unexpectedDeck));
+    }
+
+    [Fact]
+    public void TestGivenCardComparerThenExistingCardsAreSorted()
+    {
+        var expected = new Cards<Card>();
+        expected.Add(new Card(ThreeOfClubs.Instance));
+        expected.Add(new Card(FiveOfClubs.Instance));
+        expected.Add(new Card(NineOfClubs.Instance));
+        expected.Add(new Card(TwoOfHearts.Instance));
+        expected.Add(new Card(TwoOfDiamonds.Instance));
+
+        var cards = new Cards<Card>();
+        cards.Add(new Card(NineOfClubs.Instance));
+        cards.Add(new Card(TwoOfDiamonds.Instance));
+        cards.Add(new Card(TwoOfHearts.Instance));
+        cards.Add(new Card(FiveOfClubs.Instance));
+        cards.Add(new Card(ThreeOfClubs.Instance));
+
+        cards.CardComparer = new CardComparerSuitThenRank<Card>(
+            suitPriorities:
+            [
+                Suit.Clubs,
+                Suit.Hearts,
+            ],
+            rankPriorities: CommonRankPriorities.AceHighAscending);
+
+        Assert.True(cards.Matches(expected));
+    }
+
+    [Fact]
+    public void TestGivenCardComparerThenCardsAreAddedInOrder()
+    {
+        var expected = new Cards<Card>();
+        expected.Add(new Card(ThreeOfClubs.Instance));
+        expected.Add(new Card(FiveOfClubs.Instance));
+        expected.Add(new Card(NineOfClubs.Instance));
+        expected.Add(new Card(TwoOfHearts.Instance));
+        expected.Add(new Card(TwoOfDiamonds.Instance));
+
+        var cards = new Cards<Card>();
+        cards.CardComparer = new CardComparerSuitThenRank<Card>(
+            suitPriorities:
+            [
+                Suit.Clubs,
+                Suit.Hearts,
+            ],
+            rankPriorities: CommonRankPriorities.AceHighAscending);
+
+        cards.Add(new Card(NineOfClubs.Instance));
+        cards.Add(new Card(TwoOfDiamonds.Instance));
+        cards.Add(new Card(TwoOfHearts.Instance));
+        cards.Add(new Card(FiveOfClubs.Instance));
+        cards.Add(new Card(ThreeOfClubs.Instance));
+
+        Assert.True(cards.Matches(expected));
+    }
+
+    [Fact]
+    public void TestGivenCardComparerThenInsertCannotBeUsed()
+    {
+        var cards = new Cards<Card>();
+        cards.CardComparer = new CardComparerSuitThenRank<Card>(
+            suitPriorities: [],
+            rankPriorities: CommonRankPriorities.AceHighAscending);
+        Assert.Throws<NotSupportedException>(() => cards.Insert(0, new Card(TwoOfClubs.Instance)));
+    }
+
+    [Fact]
+    public void TestGivenCardComparerThenIndexSetterCannotBeUsed()
+    {
+        var cards = new Cards<Card>();
+        cards.CardComparer = new CardComparerSuitThenRank<Card>(
+            suitPriorities: [],
+            rankPriorities: CommonRankPriorities.AceHighAscending);
+        Assert.Throws<NotSupportedException>(() => cards[0] = new Card(TwoOfClubs.Instance));
+    }
+
+    [Fact]
+    public void TestNotGivenCardComparerThenInsertCanBeUsed()
+    {
+        var cards = new Cards<Card>();
+        cards.Insert(0, new Card(TwoOfClubs.Instance));
+        Assert.Single(cards);
+        Assert.Equal(TwoOfClubs.Instance, cards[0].Value);
+    }
+
+    [Fact]
+    public void TestNotGivenCardComparerThenIndexSetterCanBeUsed()
+    {
+        var cards = new Cards<Card>();
+        cards.Add(new Card(AceOfHearts.Instance));
+        cards[0] = new Card(TwoOfClubs.Instance);
+        Assert.Single(cards);
+        Assert.Equal(TwoOfClubs.Instance, cards[0].Value);
     }
 }

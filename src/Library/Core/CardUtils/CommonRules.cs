@@ -38,9 +38,9 @@ public static class CommonRules
         where TCard : Card
     {
         if (minCardsToPlay < 0)
-            throw new ArgumentException($"{nameof(minCardsToPlay)} is less than 0");
+            throw new ArgumentException($"{nameof(minCardsToPlay)} ({minCardsToPlay}) is less than 0");
         if (minCardsToPlay > maxCardsToPlay)
-            throw new ArgumentException($"{nameof(minCardsToPlay)} is higher than {nameof(maxCardsToPlay)}");
+            throw new ArgumentException($"{nameof(minCardsToPlay)} ({minCardsToPlay}) is higher than {nameof(maxCardsToPlay)} ({maxCardsToPlay})");
         return new CardComboSelectionRule<TCard>(
             Description: minCardsToPlay == maxCardsToPlay
                 ? $"Select exactly {minCardsToPlay} card(s)"

@@ -41,9 +41,15 @@ single binary is desired.
 
 ### Short-Term
 
+- More unit tests!
+  - `CommonRules`
+  - `CircularCounter`
+  - `IReadOnlyListExtensions.FindIndex`
+  - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
+  - `ChannelGameEventPublisher`
+  - All of Hearts
+  - CLI
 - If game crashes, display game ID so users could report
-- Now that `HeartsGame` has been more decomposed to (hopefully) improve testability, go test it and
-  `HeartsSetupRound`
 - How handle data visibility to diff players?
 - CLI updates
     - Add a rules section to wireframe
@@ -61,7 +67,6 @@ single binary is desired.
 - Actually impl `PlayerBridge`
     - Timeout requests probably
     - It'd be slick to refactor `CliPlayer`'s sync logic here (or "in" `IPlayer`)
-- More unit tests!
 
 ### Other Platforms and Online Mode
 

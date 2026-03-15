@@ -1,5 +1,3 @@
-using System.Text;
-
 using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.CardUtils;
 using CoolCardGames.Library.Core.GameEventTypes;

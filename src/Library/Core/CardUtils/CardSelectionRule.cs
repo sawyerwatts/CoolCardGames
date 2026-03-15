@@ -11,7 +11,10 @@ public delegate bool CardSelectionValidation<TCard>(
 public readonly record struct CardSelectionRule<TCard>(
     string Description,
     CardSelectionValidation<TCard> ValidateCard)
-    where TCard : Card;
+    where TCard : Card
+{
+    public CardSelectionRule() : this(null!, null!) => throw new NotSupportedException();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,4 +29,7 @@ public delegate bool CardComboSelectionValidation<TCard>(
 public readonly record struct CardComboSelectionRule<TCard>(
     string Description,
     CardComboSelectionValidation<TCard> ValidateCards)
-    where TCard : Card;
+    where TCard : Card
+{
+    public CardComboSelectionRule() : this(null!, null!) => throw new NotSupportedException();
+}

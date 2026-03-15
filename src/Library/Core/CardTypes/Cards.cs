@@ -69,6 +69,7 @@ public partial class Cards<TCard> : IList<TCard>
         {
             if (i == 0)
                 builder.AppendLine();
+            builder.Append("  ");
             builder.Append(i);
             builder.Append(": ");
             builder.Append(this[i]);
