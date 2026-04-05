@@ -41,15 +41,53 @@ single binary is desired.
 
 ### Short-Term
 
+- Web API (so can vibe code frontend; test what heard about good prototype but bad at iterating)
+  - Just use a hardcoded jwt, for now
+  - Build endpoints
+    - Endpoint to lists games
+    - Endpoint to create game of specific type
+    - Endpoint to get latest events w/in a game since last event
+      - Sent event ID in GET
+      - Will need to use Redis and jwt's `sub` so can make sure user isn't rewinding
+    - Endpoint to "respond" to prompt
+    - paths:
+      ```txt
+      GET /gameTypes
+      { GameTypes : [ "Hearts" ] }
+
+      GET /gameSession
+      { GameInstances: [ { GameType: "Hearts", SessionId: "{GUID}" } ] }
+
+      POST /gameSession?gameType={GameType}
+      { SessionId: "{SessionId}" }
+
+      GET /gameSession/{SessionId}/newEvents?lastSeenEventId={EventId}
+      { Events: [ { Events } ] }
+      // Will need to use jwt's `sub` and Redis so user can't rewind
+
+      POST /gameSession/{SessionId}/playCard
+      { CardPlayed: Card }
+
+      POST /gameSession/{SessionId}/playCards
+      { CardsPlayed: [ Cards ] }
+      ```
+  - Swagger page (esp for game events and card types)
+  - More things to iteratively build. This way, can see how well AI behaves when given updates
+    - General web API quality (POST vs PUT, problem details, etc)
+    - Timeouts (player bridge)
+    - Real auth
+    - Configure user/game settings
+    - Pagination of gameInstances
+    - Multiplayer (posting a game session, etc)
 - More unit tests!
   - `IReadOnlyListExtensions.FindIndex`
   - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
   - `ChannelGameEventPublisher`
   - Most of Hearts
   - CLI
-- If game crashes, display game ID so users could report
 - How handle data visibility to diff players?
 - CLI updates
+    - If game crashes, display game ID so users could report
     - Add a rules section to wireframe
     - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
       - ([docs](https://spectreconsole.net/widgets/layout))
