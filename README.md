@@ -85,6 +85,7 @@ single binary is desired.
   - `ChannelGameEventPublisher`
   - Most of Hearts
   - CLI
+- Fill out `GameRegistry`'s meta data
 - How handle data visibility to diff players?
 - CLI updates
     - If game crashes, display game ID so users could report

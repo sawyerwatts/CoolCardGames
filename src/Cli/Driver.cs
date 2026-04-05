@@ -1,3 +1,4 @@
+using CoolCardGames.Library;
 using CoolCardGames.Library.Core.Players;
 using CoolCardGames.Library.Games.Hearts;
 
@@ -14,7 +15,7 @@ public class Driver(
     IServiceProvider services,
     ILogger<Driver> logger)
 {
-    public async Task RunAsync(CancellationToken cancellationToken)
+    public async Task RunAsync(GameRegistry gameRegistry, CancellationToken cancellationToken)
     {
         PlayerAccountCard accountCard = GetSessionsAccountCard();
         AnsiConsole.WriteLine($"Hello, {accountCard.DisplayName}!");
@@ -29,7 +30,7 @@ public class Driver(
                     new SelectionPrompt<string>()
                         .Title("What game do you want to play?")
 #pragma warning disable CA1861
-                        .AddChoices(new[] { "Hearts", })
+                        .AddChoices(gameRegistry.GameNames)
 #pragma warning restore CA1861
                 );
             }

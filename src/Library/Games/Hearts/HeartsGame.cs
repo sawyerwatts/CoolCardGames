@@ -36,7 +36,8 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
 
     public const int NumPlayers = 4;
 
-    public override string Name => "Hearts";
+    public const string NameConst = "Hearts";
+    public override string Name => NameConst;
 
     protected override object? SettingsToBeLogged => new { UserGameSettings = _settings };
 
