@@ -20,6 +20,7 @@ public class GameSessionsController : Controller
         return Ok(new GameSessionPostResponse() { SessionId = Guid.NewGuid().ToString() });
     }
 
+    // TODO: mind want to rebrand this to GetCurrentState or something so can see cards n stuff
     [HttpGet("{sessionId}/newEventsSince/{lastEventId}")]
     public ActionResult<GameSessionNewEventsResponse> GetNewEvents(string sessionId, string lastEventId, CancellationToken cancellationToken)
     {

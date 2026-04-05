@@ -13,6 +13,7 @@ This repository implements a number of card games.
 ### Running locally
 
 - There is a [scalar webpage](http://localhost:5222/scalar) for the web API.
+- There is a [swagger webpage](http://localhost:5222/swagger/index.html) for the web API too.
 
 ### Architecture
 
@@ -64,6 +65,7 @@ single binary is desired.
   - Most of Hearts
   - CLI
 - Fill out `GameRegistry`'s meta data
+- When registering game events, if the event is
 - How handle data visibility to diff players?
 - CLI updates
     - If game crashes, display game ID so users could report
