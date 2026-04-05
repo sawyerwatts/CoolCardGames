@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Library\CoolCardGames.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Endpoints\" />
+  </ItemGroup>
+
 </Project>

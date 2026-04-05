@@ -3,7 +3,7 @@ using CoolCardGames.WebApi.GameTypes;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace CoolCardGames.WebApi.GameTypesEndpoints;
+namespace CoolCardGames.WebApi.Endpoints.GameTypes;
 
 [ApiController]
 [Route("GameTypes")]
