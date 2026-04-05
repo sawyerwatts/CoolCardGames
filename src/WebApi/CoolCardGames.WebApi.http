@@ -2,32 +2,32 @@
 
 ### Get game types
 
-GET {{HostAddress}}/gameTypes
+GET {{HostAddress}}/gameType
 Accept: application/json
 
 ### Get game sessions
 
-GET {{HostAddress}}/gameSessions
+GET {{HostAddress}}/gameSession
 Accept: application/json
 
 ### Create game session
 
-POST {{HostAddress}}/gameSessions?gameType=Hearts
+POST {{HostAddress}}/gameSession?gameType=Hearts
 Accept: application/json
 
-> {%
-    let sessionId = response.body.sessionId;
-    client.global.set("SessionId", sessionId);
-    console.log("Retrieved session ID " + sessionId)
-%}
+> {% client.global.set("SessionId", response.body.sessionId); %}
 
 ### Get new game events
 
-GET {{HostAddress}}/gameSessions/{{SessionId}}/newEventsSince/{{LastEventId}}
+GET {{HostAddress}}/gameSession/{{SessionId}}/newEventsSince/{{LastEventId}}
 Accept: application/json
 
-> {%
-    let lastEventId = response.body.lastEventsId;
-    client.global.set("LastEventId", lastEventId);
-    console.log("The new last event ID is " + lastEventId)
-%}
+> {% client.global.set("LastEventId", response.body.lastEventsId); %}
+
+### Play card
+
+# TODO: this
+
+### Play cards
+
+# TODO: this

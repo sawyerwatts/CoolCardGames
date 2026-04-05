@@ -1,8 +1,8 @@
 using CoolCardGames.WebApi.GameTypeDtos.GameEvents;
 
-namespace CoolCardGames.WebApi.Endpoints.GameSessions;
+namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
-public class GameSessionsNewEventsResponse
+public class GameSessionNewEventsResponse
 {
     public IEnumerable<IGameEventDto> NewEvents { get; set; } = [];
     public string LastEventsId { get; set; } = "";
