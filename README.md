@@ -4,6 +4,16 @@ This repository implements a number of card games.
 
 ## Getting Started
 
+### Build and Test
+
+1. Install .NET 10
+1. `dotnet build`
+1. `dotnet test`
+
+### Running locally
+
+- There is a [scalar webpage](http://localhost:5222/scalar) for the web API.
+
 ### Architecture
 
 This uses feature folders and abstract core architecture. Within `Library.csproj`, there is `Core/`,
@@ -31,12 +41,6 @@ single binary is desired.
 
 ![dataFlow](./docs/images/dataFlow.png)
 
-### Build and Test
-
-1. Install .NET 10
-1. `dotnet build`
-1. `dotnet test`
-
 ## TODO
 
 ### Short-Term
@@ -46,25 +50,13 @@ single binary is desired.
   - Build endpoints
     - Endpoint to lists games
     - Endpoint to create game of specific type
+      - TODO: what if the player plays multiple games?
     - Endpoint to get latest events w/in a game since last event
       - Sent event ID in GET
       - Will need to use Redis and jwt's `sub` so can make sure user isn't rewinding
     - Endpoint to "respond" to prompt
     - paths:
       ```txt
-      GET /gameTypes
-      { GameTypes : [ "Hearts" ] }
-
-      GET /gameSessions
-      { GameInstances: [ { GameType: "Hearts", SessionId: "{GUID}" } ] }
-
-      POST /gameSessions?gameType={GameType}
-      { SessionId: "{SessionId}" }
-
-      GET /gameSessions/{SessionId}/newEvents?lastSeenEventId={EventId}
-      { Events: [ { Events } ] }
-      // Will need to use jwt's `sub` and Redis so user can't rewind
-
       POST /gameSessions/{SessionId}/playCard
       { CardPlayed: Card }
 
@@ -78,7 +70,8 @@ single binary is desired.
     - Real auth
     - Configure user/game settings
     - Pagination of gameInstances
-    - Multiplayer (posting a game session, etc)
+    - Multiplayer (posting a game session, requiring a password like DS3, etc)
+    - [Rollback](https://en.wikipedia.org/wiki/Netcode#Rollback)
 - More unit tests!
   - `IReadOnlyListExtensions.FindIndex`
   - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
@@ -107,11 +100,6 @@ single binary is desired.
 
 ### Other Platforms and Online Mode
 
-- Online mode
-    - REST API, maybe [grpc?](https://github.com/grpc/grpc-dotnet)
-    - P2P or Server?
-    - [Rollback?](https://en.wikipedia.org/wiki/Netcode#Rollback)
-    - How handle reconnects? Sticky session, probably
 - CLI Online Mode
 - Website
 - Mobile App, esp w/ offline mode too (LOL)

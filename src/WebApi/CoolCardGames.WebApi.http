@@ -1,12 +1,33 @@
-@WebApi_HostAddress = http://localhost:5222
+@HostAddress = http://localhost:5222
 
-###################################################################################################
-### GameTypes
-###################################################################################################
+### Get game types
 
-### GET
-
-GET {{WebApi_HostAddress}}/gameTypes
+GET {{HostAddress}}/gameTypes
 Accept: application/json
 
-###
+### Get game sessions
+
+GET {{HostAddress}}/gameSessions
+Accept: application/json
+
+### Create game session
+
+POST {{HostAddress}}/gameSessions?gameType=Hearts
+Accept: application/json
+
+> {%
+    let sessionId = response.body.sessionId;
+    client.global.set("SessionId", sessionId);
+    console.log("Retrieved session ID " + sessionId)
+%}
+
+### Get new game events
+
+GET {{HostAddress}}/gameSessions/{{SessionId}}/newEventsSince/{{LastEventId}}
+Accept: application/json
+
+> {%
+    let lastEventId = response.body.lastEventsId;
+    client.global.set("LastEventId", lastEventId);
+    console.log("The new last event ID is " + lastEventId)
+%}

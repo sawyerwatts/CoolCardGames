@@ -1,5 +1,4 @@
 using CoolCardGames.Library;
-using CoolCardGames.WebApi.GameTypes;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +6,11 @@ namespace CoolCardGames.WebApi.Endpoints.GameTypes;
 
 [ApiController]
 [Route("GameTypes")]
-public class GameTypesController(GameRegistry gameRegistry)
+public class GameTypesController(GameRegistry gameRegistry) : Controller
 {
     [HttpGet]
-    public GameTypesGetResponse Get(CancellationToken cancellationToken)
+    public ActionResult<GameTypesGetResponse> Get(CancellationToken cancellationToken)
     {
-        return new GameTypesGetResponse() { GameTypes = gameRegistry.GameNames.Select(name => new GameType() { Name = name }) };
+        return Ok(new GameTypesGetResponse() { GameTypes = gameRegistry.GameNames.Select(name => new GameType() { Name = name }) });
     }
 }

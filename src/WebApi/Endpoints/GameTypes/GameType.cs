@@ -1,4 +1,4 @@
-namespace CoolCardGames.WebApi.GameTypes;
+namespace CoolCardGames.WebApi.Endpoints.GameTypes;
 
 public struct GameType()
 {

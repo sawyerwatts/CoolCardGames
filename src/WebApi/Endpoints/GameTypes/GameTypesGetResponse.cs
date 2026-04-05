@@ -1,6 +1,6 @@
-namespace CoolCardGames.WebApi.GameTypes;
+namespace CoolCardGames.WebApi.Endpoints.GameTypes;
 
-public struct GameTypesGetResponse()
+public class GameTypesGetResponse
 {
     public IEnumerable<GameType> GameTypes { get; set; } = [];
 }

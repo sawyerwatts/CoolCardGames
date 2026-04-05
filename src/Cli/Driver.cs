@@ -9,13 +9,14 @@ using Spectre.Console;
 namespace CoolCardGames.Cli;
 
 public class Driver(
+    GameRegistry gameRegistry,
     CliPlayerFactory cliPlayerFactory,
     AiPlayerFactory aiPlayerFactory,
     IOptionsMonitor<Driver.Settings> driverSettings,
     IServiceProvider services,
     ILogger<Driver> logger)
 {
-    public async Task RunAsync(GameRegistry gameRegistry, CancellationToken cancellationToken)
+    public async Task RunAsync(CancellationToken cancellationToken)
     {
         PlayerAccountCard accountCard = GetSessionsAccountCard();
         AnsiConsole.WriteLine($"Hello, {accountCard.DisplayName}!");
