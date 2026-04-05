@@ -55,20 +55,20 @@ single binary is desired.
       GET /gameTypes
       { GameTypes : [ "Hearts" ] }
 
-      GET /gameSession
+      GET /gameSessions
       { GameInstances: [ { GameType: "Hearts", SessionId: "{GUID}" } ] }
 
-      POST /gameSession?gameType={GameType}
+      POST /gameSessions?gameType={GameType}
       { SessionId: "{SessionId}" }
 
-      GET /gameSession/{SessionId}/newEvents?lastSeenEventId={EventId}
+      GET /gameSessions/{SessionId}/newEvents?lastSeenEventId={EventId}
       { Events: [ { Events } ] }
       // Will need to use jwt's `sub` and Redis so user can't rewind
 
-      POST /gameSession/{SessionId}/playCard
+      POST /gameSessions/{SessionId}/playCard
       { CardPlayed: Card }
 
-      POST /gameSession/{SessionId}/playCards
+      POST /gameSessions/{SessionId}/playCards
       { CardsPlayed: [ Cards ] }
       ```
   - Swagger page (esp for game events and card types)
