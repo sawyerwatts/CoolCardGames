@@ -13,6 +13,10 @@ public class GameEventOpenApiDocumentTransformer(ILogger<GameEventOpenApiDocumen
         // TODO: instead, have a GameEventDto w/ Summary and Payload?
         //      as-is, this is leaking way too much about internal representations, but we do also want everything to be visible
         //      prob want a CardDto
+        //      idea: make GameEvents not generic, and then have type converter for Card?
+        //          prob want a type converter for player account card too
+        //      still don't love how easy it would be to leak things to the api
+        //          might just have to flag it in GameEvent xmldocs
         var gameEventType = typeof(GameEvent);
         var gameEventTypes = gameEventType.Assembly.GetTypes();
         foreach (Type currGameEventType in gameEventTypes)
