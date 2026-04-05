@@ -9,13 +9,15 @@ public class GameSessionsController : Controller
     [HttpGet]
     public ActionResult<GameSessionGetResponse> Get(CancellationToken cancellationToken)
     {
-        return Ok(new GameSessionGetResponse()); // TODO: this
+        // TODO: this
+        return Ok(new GameSessionGetResponse());
     }
 
     [HttpPost]
     public ActionResult<GameSessionPostResponse> Post([FromQuery] string gameType, CancellationToken cancellationToken)
     {
-        return Ok(new GameSessionPostResponse() { SessionId = Guid.NewGuid().ToString() }); // TODO: this
+        // TODO: this
+        return Ok(new GameSessionPostResponse() { SessionId = Guid.NewGuid().ToString() });
     }
 
     [HttpGet("{sessionId}/newEventsSince/{lastEventId}")]

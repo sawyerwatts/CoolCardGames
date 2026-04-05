@@ -47,22 +47,7 @@ single binary is desired.
 
 - Web API (so can vibe code frontend; test what heard about good prototype but bad at iterating)
   - Just use a hardcoded jwt, for now
-  - Build endpoints
-    - Endpoint to lists games
-    - Endpoint to create game of specific type
-      - TODO: what if the player plays multiple games?
-    - Endpoint to get latest events w/in a game since last event
-      - Sent event ID in GET
-      - Will need to use Redis and jwt's `sub` so can make sure user isn't rewinding
-    - Endpoint to "respond" to prompt
-    - paths:
-      ```txt
-      POST /gameSessions/{SessionId}/playCard
-      { CardPlayed: Card }
-
-      POST /gameSessions/{SessionId}/playCards
-      { CardsPlayed: [ Cards ] }
-      ```
+  - Impl stubbed endpoints
   - Swagger page (esp for game events and card types)
   - More things to iteratively build. This way, can see how well AI behaves when given updates
     - General web API quality (POST vs PUT, problem details, etc)
