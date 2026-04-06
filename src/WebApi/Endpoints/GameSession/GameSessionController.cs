@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 [ApiController]
-[Route("GameSession")]
+[Route("v1/GameSession")]
 public class GameSessionsController : Controller
 {
     [HttpGet]

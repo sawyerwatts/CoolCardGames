@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CoolCardGames.WebApi.Endpoints.GameType;
 
 [ApiController]
-[Route("GameType")]
+[Route("v1/GameType")]
 public class GameTypeController(GameRegistry gameRegistry) : Controller
 {
     [HttpGet]

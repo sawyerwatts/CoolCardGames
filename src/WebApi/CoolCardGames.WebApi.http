@@ -1,4 +1,4 @@
-@HostAddress = http://localhost:5222
+@HostAddress = http://localhost:5222/v1
 
 ### Get game types
 
@@ -18,6 +18,13 @@ Accept: application/json
 > {% client.global.set("SessionId", response.body.sessionId); %}
 
 ### Get new game events
+
+< {%
+
+if (client.global.get("LastEventId") === undefined)
+    client.global.set("LastEventId", 0)
+
+%}
 
 GET {{HostAddress}}/gameSession/{{SessionId}}/newEventsSince/{{LastEventId}}
 Accept: application/json
