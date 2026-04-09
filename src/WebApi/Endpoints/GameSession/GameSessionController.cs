@@ -1,6 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
+
+// TODO: this assumes sticky sessions
 
 [ApiController]
 [Route("v1/GameSession")]
@@ -16,21 +20,18 @@ public class GameSessionsController : Controller
     [HttpPost]
     public ActionResult<GameSessionPostResponse> Post([FromQuery] string gameType, CancellationToken cancellationToken)
     {
-        // TODO: this
+        // TODO: this; make game and player
         return Ok(new GameSessionPostResponse() { SessionId = Guid.NewGuid().ToString() });
     }
 
-    // TODO: mind want to rebrand this to GetCurrentState or something so can see cards n stuff
-    [HttpGet("{sessionId}/newEventsSince/{lastEventId}")]
-    public ActionResult<GameSessionNewEventsResponse> GetNewEvents(string sessionId, string lastEventId, CancellationToken cancellationToken)
+    [HttpGet("{sessionId}")]
+    public ActionResult<GameSessionGetCurrentStateResponse> GetCurrentState([Required] string sessionId, CancellationToken cancellationToken)
     {
-        // TODO: this; somehow get game events into swagger too
-        // TODO: the events need to indicate that the player needs to play card(s)
-        // TODO: Will need to use jwt's `sub` and Redis so user can't rewind
-        return Ok(new GameSessionNewEventsResponse()
-        {
-            LastEventsId = "3",
-        });
+        // TODO: check+use sessionId
+        // TODO: use "JWT" sub claim to figure out player to target (if admin, get everything?)
+        // TODO: actually retrieve from game; if no game, 400
+        var currState = new GameSessionGetCurrentStateResponse();
+        return Ok(currState);
     }
 
     [HttpPost("{sessionId}/playCard")]

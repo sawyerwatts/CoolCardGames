@@ -17,19 +17,10 @@ Accept: application/json
 
 > {% client.global.set("SessionId", response.body.sessionId); %}
 
-### Get new game events
+### Get game state and new events
 
-< {%
-
-if (client.global.get("LastEventId") === undefined)
-    client.global.set("LastEventId", 0)
-
-%}
-
-GET {{HostAddress}}/gameSession/{{SessionId}}/newEventsSince/{{LastEventId}}
+GET {{HostAddress}}/gameSession/{{SessionId}}
 Accept: application/json
-
-> {% client.global.set("LastEventId", response.body.lastEventsId); %}
 
 ### Play card
 

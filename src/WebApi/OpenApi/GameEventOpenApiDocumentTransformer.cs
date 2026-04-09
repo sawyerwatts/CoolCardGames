@@ -17,6 +17,7 @@ public class GameEventOpenApiDocumentTransformer(ILogger<GameEventOpenApiDocumen
         //          prob want a type converter for player account card too
         //      still don't love how easy it would be to leak things to the api
         //          might just have to flag it in GameEvent xmldocs
+        // TODO: in API, prob wanna flatten envelope into game event
         var gameEventType = typeof(GameEvent);
         var gameEventTypes = gameEventType.Assembly.GetTypes();
         foreach (Type currGameEventType in gameEventTypes)

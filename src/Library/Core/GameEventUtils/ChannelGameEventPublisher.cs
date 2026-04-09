@@ -24,7 +24,7 @@ public class ChannelGameEventPublisher(
     ILogger<ChannelGameEventPublisher> logger)
     : IGameEventPublisher
 {
-    private uint _id = 0;
+    private uint _id = 1;
 
     public async ValueTask<GameEventEnvelope> Publish(GameEvent gameEvent, CancellationToken cancellationToken)
     {
