@@ -14,6 +14,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddSerilog();
 
 builder.AddLibraryServices();
+builder.AddWebApiServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
