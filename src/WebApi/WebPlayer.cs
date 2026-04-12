@@ -13,6 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.WebApi;
 
+// BUG: there are still concurrency bugs in this class
+//      - on the second trick, "The game never reviewed the cards before timing out"
+//      - esp around ifNotNullSelectCardFollowingTheseRules not being updated after the first round
+
 // TODO: if they PlayCard when need to PlayCards, don't time out
 
 // TODO: need better docs about the specific order these methods need to be used in
@@ -94,10 +98,22 @@ public class WebPlayer : Player
 
     protected override async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards cards, List<CardSelectionRule> cardSelectionRules, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Before prompting the user for the index of the card to play, confirming the user has read the previous attempt's index to play (if any)");
+        while (true)
+        {
+            var canPrompt = await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
+                Task.FromResult(_state.IndexOfCardToPlay is null));
+            if (canPrompt)
+                break;
+
+            await Task.Delay(_settings.Value.UserResponsePollMs, cancellationToken);
+        }
+
         _logger.LogInformation("Preparing to track that the user needs to choose the index of the card to play");
         await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
         {
             _state.IfNotNullSelectCardFollowingTheseRules = cardSelectionRules.Select(rule => rule.Description);
+            _state.IfNotNullSelectCardComboFollowingTheseRules = null;
             _state.Cards = cards;
             _state.IndexOfCardToPlay = null;
             return Task.FromResult(true);
@@ -133,9 +149,21 @@ public class WebPlayer : Player
 
     protected override async Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards cards, List<CardComboSelectionRule> cardComboSelectionRules, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Before prompting the user for the indexes of the cards to play, confirming the user has read the previous attempt's indexes to play (if any)");
+        while (true)
+        {
+            var canPrompt = await _asyncLock.LockThenExecute(nameof(PromptForIndexesOfCardsToPlay), () =>
+                Task.FromResult(_state.IndexesOfCardsToPlay is null));
+            if (canPrompt)
+                break;
+
+            await Task.Delay(_settings.Value.UserResponsePollMs, cancellationToken);
+        }
+
         _logger.LogInformation("Preparing to track that the user needs to choose the index(es) of the card(s) to play");
         var resetStateThreadUnsafe = await _asyncLock.LockThenExecute(nameof(PromptForIndexesOfCardsToPlay), () =>
         {
+            _state.IfNotNullSelectCardFollowingTheseRules = null;
             _state.IfNotNullSelectCardComboFollowingTheseRules = cardComboSelectionRules.Select(rule => rule.Description);
             _state.Cards = cards;
             _state.IndexesOfCardsToPlay = null;
@@ -277,6 +305,9 @@ public class WebPlayer : Player
                 resp.RulesFailed = _state.RulesFailed;
                 _state.RulesFailed = null;
 
+                // BUG: there's a concurrency bug around _state.IndexOfCardToPlay when the user enters a bad index.
+                //      The value returned is null instead of the given index (I suspect this and Prompt have a race
+                //      condition around this property).
                 resp.IndexOfCardAttempted = _state.IndexOfCardToPlay;
                 _state.IndexOfCardToPlay = null;
 

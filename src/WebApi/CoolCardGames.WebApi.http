@@ -20,7 +20,7 @@ Accept: application/json
 ### Get game state and new events
 
 GET {{HostAddress}}/gameSession/{{SessionId}}
-sccept: application/json
+Accept: application/json
 
 ### Play card
 
