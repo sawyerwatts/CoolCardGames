@@ -11,6 +11,15 @@ public class GameTypeController(GameRegistry gameRegistry) : Controller
     [HttpGet]
     public ActionResult<GameTypeGetResponse> Get(CancellationToken cancellationToken)
     {
-        return Ok(new GameTypeGetResponse() { GameTypes = gameRegistry.GameNames.Select(name => new GameType() { Name = name }) });
+        return Ok(new GameTypeGetResponse()
+        {
+            GameTypes = gameRegistry.GameMetaDatas.Select(metaData => new GameType()
+            {
+                Name = metaData.Name,
+                Description = metaData.Description,
+                MinPlayers = metaData.MinPlayers,
+                MaxPlayers = metaData.MaxPlayers,
+            })
+        });
     }
 }

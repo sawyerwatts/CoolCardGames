@@ -57,7 +57,7 @@ public class GameSessionsController(
         Session newSession;
         try
         {
-            if (!gameRegistry.GameNames.Contains(gameType))
+            if (!gameRegistry.GameMetaDatas.Any(game => game.Name.Contains(gameType)))
             {
                 logger.LogInformation("User entered unknown game type ({GameType})", gameType);
                 var details = new ProblemDetails

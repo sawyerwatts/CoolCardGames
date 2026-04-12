@@ -28,7 +28,7 @@ public class Driver(
                     new SelectionPrompt<string>()
                         .Title("What game do you want to play?")
 #pragma warning disable CA1861
-                        .AddChoices(gameRegistry.GameNames)
+                        .AddChoices(gameRegistry.GameMetaDatas.Select(metaData => metaData.Name))
 #pragma warning restore CA1861
                 );
             }
