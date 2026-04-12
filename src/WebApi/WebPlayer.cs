@@ -305,9 +305,6 @@ public class WebPlayer : Player
                 resp.RulesFailed = _state.RulesFailed;
                 _state.RulesFailed = null;
 
-                // BUG: there's a concurrency bug around _state.IndexOfCardToPlay when the user enters a bad index.
-                //      The value returned is null instead of the given index (I suspect this and Prompt have a race
-                //      condition around this property).
                 resp.IndexOfCardAttempted = _state.IndexOfCardToPlay;
                 _state.IndexOfCardToPlay = null;
 
