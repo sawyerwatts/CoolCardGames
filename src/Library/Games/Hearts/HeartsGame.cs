@@ -81,8 +81,8 @@ public sealed class HeartsGame : Game<HeartsPlayerState>
         var iTrickPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers);
         while (true) // TODO: at risk of infinite loop
         {
-            var player = _players[iTrickPlayer.N];
-            var playerState = _gameState.Players[iTrickPlayer.N];
+            var player = _players[iTrickPlayer.Value];
+            var playerState = _gameState.Players[iTrickPlayer.Value];
             await _gameEventPublisher.Publish(new HeartsGameEvent.GettingOpeningCardFrom(player.AccountCard), cancellationToken);
             if (!_gameState.IsHeartsBroken && playerState.Hand.All(card => card.Value.Suit is Suit.Hearts))
             {
@@ -114,8 +114,8 @@ public sealed class HeartsGame : Game<HeartsPlayerState>
 
         while (iTrickPlayer.CycleClockwise() != _gameState.IndexTrickStartPlayer)
         {
-            var chosenCard = await _players[iTrickPlayer.N].PromptForValidCardAndPlay(
-                cards: _gameState.Players[iTrickPlayer.N].Hand,
+            var chosenCard = await _players[iTrickPlayer.Value].PromptForValidCardAndPlay(
+                cards: _gameState.Players[iTrickPlayer.Value].Hand,
                 cardSelectionRules: followingRules,
                 cancellationToken);
             trick.Add(chosenCard);
@@ -123,7 +123,7 @@ public sealed class HeartsGame : Game<HeartsPlayerState>
             if (!_gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
                 await _gameEventPublisher.Publish(
-                    new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].AccountCard, (HeartsCard)chosenCard),
+                    new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.Value].AccountCard, (HeartsCard)chosenCard),
                     cancellationToken);
                 _gameState.IsHeartsBroken = true;
             }

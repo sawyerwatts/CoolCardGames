@@ -14,96 +14,96 @@ public class CircularCounterTests
     public void TestCyclingUp()
     {
         CircularCounter sut = new(3);
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(1, sut.Tick());
-        Assert.Equal(1, sut.N);
+        Assert.Equal(1, sut.Value);
 
         Assert.Equal(2, sut.Tick());
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
 
         Assert.Equal(0, sut.Tick());
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
     }
 
     [Fact]
     public void TestCyclingClockwise()
     {
         CircularCounter sut = new(3);
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(1, sut.CycleClockwise());
-        Assert.Equal(1, sut.N);
+        Assert.Equal(1, sut.Value);
 
         Assert.Equal(2, sut.CycleClockwise());
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
 
         Assert.Equal(0, sut.CycleClockwise());
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
     }
 
     [Fact]
     public void TestCyclingDown()
     {
         CircularCounter sut = new(3, startAtEnd: true);
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
 
         Assert.Equal(1, sut.Tick(-1));
-        Assert.Equal(1, sut.N);
+        Assert.Equal(1, sut.Value);
 
         Assert.Equal(0, sut.Tick(-1));
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(2, sut.Tick(-1));
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
     }
 
     [Fact]
     public void TestCyclingCounterClockwise()
     {
         CircularCounter sut = new(3, startAtEnd: true);
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
 
         Assert.Equal(1, sut.CycleCounterClockwise());
-        Assert.Equal(1, sut.N);
+        Assert.Equal(1, sut.Value);
 
         Assert.Equal(0, sut.CycleCounterClockwise());
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(2, sut.CycleCounterClockwise());
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
     }
 
     [Fact]
     public void TestTickDontUpdateCounter()
     {
         CircularCounter sut = new(3);
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(1, sut.Tick(updateInstance: false));
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
     }
 
     [Fact]
     public void TestMultiTickThatDontRollOver()
     {
         CircularCounter sut = new(3);
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(2, sut.Tick(2));
-        Assert.Equal(2, sut.N);
+        Assert.Equal(2, sut.Value);
 
         Assert.Equal(0, sut.Tick());
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
     }
 
     [Fact]
     public void TestMultiTickThatRollOver()
     {
         CircularCounter sut = new(3);
-        Assert.Equal(0, sut.N);
+        Assert.Equal(0, sut.Value);
 
         Assert.Equal(1, sut.Tick(4));
-        Assert.Equal(1, sut.N);
+        Assert.Equal(1, sut.Value);
     }
 }

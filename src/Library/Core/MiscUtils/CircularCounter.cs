@@ -4,7 +4,7 @@ namespace CoolCardGames.Library.Core.MiscUtils;
 
 public record struct CircularCounter
 {
-    public int N { get; private set; }
+    public int Value { get; private set; }
     private readonly int _maxExclusive;
 
     public CircularCounter() => throw new NotSupportedException();
@@ -16,7 +16,7 @@ public record struct CircularCounter
         _maxExclusive = maxExclusive;
 
         if (startAtEnd)
-            N = _maxExclusive - 1;
+            Value = _maxExclusive - 1;
     }
 
     public CircularCounter(int seed, int maxExclusive)
@@ -27,7 +27,7 @@ public record struct CircularCounter
 
         if (seed < 0 || seed >= maxExclusive)
             throw new ArgumentException($"{nameof(seed)} must be non-negative and less than {nameof(maxExclusive)}, but given {nameof(seed)} of {seed} and {nameof(maxExclusive)} of {maxExclusive}");
-        N = seed;
+        Value = seed;
     }
 
     public int CycleClockwise(int times = 1, bool updateInstance = true)
@@ -48,9 +48,9 @@ public record struct CircularCounter
     public int Tick(int delta = 1, bool updateInstance = true)
     {
         if (delta == 0)
-            return N;
+            return Value;
 
-        var n = N;
+        var n = Value;
         var move = delta switch
         {
             < 0 => -1,
@@ -69,7 +69,7 @@ public record struct CircularCounter
         }
 
         if (updateInstance)
-            N = n;
+            Value = n;
         return n;
     }
 }

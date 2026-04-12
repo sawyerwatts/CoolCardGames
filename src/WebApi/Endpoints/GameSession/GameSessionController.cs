@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
-// BUG: game is crashing
-
 // TODO: how clean up finished sessions?
 
 // TODO: openapi serialize enums as strings

@@ -99,7 +99,7 @@ public class Dealer(IGameEventPublisher gameEventPublisher, Dealer.IRng rng, ILo
         CircularCounter iCurrHand = new(numHands);
         foreach (var currCard in deck)
         {
-            hands[iCurrHand.N].Add(currCard);
+            hands[iCurrHand.Value].Add(currCard);
             iCurrHand.Tick();
         }
 
