@@ -13,6 +13,8 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.WebApi;
 
+// TODO: if they PlayCard when need to PlayCards, don't time out
+
 // TODO: need better docs about the specific order these methods need to be used in
 
 /// <summary>
@@ -74,8 +76,8 @@ public class WebPlayer : Player
             if (_state.IfNotNullSelectCardComboFollowingTheseRules is not null)
                 result.IfNotNullSelectCardComboFollowingTheseRules = _state.IfNotNullSelectCardComboFollowingTheseRules;
 
-            if (_state.Hand is not null)
-                result.Hand = _state.Hand;
+            if (_state.Cards is not null)
+                result.Cards = _state.Cards;
 
             // If the network drops the response, then the user won't have any way of replaying the
             // lost events. I couldn't think of a (relatively painless) way to implement event
@@ -93,60 +95,39 @@ public class WebPlayer : Player
     protected override async Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards cards, List<CardSelectionRule> cardSelectionRules, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Preparing to track that the user needs to choose the index of the card to play");
-        var resetStateThreadUnsafe = await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
+        await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
         {
             _state.IfNotNullSelectCardFollowingTheseRules = cardSelectionRules.Select(rule => rule.Description);
-            _state.Hand = cards;
+            _state.Cards = cards;
             _state.IndexOfCardToPlay = null;
-            var cleanup = new Disposable(() =>
-            {
-                _state.IfNotNullSelectCardFollowingTheseRules = null;
-                _state.Hand = null;
-                _state.IndexOfCardToPlay = null;
-            });
-            return Task.FromResult(cleanup);
+            return Task.FromResult(true);
         });
 
-        try
+        while (true)
         {
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                // In parallel, the user will be using the API to GET the current status, and then POST the
-                // response into AnswerPromptForIndexOfCardToPlay. Poll until that has been done.
-                _logger.LogInformation("Checking if the player has selected the index of the card to play");
-                int? indexOfCardToPlay = await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
+            // In parallel, the user will be using the API to GET the current status, and then POST the
+            // response into AnswerPromptForIndexOfCardToPlay. Poll until that has been done.
+            _logger.LogInformation("Checking if the player has selected the index of the card to play");
+            int? indexOfCardToPlay = await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
+            {
+                int? indexOfCardToPlay = _state.IndexOfCardToPlay;
+                if (indexOfCardToPlay is null)
                 {
-                    int? indexOfCardToPlay = _state.IndexOfCardToPlay;
-                    if (indexOfCardToPlay is null)
-                    {
-                        int? noResp = null;
-                        return Task.FromResult(noResp);
-                    }
+                    int? noResp = null;
+                    return Task.FromResult(noResp);
+                }
 
-                    _logger.LogInformation("Preparing to track that the user has selected the index of the card to play");
-                    resetStateThreadUnsafe.Dispose();
-                    return Task.FromResult(indexOfCardToPlay);
-                });
-
-                if (indexOfCardToPlay is not null)
-                    return indexOfCardToPlay.Value;
-
-                _logger.LogInformation("Player has not responded, sleeping for {PollMs} ms", _settings.Value.PollMs);
-                await Task.Delay(_settings.Value.PollMs, cancellationToken);
-            }
-        }
-        catch (Exception exc)
-        {
-            _logger.LogError(exc, "An exception occurred in {PromptForIndexOfCardToPlay}, performing cleanup", nameof(PromptForIndexOfCardToPlay));
-            _ = await _asyncLock.LockThenExecute(nameof(PromptForIndexOfCardToPlay), () =>
-            {
-                resetStateThreadUnsafe.Dispose();
-                return Task.FromResult(true);
+                _logger.LogInformation("Preparing to track that the user has selected the index of the card to play");
+                return Task.FromResult(indexOfCardToPlay);
             });
-            _logger.LogInformation(exc, "Cleanup completed, rethrowing");
-            throw;
+
+            if (indexOfCardToPlay is not null)
+                return indexOfCardToPlay.Value;
+
+            _logger.LogInformation("Player has not responded, sleeping for {PollMs} ms", _settings.Value.UserResponsePollMs);
+            await Task.Delay(_settings.Value.UserResponsePollMs, cancellationToken);
         }
     }
 
@@ -156,12 +137,12 @@ public class WebPlayer : Player
         var resetStateThreadUnsafe = await _asyncLock.LockThenExecute(nameof(PromptForIndexesOfCardsToPlay), () =>
         {
             _state.IfNotNullSelectCardComboFollowingTheseRules = cardComboSelectionRules.Select(rule => rule.Description);
-            _state.Hand = cards;
+            _state.Cards = cards;
             _state.IndexesOfCardsToPlay = null;
             var cleanup = new Disposable(() =>
             {
                 _state.IfNotNullSelectCardComboFollowingTheseRules = null;
-                _state.Hand = null;
+                _state.Cards = null;
                 _state.IndexesOfCardsToPlay = null;
             });
             return Task.FromResult(cleanup);
@@ -174,16 +155,13 @@ public class WebPlayer : Player
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // In parallel, the user will be using the API to GET the current status, and then POST the
-                // response into AnswerPromptForIndexOfCardToPlay. Poll until that has been done.
+                // response into AnswerPromptForIndexesOfCardsToPlay. Poll until that has been done.
                 _logger.LogInformation("Checking if the player has selected the index(es) of the card(s) to play");
-                List<int>? indexesOfCardToPlay = await _asyncLock.LockThenExecute<List<int>?>(nameof(PromptForIndexesOfCardsToPlay), () =>
+                List<int>? indexesOfCardToPlay = await _asyncLock.LockThenExecute(nameof(PromptForIndexesOfCardsToPlay), () =>
                 {
                     List<int>? indexesOfCardsToPlay = _state.IndexesOfCardsToPlay;
                     if (indexesOfCardsToPlay is null)
-                    {
-                        indexesOfCardsToPlay = null;
                         return Task.FromResult(indexesOfCardsToPlay);
-                    }
 
                     _logger.LogInformation("Preparing to track that the user has selected the index(es) of the card(s) to play");
                     resetStateThreadUnsafe.Dispose();
@@ -193,8 +171,8 @@ public class WebPlayer : Player
                 if (indexesOfCardToPlay is not null)
                     return indexesOfCardToPlay;
 
-                _logger.LogInformation("Player has not responded, sleeping for {PollMs} ms", _settings.Value.PollMs);
-                await Task.Delay(_settings.Value.PollMs, cancellationToken);
+                _logger.LogInformation("Player has not responded, sleeping for {PollMs} ms", _settings.Value.UserResponsePollMs);
+                await Task.Delay(_settings.Value.UserResponsePollMs, cancellationToken);
             }
         }
         catch (Exception exc)
@@ -210,34 +188,146 @@ public class WebPlayer : Player
         }
     }
 
-    protected override Task CardSelectedWasNotValid(Cards cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task CardsSelectedWereNotValid(Cards cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task AnswerPromptForIndexOfCardToPlay(int indexOfCardToPlay, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _asyncLock.LockThenExecute(nameof(AnswerPromptForIndexOfCardToPlay), () =>
+        {
+            _state.IndexOfCardToPlay = indexOfCardToPlay;
+            _state.GameReviewedCardOrCardsToPlay = false;
+            return Task.FromResult(true);
+        });
     }
 
-    public Task AnswerPromptForIndexesOfCardsToPlay(List<int> indexesOfCardsToPlay, CancellationToken cancellationToken)
+    public async Task AnswerPromptForIndexesOfCardsToPlay(List<int> indexesOfCardsToPlay, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _asyncLock.LockThenExecute(nameof(AnswerPromptForIndexesOfCardsToPlay), () =>
+        {
+            _state.IndexesOfCardsToPlay = indexesOfCardsToPlay;
+            _state.GameReviewedCardOrCardsToPlay = false;
+            return Task.FromResult(true);
+        });
     }
 
-    public Task<GameSessionPlayCardResponse> CheckIfCardSelectedWasNotValid(CancellationToken cancellationToken)
+    public override async Task<Card> PromptForValidCardAndPlay(Cards cards, List<CardSelectionRule> cardSelectionRules, CancellationToken cancellationToken, bool reveal = true)
     {
-        throw new NotImplementedException();
+        var selectedCard = await base.PromptForValidCardAndPlay(cards, cardSelectionRules, cancellationToken, reveal);
+        await _asyncLock.LockThenExecute(nameof(PromptForValidCardAndPlay), () =>
+        {
+            _state.GameReviewedCardOrCardsToPlay = true;
+            return Task.FromResult(true);
+        });
+        return selectedCard;
     }
 
-    public Task<GameSessionPlayCardsResponse> CheckIfCardsSelectedWereNotValid(CancellationToken cancellationToken)
+    public override async Task<Cards> PromptForValidCardsAndPlay(Cards cards, List<CardComboSelectionRule> cardComboSelectionRules, CancellationToken cancellationToken, bool reveal = true)
     {
-        throw new NotImplementedException();
+        var selectedCards = await base.PromptForValidCardsAndPlay(cards, cardComboSelectionRules, cancellationToken, reveal);
+        await _asyncLock.LockThenExecute(nameof(PromptForValidCardAndPlay), () =>
+        {
+            _state.GameReviewedCardOrCardsToPlay = true;
+            return Task.FromResult(true);
+        });
+        return selectedCards;
+    }
+
+    protected override async Task CardSelectedWasNotValid(Cards cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    {
+        await _asyncLock.LockThenExecute(nameof(CardSelectedWasNotValid), () =>
+        {
+            _state.GameReviewedCardOrCardsToPlay = true;
+            _state.Cards = cards;
+            _state.IndexOfCardToPlay = iCardSelected;
+            _state.RulesFailed = rulesFailed;
+            return Task.FromResult(true);
+        });
+    }
+
+    protected override async Task CardsSelectedWereNotValid(Cards cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    {
+        await _asyncLock.LockThenExecute(nameof(CardsSelectedWereNotValid), () =>
+        {
+            _state.GameReviewedCardOrCardsToPlay = true;
+            _state.Cards = cards;
+            _state.IndexesOfCardsToPlay = iCardsSelected;
+            _state.RulesFailed = rulesFailed;
+            return Task.FromResult(true);
+        });
+    }
+
+    public async Task<GameSessionPlayCardResponse> CheckIfCardSelectedWasNotValid(CancellationToken cancellationToken)
+    {
+        GameSessionPlayCardResponse? response = null;
+        for (int i = 0; response is null && i < _settings.Value.GameReviewCardsMaxPolls; i++)
+        {
+            await Task.Delay(_settings.Value.GameReviewCardsPollMs, cancellationToken);
+
+            response = await _asyncLock.LockThenExecute(nameof(CheckIfCardSelectedWasNotValid), async () =>
+            {
+                var reviewed = _state.GameReviewedCardOrCardsToPlay;
+                if (!reviewed)
+                    return null;
+
+                _state.GameReviewedCardOrCardsToPlay = false;
+
+                var resp = new GameSessionPlayCardResponse();
+                resp.AcceptedCardPlayed = _state.RulesFailed is null;
+                if (resp.AcceptedCardPlayed)
+                    return resp;
+
+                resp.RulesFailed = _state.RulesFailed;
+                _state.RulesFailed = null;
+
+                resp.IndexOfCardAttempted = _state.IndexOfCardToPlay;
+                _state.IndexOfCardToPlay = null;
+
+                resp.AllCards = _state.Cards;
+                _state.Cards = null;
+
+                return resp;
+            });
+        }
+
+        if (response is null)
+            throw new InvalidOperationException("The game never reviewed the cards before timing out");
+        return response;
+    }
+
+    public async Task<GameSessionPlayCardsResponse> CheckIfCardsSelectedWereNotValid(CancellationToken cancellationToken)
+    {
+        GameSessionPlayCardsResponse? response = null;
+        for (int i = 0; response is null && i < _settings.Value.GameReviewCardsMaxPolls; i++)
+        {
+            await Task.Delay(_settings.Value.GameReviewCardsPollMs, cancellationToken);
+
+            response = await _asyncLock.LockThenExecute(nameof(CheckIfCardsSelectedWereNotValid), async () =>
+            {
+                var reviewed = _state.GameReviewedCardOrCardsToPlay;
+                if (!reviewed)
+                    return null;
+
+                _state.GameReviewedCardOrCardsToPlay = false;
+
+                var resp = new GameSessionPlayCardsResponse();
+                resp.AcceptedCardsPlayed = _state.RulesFailed is null;
+                if (resp.AcceptedCardsPlayed)
+                    return resp;
+
+                resp.RulesFailed = _state.RulesFailed;
+                _state.RulesFailed = null;
+
+                resp.IndexesOfCardsAttempted = _state.IndexesOfCardsToPlay;
+                _state.IndexesOfCardsToPlay = null;
+
+                resp.AllCards = _state.Cards;
+                _state.Cards = null;
+
+                return resp;
+            });
+        }
+
+        if (response is null)
+            throw new InvalidOperationException("The game never reviewed the cards before timing out");
+        return response;
     }
 
     /// <summary>
@@ -250,13 +340,17 @@ public class WebPlayer : Player
     {
         public IEnumerable<string>? IfNotNullSelectCardFollowingTheseRules { get; set; }
         public IEnumerable<string>? IfNotNullSelectCardComboFollowingTheseRules { get; set; }
-        public Cards? Hand { get; set; }
+        public Cards? Cards { get; set; }
         public int? IndexOfCardToPlay { get; set; }
         public List<int>? IndexesOfCardsToPlay { get; set; }
+        public List<string>? RulesFailed { get; set; }
+        public bool GameReviewedCardOrCardsToPlay { get; set; }
     }
 
     public sealed class Settings
     {
-        [Range(50, 10_000)] public int PollMs { get; set; } = 250;
+        [Range(50, 10_000)] public int UserResponsePollMs { get; set; } = 250;
+        [Range(1, 100)] public int GameReviewCardsPollMs { get; set; } = 50;
+        [Range(1, 100)] public int GameReviewCardsMaxPolls { get; set; } = 100;
     }
 }

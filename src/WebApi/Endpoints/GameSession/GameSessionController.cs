@@ -13,7 +13,7 @@ namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 // TODO: replace `ok(null)`s w/ 410s
 
-// TODO: how clean up finished sessions?
+// TODO: how clean up finished sessions (esp on exc)?
 
 // TODO: in resp, don't have Hand w/ cards, have Card w/ Location enum
 

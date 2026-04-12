@@ -20,6 +20,11 @@ public partial class AsyncLock(ILogger logger)
         {
             return await f();
         }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "An exception occurred while executing the action, rethrowing");
+            throw;
+        }
         finally
         {
             LogExitingLockForMethodName(callerMethodName);

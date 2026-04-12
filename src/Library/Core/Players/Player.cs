@@ -118,7 +118,7 @@ public abstract partial class Player(ILogger<IPlayer> logger) : IPlayer
         return PromptForValidCardAndPlay(cards, [cardSelectionRule], cancellationToken, reveal);
     }
 
-    public async Task<Card> PromptForValidCardAndPlay(
+    public virtual async Task<Card> PromptForValidCardAndPlay(
         Cards cards,
         List<CardSelectionRule> cardSelectionRules,
         CancellationToken cancellationToken,
@@ -194,7 +194,7 @@ public abstract partial class Player(ILogger<IPlayer> logger) : IPlayer
         return PromptForValidCardsAndPlay(cards, [cardComboSelectionRule], cancellationToken, reveal);
     }
 
-    public async Task<Cards> PromptForValidCardsAndPlay(
+    public virtual async Task<Cards> PromptForValidCardsAndPlay(
         Cards cards,
         List<CardComboSelectionRule> cardComboSelectionRules,
         CancellationToken cancellationToken,

@@ -20,11 +20,12 @@ Accept: application/json
 ### Get game state and new events
 
 GET {{HostAddress}}/gameSession/{{SessionId}}
-Accept: application/json
+sccept: application/json
 
 ### Play card
 
 POST {{HostAddress}}/GameSession/{{SessionId}}/playCard
+Content-Type: application/json
 Accept: application/json
 
 {
@@ -34,9 +35,9 @@ Accept: application/json
 ### Play cards
 
 POST {{HostAddress}}/GameSession/{{SessionId}}/playCards
+Content-Type: application/json
 Accept: application/json
 
 {
-    "IndexesOfCardsToPlay": [
-    ]
+    "IndexesOfCardsToPlay": [ 0, 1, 2 ]
 }
