@@ -88,7 +88,7 @@ public abstract partial class Player(ILogger<IPlayer> logger) : IPlayer
 
     private IGameEventPublisher? _currGameEventPublisher;
 
-    public Disposable JoinGame(ChannelReader<GameEventEnvelope> currGamesEvents, IGameEventPublisher currGameEventPublisher)
+    public virtual Disposable JoinGame(ChannelReader<GameEventEnvelope> currGamesEvents, IGameEventPublisher currGameEventPublisher)
     {
         AssertNull(CurrGameEvents);
         CurrGameEvents = currGamesEvents;

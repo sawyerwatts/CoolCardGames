@@ -7,10 +7,15 @@ using CoolCardGames.Library.Core.MiscUtils;
 using CoolCardGames.Library.Core.Players;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
+// TODO: replace `ok(null)`s w/ 410s
+
 // TODO: how clean up finished sessions?
+
+// TODO: in resp, don't have Hand w/ cards, have Card w/ Location enum
 
 // TODO: openapi serialize enums as strings
 
@@ -22,6 +27,7 @@ public class GameSessionsController(
     ILoggerFactory loggerFactory,
     GameRegistry gameRegistry,
     AppLevelCancellationTokenHostedService appLevelCancellationTokenHostedService,
+    IOptions<WebPlayer.Settings> webPlayerSettings,
     ILogger<GameSessionsController> logger)
     : Controller
 {
@@ -72,7 +78,7 @@ public class GameSessionsController(
             }
 
             var playerLogger = loggerFactory.CreateLogger<WebPlayer>();
-            var webPlayer = new WebPlayer(_accountCard, playerLogger);
+            var webPlayer = new WebPlayer(_accountCard, webPlayerSettings, playerLogger);
             var game = gameRegistry.MakeGame(gameType, webPlayer, gameCancellationToken);
 
             game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
@@ -111,17 +117,37 @@ public class GameSessionsController(
     }
 
     [HttpPost("{sessionId}/playCard")]
-    public ActionResult<GameSessionPlayCardResponse> PlayCard(GameSessionPlayCardRequest playCard, CancellationToken cancellationToken)
+    public async Task<ActionResult<GameSessionPlayCardResponse>> PlayCard(
+        [Required] string sessionId,
+        GameSessionPlayCardRequest playCardRequest,
+        CancellationToken cancellationToken)
     {
-        // TODO: this
-        return Ok(new GameSessionPlayCardResponse());
+        // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
+
+        var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
+        if (session is null)
+            return Ok(null);
+
+        await session.WebPlayer.AnswerPromptForIndexOfCardToPlay(playCardRequest.IndexOfCardToPlay, cancellationToken);
+        var resp = await session.WebPlayer.CheckIfCardSelectedWasNotValid(cancellationToken);
+        return Ok(resp);
     }
 
     [HttpPost("{sessionId}/playCards")]
-    public ActionResult<GameSessionPlayCardsResponse> PlayCards(GameSessionPlayCardsRequest playCards, CancellationToken cancellationToken)
+    public async Task<ActionResult<GameSessionPlayCardsResponse>> PlayCards(
+        [Required] string sessionId,
+        GameSessionPlayCardsRequest playCardsRequest,
+        CancellationToken cancellationToken)
     {
-        // TODO: this
-        return Ok(new GameSessionPlayCardsResponse());
+        // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
+
+        var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
+        if (session is null)
+            return Ok(null);
+
+        await session.WebPlayer.AnswerPromptForIndexesOfCardsToPlay(playCardsRequest.IndexesOfCardsToPlay, cancellationToken);
+        var resp = await session.WebPlayer.CheckIfCardsSelectedWereNotValid(cancellationToken);
+        return Ok(resp);
     }
 
     private sealed record Session(

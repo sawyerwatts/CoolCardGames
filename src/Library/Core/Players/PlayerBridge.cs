@@ -5,7 +5,8 @@ namespace CoolCardGames.Library.Core.Players;
 /// <summary>
 /// This class exists so that if a player disconnects, they can be seamlessly swapped to an AI.
 /// </summary>
-// TODO: actually implement the swapping
+// TODO: actually implement the swapping, and using this. prob want a bridge factory
+//      if playing with other humans, enforce 30sec timeout. otherwise, no timeout
 public class PlayerBridge(IPlayer player /*, AiPlayerFactory aiFactory */)
     : IPlayer
 {

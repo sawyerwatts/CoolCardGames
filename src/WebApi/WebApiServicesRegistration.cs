@@ -9,5 +9,10 @@ public static class WebApiServicesRegistration
         builder.Services.AddSingleton<AppLevelCancellationTokenHostedService>();
         builder.Services.AddHostedService<AppLevelCancellationTokenHostedService>(services =>
             services.GetRequiredService<AppLevelCancellationTokenHostedService>());
+
+        builder.Services.AddOptions<WebPlayer.Settings>()
+            .BindConfiguration("Player")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
     }
 }

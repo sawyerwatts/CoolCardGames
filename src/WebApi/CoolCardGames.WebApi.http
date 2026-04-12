@@ -24,8 +24,19 @@ Accept: application/json
 
 ### Play card
 
-# TODO: this
+POST {{HostAddress}}/GameSession/{{SessionId}}/playCard
+Accept: application/json
+
+{
+    "IndexOfCardToPlay": 0
+}
 
 ### Play cards
 
-# TODO: this
+POST {{HostAddress}}/GameSession/{{SessionId}}/playCards
+Accept: application/json
+
+{
+    "IndexesOfCardsToPlay": [
+    ]
+}
