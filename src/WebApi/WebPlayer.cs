@@ -53,7 +53,7 @@ public class WebPlayer(
             while (CurrGameEvents.TryPeek(out _))
             {
                 var envelope = await CurrGameEvents.ReadAsync(cancellationToken);
-                result.NewGameEvents.Add(envelope);
+                result.NewGameEventEnvelopes.Add(envelope);
             }
 
             return result;

@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
-// TODO: JsonSerializer isn't serializing subclass' properties
-
 // BUG: game is crashing
 
 // TODO: how clean up finished sessions?
