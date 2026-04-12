@@ -1,6 +1,5 @@
 using CoolCardGames.Library;
 using CoolCardGames.Library.Core.Players;
-using CoolCardGames.Library.Games.Hearts;
 
 using Microsoft.Extensions.Options;
 
@@ -11,9 +10,7 @@ namespace CoolCardGames.Cli;
 public class Driver(
     GameRegistry gameRegistry,
     CliPlayerFactory cliPlayerFactory,
-    AiPlayerFactory aiPlayerFactory,
     IOptionsMonitor<Driver.Settings> driverSettings,
-    IServiceProvider services,
     ILogger<Driver> logger)
 {
     public async Task RunAsync(CancellationToken cancellationToken)
@@ -47,21 +44,12 @@ public class Driver(
         try
         {
             var cliPlayer = cliPlayerFactory.Make(accountCard);
-            var heartsFactory = services.GetRequiredService<HeartsGameFactory>();
 
             // Ensure the game gets canceled when the player's session ends.
             using var gameCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var gameCancellationToken = gameCancellationTokenSource.Token;
 
-            var game = heartsFactory.Make(
-                players:
-                [
-                    cliPlayer,
-                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
-                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
-                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
-                ],
-                cancellationToken: gameCancellationToken);
+            var game = gameRegistry.MakeGame(gameName, cliPlayer, gameCancellationToken);
             game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
 
             await cliPlayer.AttachSessionToCurrentGame(gameCancellationToken);

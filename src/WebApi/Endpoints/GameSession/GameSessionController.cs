@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
+using CoolCardGames.Library;
 using CoolCardGames.Library.Core.MiscUtils;
 using CoolCardGames.Library.Core.Players;
-using CoolCardGames.Library.Games.Hearts;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +20,7 @@ namespace CoolCardGames.WebApi.Endpoints.GameSession;
 [Route("v1/GameSession")]
 public class GameSessionsController(
     ILoggerFactory loggerFactory,
-    AiPlayerFactory aiPlayerFactory,
-    HeartsGameFactory heartsFactory,
+    GameRegistry gameRegistry,
     AppLevelCancellationTokenHostedService appLevelCancellationTokenHostedService,
     ILogger<GameSessionsController> logger)
     : Controller
@@ -58,47 +57,35 @@ public class GameSessionsController(
         Session newSession;
         try
         {
-            switch (gameType) // TODO: rm duplication b/w this and cli; put into GameRegistry?
+            if (!gameRegistry.GameNames.Contains(gameType))
             {
-                case HeartsGame.NameConst:
-                    var playerLogger = loggerFactory.CreateLogger<WebPlayer>();
-                    var webPlayer = new WebPlayer(_accountCard, playerLogger);
-                    var game = heartsFactory.Make(
-                        players:
-                        [
-                            webPlayer,
-                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
-                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
-                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
-                        ],
-                        cancellationToken: gameCancellationToken);
-
-                    game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
-                    var postResp = new GameSessionPostResponse()
-                    {
-                        SessionId = sessionId,
-                        GameType = gameType,
-                        OwningPlayerId = webPlayer.AccountCard.Id,
-                    };
-                    newSession = new Session(
-                        PostResponse: postResp,
-                        WebPlayer: webPlayer,
-                        CleanUp: disposable);
-
-                    break;
-                default:
-                    logger.LogInformation("User entered unknown game type ({GameType})", gameType);
-                    var details = new ProblemDetails
-                    {
-                        Title = $"Unknown {nameof(gameType)} given",
-                        Detail = $"Unknown {nameof(gameType)} given: {gameType}",
-                        Extensions = { [nameof(gameType)] = gameType },
-                        Status = (int)HttpStatusCode.BadRequest,
-                    };
-                    var resp = BadRequest(details);
-                    disposable.Dispose();
-                    return resp;
+                logger.LogInformation("User entered unknown game type ({GameType})", gameType);
+                var details = new ProblemDetails
+                {
+                    Title = $"Unknown {nameof(gameType)} given",
+                    Detail = $"Unknown {nameof(gameType)} given: {gameType}",
+                    Extensions = { [nameof(gameType)] = gameType },
+                    Status = (int)HttpStatusCode.BadRequest,
+                };
+                disposable.Dispose();
+                return BadRequest(details);
             }
+
+            var playerLogger = loggerFactory.CreateLogger<WebPlayer>();
+            var webPlayer = new WebPlayer(_accountCard, playerLogger);
+            var game = gameRegistry.MakeGame(gameType, webPlayer, gameCancellationToken);
+
+            game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
+            var postResp = new GameSessionPostResponse()
+            {
+                SessionId = sessionId,
+                GameType = gameType,
+                OwningPlayerId = webPlayer.AccountCard.Id,
+            };
+            newSession = new Session(
+                PostResponse: postResp,
+                WebPlayer: webPlayer,
+                CleanUp: disposable);
         }
         catch
         {
