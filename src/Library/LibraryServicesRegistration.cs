@@ -1,4 +1,3 @@
-using CoolCardGames.Library.Games;
 using CoolCardGames.Library.Games.Hearts;
 
 using Microsoft.Extensions.DependencyInjection;

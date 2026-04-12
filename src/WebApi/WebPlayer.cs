@@ -1,6 +1,5 @@
 using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.CardUtils;
-using CoolCardGames.Library.Core.GameEventTypes;
 using CoolCardGames.Library.Core.MiscUtils;
 using CoolCardGames.Library.Core.Players;
 using CoolCardGames.WebApi.Endpoints.GameSession;

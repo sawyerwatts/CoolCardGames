@@ -1,7 +1,7 @@
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
-using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.MiscUtils;
 using CoolCardGames.Library.Core.Players;
 using CoolCardGames.Library.Games.Hearts;
@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 // TODO: this assumes sticky sessions (so new events can be passed)
+
+// TODO: openapi serialize enums as strings
 
 [ApiController]
 [Route("v1/GameSession")]
@@ -22,20 +24,20 @@ public class GameSessionsController(
     ILogger<GameSessionsController> logger)
     : Controller
 {
+    private static readonly ConcurrentBag<Session> Sessions = [];
+
     private readonly CancellationToken _appCancellationToken = appLevelCancellationTokenHostedService.Token;
-    private readonly List<Session> _sessions = [];
 
     private readonly PlayerAccountCard _accountCard = new("12345", "Froefee"); // TODO: don't hardcode
 
     [HttpGet]
     public ActionResult<GameSessionGetResponse> Get(CancellationToken cancellationToken)
     {
-        return Ok(new GameSessionGetResponse
-        {
-            Items = _sessions
-                .Where(session => session.OwningPlayerId == _accountCard.Id)
-                .Select(session => new GameSessionGetResponseItem() { SessionId = session.Id, GameName = session.GameType, })
-        });
+        var items = Sessions
+            .Where(session => session.PostResponse.OwningPlayerId == _accountCard.Id)
+            .Select(session => new GameSessionGetResponseItem() { SessionId = session.PostResponse.SessionId, GameName = session.PostResponse.GameType, });
+        var resp = new GameSessionGetResponse { Items = items };
+        return Ok(resp);
     }
 
     [HttpPost]
@@ -51,6 +53,7 @@ public class GameSessionsController(
             loggingScope?.Dispose();
         });
 
+        Session newSession;
         try
         {
             switch (gameType) // TODO: rm duplication b/w this and cli; put into GameRegistry?
@@ -67,14 +70,19 @@ public class GameSessionsController(
                             aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
                         ],
                         cancellationToken: gameCancellationToken);
+
                     game.PlayAndDisposeInBackgroundThread(gameCancellationToken);
-                    var session = new Session(
-                        Id: sessionId,
-                        GameType: gameType,
-                        OwningPlayerId: webPlayer.AccountCard.Id,
-                        WebPlayer: webPlayer, // TODO: this; change player to not be generic? how much does it really need to be generic?
+                    var postResp = new GameSessionPostResponse()
+                    {
+                        SessionId = sessionId,
+                        GameType = gameType,
+                        OwningPlayerId = webPlayer.AccountCard.Id,
+                    };
+                    newSession = new Session(
+                        PostResponse: postResp,
+                        WebPlayerType: typeof(WebPlayer<HeartsCard>),
+                        WebPlayer: webPlayer,
                         CleanUp: disposable);
-                    _sessions.Add(session);
 
                     break;
                 default:
@@ -97,7 +105,8 @@ public class GameSessionsController(
             throw;
         }
 
-        return Ok(new GameSessionPostResponse() { SessionId = sessionId });
+        Sessions.Add(newSession);
+        return Ok(newSession.PostResponse);
     }
 
     [HttpGet("{sessionId}")]
@@ -124,10 +133,9 @@ public class GameSessionsController(
         return Ok(new GameSessionPlayCardsResponse());
     }
 
-    private record Session(
-        string Id,
-        string GameType,
-        string OwningPlayerId,
-        WebPlayer<Card> WebPlayer,
+    private sealed record Session(
+        GameSessionPostResponse PostResponse,
+        Type WebPlayerType,
+        object WebPlayer,
         Disposable CleanUp);
 }

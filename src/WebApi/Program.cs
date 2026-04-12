@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 using CoolCardGames.Library;
 using CoolCardGames.WebApi;
 using CoolCardGames.WebApi.OpenApi;
@@ -16,7 +19,14 @@ builder.Services.AddSerilog();
 builder.AddLibraryServices();
 builder.AddWebApiServices();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Serialize enums as strings
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)); // Use camelCase for enum strings
+    });
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>
 {

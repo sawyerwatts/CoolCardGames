@@ -6,6 +6,8 @@ public static class WebApiServicesRegistration
 
     public static void AddWebApiServices(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<AppLevelCancellationTokenHostedService>();
+        builder.Services.AddSingleton<AppLevelCancellationTokenHostedService>();
+        builder.Services.AddHostedService<AppLevelCancellationTokenHostedService>(services =>
+            services.GetRequiredService<AppLevelCancellationTokenHostedService>());
     }
 }
