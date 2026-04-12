@@ -2,17 +2,21 @@ namespace CoolCardGames.Library.Games.Hearts;
 
 public static class HeartsGameCardSelectionRules
 {
-    public static readonly CardSelectionRule<HeartsCard> FirstTrickOpeningCardMustBeTwoOfClubs = new(
+    public static readonly CardSelectionRule FirstTrickOpeningCardMustBeTwoOfClubs = new(
         description: "The first trick must be opened with the two of clubs",
         validateCard: (hand, iCardToPlay) => hand[iCardToPlay].Value is TwoOfClubs);
 
-    public static readonly CardSelectionRule<HeartsCard> FirstTrickCannotHavePoints = new(
+    public static readonly CardSelectionRule FirstTrickCannotHavePoints = new(
         description: "The first trick may not have point cards played",
-        validateCard: (hand, iCardToPlay) => hand[iCardToPlay].Points == 0);
+        validateCard: (hand, iCardToPlay) =>
+        {
+            var cardToPlay = (HeartsCard)hand[iCardToPlay];
+            return cardToPlay.Points == 0;
+        });
 
-    public static CardSelectionRule<HeartsCard> HeartsCanOnlyBeLeadOnceBroken(bool isHeartsBroken)
+    public static CardSelectionRule HeartsCanOnlyBeLeadOnceBroken(bool isHeartsBroken)
     {
-        return new CardSelectionRule<HeartsCard>(
+        return new CardSelectionRule(
             description: "Hearts can only be lead once hearts is broken",
             validateCard: (hand, iCardToPlay) =>
             {

@@ -7,12 +7,12 @@ namespace CoolCardGames.Library.Games.Hearts;
 /// <remarks>
 /// It is intended to use <see cref="HeartsGameFactory"/> to instantiate this service.
 /// </remarks>
-public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
+public sealed class HeartsGame : Game<HeartsPlayerState>
 {
     private readonly IGameEventPublisher _gameEventPublisher;
     private readonly HeartsGameState _gameState;
     private readonly IHeartsSetupRound _setupRound;
-    private readonly IReadOnlyList<IPlayer<HeartsCard>> _players;
+    private readonly IReadOnlyList<IPlayer> _players;
     private readonly HeartsSettings _settings;
 
     /// <remarks>
@@ -22,7 +22,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         IGameEventPublisher gameEventPublisher,
         HeartsGameState gameState,
         IHeartsSetupRound setupRound,
-        IReadOnlyList<IPlayer<HeartsCard>> players,
+        IReadOnlyList<IPlayer> players,
         HeartsSettings settings,
         ILogger<HeartsGame> logger)
         : base(gameEventPublisher, gameState, players, logger)
@@ -100,12 +100,12 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             cards: _gameState.Players[_gameState.IndexTrickStartPlayer].Hand,
             cardSelectionRule: openingRule,
             cancellationToken);
-        var trick = new Cards<HeartsCard>(capacity: NumPlayers) { openingCard };
+        var trick = new Cards(capacity: NumPlayers) { openingCard };
         var suitToFollow = openingCard.Value.Suit;
 
-        List<CardSelectionRule<HeartsCard>> followingRules =
+        List<CardSelectionRule> followingRules =
         [
-            CommonCardSelectionRules.IsSuitFollowedIfPossible<HeartsCard>(suitToFollow),
+            CommonCardSelectionRules.IsSuitFollowedIfPossible(suitToFollow),
         ];
         if (_gameState.IsFirstTrick)
         {
@@ -123,7 +123,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
             if (!_gameState.IsHeartsBroken && chosenCard.Value.Suit is Suit.Hearts)
             {
                 await _gameEventPublisher.Publish(
-                    new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].AccountCard, chosenCard),
+                    new HeartsGameEvent.HeartsHaveBeenBroken(_players[iTrickPlayer.N].AccountCard, (HeartsCard)chosenCard),
                     cancellationToken);
                 _gameState.IsHeartsBroken = true;
             }
@@ -139,7 +139,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         var iNextTrickStartPlayer = new CircularCounter(seed: _gameState.IndexTrickStartPlayer, maxExclusive: NumPlayers)
             .Tick(delta: iTrickTakerOffsetFromStartPlayer);
         await _gameEventPublisher.Publish(
-            new GameEvent.PlayerTookTrickWithCard<HeartsCard>(_players[iNextTrickStartPlayer].AccountCard,
+            new GameEvent.PlayerTookTrickWithCard(_players[iNextTrickStartPlayer].AccountCard,
                 trick[iTrickTakerOffsetFromStartPlayer]),
             cancellationToken);
         _gameState.Players[iNextTrickStartPlayer].TricksTaken.Add(trick);
@@ -148,7 +148,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         return;
 
         // TODO: pull into a helper or something?
-        static int DetermineTrickTakerIndexRelativeToStartPlayer(Cards<HeartsCard> trick, Suit suitToFollow)
+        static int DetermineTrickTakerIndexRelativeToStartPlayer(Cards trick, Suit suitToFollow)
         {
             var onSuitCards = trick.Where(card => card.Value.Suit == suitToFollow);
             var highestOnSuitRank =
@@ -170,7 +170,7 @@ public sealed class HeartsGame : Game<HeartsCard, HeartsPlayerState>
         List<int> roundScores = new(capacity: NumPlayers);
         foreach (var playerState in _gameState.Players)
         {
-            var roundScore = playerState.TricksTaken.Sum(trickCards => trickCards.Sum(card => card.Points));
+            var roundScore = playerState.TricksTaken.Sum(trickCards => trickCards.Sum(card => ((HeartsCard)card).Points));
             roundScores.Add(roundScore);
         }
 

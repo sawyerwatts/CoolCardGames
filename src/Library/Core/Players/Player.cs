@@ -5,11 +5,10 @@ using Microsoft.Extensions.Logging;
 namespace CoolCardGames.Library.Core.Players;
 
 /// <remarks>
-/// If you want to actually code a player, you'll want to extend <see cref="Player{TCard}"/>.
+/// If you want to actually code a player, you'll want to extend <see cref="Player"/>.
 /// This interface is more for ease of proxying and testing and stuff.
 /// </remarks>
-public interface IPlayer<TCard>
-    where TCard : Card
+public interface IPlayer
 {
     PlayerAccountCard AccountCard { get; }
 
@@ -22,9 +21,9 @@ public interface IPlayer<TCard>
     Disposable JoinGame(ChannelReader<GameEventEnvelope> currGamesEvents, IGameEventPublisher currGameEventPublisher);
 
     /// <remarks>
-    /// This will modify the passed <paramref name="cards"/> and return the <see cref="TCard"/> removed.
+    /// This will modify the passed <paramref name="cards"/> and return the <see cref="Card"/> removed.
     /// <br />
-    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCard{TCard}"/>
+    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCard"/>
     /// once the player selects a valid card.
     /// </remarks>
     /// <param name="cards"></param>
@@ -36,22 +35,22 @@ public interface IPlayer<TCard>
     /// <param name="reveal">
     /// Reveal the returned card after removing it from <paramref name="cards"/>
     /// </param>
-    Task<TCard> PromptForValidCardAndPlay(
-        Cards<TCard> cards,
-        CardSelectionRule<TCard> cardSelectionRule,
+    Task<Card> PromptForValidCardAndPlay(
+        Cards cards,
+        CardSelectionRule cardSelectionRule,
         CancellationToken cancellationToken,
         bool reveal = true);
 
-    Task<TCard> PromptForValidCardAndPlay(
-        Cards<TCard> cards,
-        List<CardSelectionRule<TCard>> cardSelectionRules,
+    Task<Card> PromptForValidCardAndPlay(
+        Cards cards,
+        List<CardSelectionRule> cardSelectionRules,
         CancellationToken cancellationToken,
         bool reveal = true);
 
     /// <remarks>
-    /// This will modify the passed <paramref name="cards"/> and return the <see cref="TCard"/>(s) removed.
+    /// This will modify the passed <paramref name="cards"/> and return the <see cref="Card"/>(s) removed.
     /// <br />
-    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCards{TCard}"/>
+    /// This will publish an <see cref="GameEvent.PlayerHasTheAction"/> before prompting the player and an <see cref="GameEvent.PlayerPlayedCards"/>
     /// once the player selects valid card(s).
     /// </remarks>
     /// <param name="cards"></param>
@@ -63,21 +62,20 @@ public interface IPlayer<TCard>
     /// <param name="reveal">
     /// Reveal the returned card after removing it from <paramref name="cards"/>
     /// </param>
-    Task<Cards<TCard>> PromptForValidCardsAndPlay(
-        Cards<TCard> cards,
-        CardComboSelectionRule<TCard> cardComboSelectionRule,
+    Task<Cards> PromptForValidCardsAndPlay(
+        Cards cards,
+        CardComboSelectionRule cardComboSelectionRule,
         CancellationToken cancellationToken,
         bool reveal = true);
 
-    Task<Cards<TCard>> PromptForValidCardsAndPlay(
-        Cards<TCard> cards,
-        List<CardComboSelectionRule<TCard>> cardComboSelectionRules,
+    Task<Cards> PromptForValidCardsAndPlay(
+        Cards cards,
+        List<CardComboSelectionRule> cardComboSelectionRules,
         CancellationToken cancellationToken,
         bool reveal = true);
 }
 
-public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IPlayer<TCard>
-    where TCard : Card
+public abstract partial class Player(ILogger<IPlayer> logger) : IPlayer
 {
     public abstract PlayerAccountCard AccountCard { get; }
 
@@ -111,18 +109,18 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
         }
     }
 
-    public Task<TCard> PromptForValidCardAndPlay(
-        Cards<TCard> cards,
-        CardSelectionRule<TCard> cardSelectionRule,
+    public Task<Card> PromptForValidCardAndPlay(
+        Cards cards,
+        CardSelectionRule cardSelectionRule,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
         return PromptForValidCardAndPlay(cards, [cardSelectionRule], cancellationToken, reveal);
     }
 
-    public async Task<TCard> PromptForValidCardAndPlay(
-        Cards<TCard> cards,
-        List<CardSelectionRule<TCard>> cardSelectionRules,
+    public async Task<Card> PromptForValidCardAndPlay(
+        Cards cards,
+        List<CardSelectionRule> cardSelectionRules,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
@@ -180,25 +178,25 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
         else
         {
             await _currGameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedCard<TCard>(AccountCard, cardToPlay),
+                gameEvent: new GameEvent.PlayerPlayedCard(AccountCard, cardToPlay),
                 cancellationToken: cancellationToken);
         }
 
         return cardToPlay;
     }
 
-    public Task<Cards<TCard>> PromptForValidCardsAndPlay(
-        Cards<TCard> cards,
-        CardComboSelectionRule<TCard> cardComboSelectionRule,
+    public Task<Cards> PromptForValidCardsAndPlay(
+        Cards cards,
+        CardComboSelectionRule cardComboSelectionRule,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
         return PromptForValidCardsAndPlay(cards, [cardComboSelectionRule], cancellationToken, reveal);
     }
 
-    public async Task<Cards<TCard>> PromptForValidCardsAndPlay(
-        Cards<TCard> cards,
-        List<CardComboSelectionRule<TCard>> cardComboSelectionRules,
+    public async Task<Cards> PromptForValidCardsAndPlay(
+        Cards cards,
+        List<CardComboSelectionRule> cardComboSelectionRules,
         CancellationToken cancellationToken,
         bool reveal = true)
     {
@@ -243,7 +241,7 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
             await CardsSelectedWereNotValid(cards, iCardsToPlay, rulesNotFollowed, cancellationToken);
         }
 
-        Cards<TCard> cardsToPlay = new(capacity: iCardsToPlay.Count);
+        Cards cardsToPlay = new(capacity: iCardsToPlay.Count);
         foreach (var iCardToPlay in iCardsToPlay.OrderDescending())
         {
             cardsToPlay.Add(cards[iCardToPlay]);
@@ -268,7 +266,7 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
         if (cardsToPlay.Any(card => !card.Hidden))
         {
             await _currGameEventPublisher.Publish(
-                gameEvent: new GameEvent.PlayerPlayedCards<TCard>(AccountCard, new Cards<TCard>(cardsToPlay.Where(card => !card.Hidden))),
+                gameEvent: new GameEvent.PlayerPlayedCards(AccountCard, new Cards(cardsToPlay.Where(card => !card.Hidden))),
                 cancellationToken: cancellationToken);
         }
 
@@ -280,8 +278,8 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
     /// </summary>
     protected abstract Task<int> PromptForIndexOfCardToPlay(
         uint prePromptEventId,
-        Cards<TCard> cards,
-        List<CardSelectionRule<TCard>> cardSelectionRules,
+        Cards cards,
+        List<CardSelectionRule> cardSelectionRules,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -289,8 +287,8 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
     /// </summary>
     protected abstract Task<List<int>> PromptForIndexesOfCardsToPlay(
         uint prePromptEventId,
-        Cards<TCard> cards,
-        List<CardComboSelectionRule<TCard>> cardComboSelectionRules,
+        Cards cards,
+        List<CardComboSelectionRule> cardComboSelectionRules,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -298,18 +296,18 @@ public abstract partial class Player<TCard>(ILogger<IPlayer<TCard>> logger) : IP
     /// returns an index of a card that is not valid to play, this method is called to tell the player
     /// which rules were not followed by that selection.
     /// </summary>
-    protected abstract Task CardSelectedWasNotValid(Cards<TCard> cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken);
+    protected abstract Task CardSelectedWasNotValid(Cards cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken);
 
     /// <summary>
     /// When <see cref="PromptForValidCardsAndPlay"/> notices that <see cref="PromptForIndexesOfCardsToPlay"/>
     /// returns index(es) of card(s) that are not valid to play, this method is called to tell the player
     /// which rules were not followed by that selection.
     /// </summary>
-    protected abstract Task CardsSelectedWereNotValid(Cards<TCard> cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken);
+    protected abstract Task CardsSelectedWereNotValid(Cards cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken);
 
     [LoggerMessage(LogLevel.Debug, "Player {AccountCard} selected a card that is not valid: {RulesNotFollowed}")]
-    static partial void LogPlayerSelectedACardThatIsNotValid(ILogger<IPlayer<TCard>> logger, PlayerAccountCard accountCard, string rulesNotFollowed);
+    static partial void LogPlayerSelectedACardThatIsNotValid(ILogger<IPlayer> logger, PlayerAccountCard accountCard, string rulesNotFollowed);
 
     [LoggerMessage(LogLevel.Debug, "Player {AccountCard} selected card(s) that are not valid: {RulesNotFollowed}")]
-    static partial void LogPlayerSelectedCardSThatAreNotValid(ILogger<IPlayer<TCard>> logger, PlayerAccountCard accountCard, string rulesNotFollowed);
+    static partial void LogPlayerSelectedCardSThatAreNotValid(ILogger<IPlayer> logger, PlayerAccountCard accountCard, string rulesNotFollowed);
 }

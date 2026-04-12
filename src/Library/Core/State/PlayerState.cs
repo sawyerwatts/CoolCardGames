@@ -1,7 +1,6 @@
 namespace CoolCardGames.Library.Core.State;
 
-public class PlayerState<TCard>
-    where TCard : Card
+public class PlayerState
 {
-    public Cards<TCard> Hand { get; set; } = [];
+    public Cards Hand { get; set; } = [];
 }

@@ -4,7 +4,7 @@ namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public class CardSelectionRuleTests
 {
-    private readonly Cards<Card> _hand =
+    private readonly Cards _hand =
     [
         new(AceOfHearts.Instance),
         new(TwoOfHearts.Instance),
@@ -15,13 +15,13 @@ public class CardSelectionRuleTests
     [Fact]
     public void TestCardSelectionRuleEnsureDefaultConstructorIsNotSupported()
     {
-        Assert.Throws<NotSupportedException>(() => new CardSelectionRule<Card>());
+        Assert.Throws<NotSupportedException>(() => new CardSelectionRule());
     }
 
     [Fact]
     public void TestCardComboSelectionRuleEnsureDefaultConstructorIsNotSupported()
     {
-        Assert.Throws<NotSupportedException>(() => new CardComboSelectionRule<Card>());
+        Assert.Throws<NotSupportedException>(() => new CardComboSelectionRule());
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class CardSelectionRuleTests
     {
         const int iExpected = 3;
 
-        var rule = new CardSelectionRule<Card>(
+        var rule = new CardSelectionRule(
             description: nameof(TestCardSelectionRuleGivenValidIndexThenCallInjectedValidationFunc),
             validateCard: (_, i) =>
             {
@@ -46,7 +46,7 @@ public class CardSelectionRuleTests
     [InlineData(4)]
     public void TestCardSelectionRuleGivenIndexOutOfRangeThenException(int iCardToPlay)
     {
-        var rule = new CardSelectionRule<Card>(
+        var rule = new CardSelectionRule(
             description: nameof(TestCardSelectionRuleGivenIndexOutOfRangeThenException),
             validateCard: (_, i) => true);
 
@@ -56,7 +56,7 @@ public class CardSelectionRuleTests
     [Fact]
     public void TestCardComboSelectionRuleGivenValidIndexesThenCallInjectedValidationFunc()
     {
-        var rule = new CardComboSelectionRule<Card>(
+        var rule = new CardComboSelectionRule(
             description: nameof(TestCardComboSelectionRuleGivenValidIndexesThenCallInjectedValidationFunc),
             validateCards: (_, indexes) =>
             {
@@ -75,7 +75,7 @@ public class CardSelectionRuleTests
     [InlineData(4)]
     public void TestCardComboSelectionRuleGivenIndexOutOfRangeThenException(int iCardToPlay)
     {
-        var rule = new CardComboSelectionRule<Card>(
+        var rule = new CardComboSelectionRule(
             description: nameof(TestCardComboSelectionRuleGivenIndexOutOfRangeThenException),
             validateCards: (_, _) => true);
 
@@ -85,7 +85,7 @@ public class CardSelectionRuleTests
     [Fact]
     public void TestCardComboSelectionRuleGivenDuplicateIndexesThenException()
     {
-        var rule = new CardComboSelectionRule<Card>(
+        var rule = new CardComboSelectionRule(
             description: nameof(TestCardComboSelectionRuleGivenDuplicateIndexesThenException),
             validateCards: (_, _) => true);
 

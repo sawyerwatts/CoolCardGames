@@ -5,9 +5,8 @@ namespace CoolCardGames.Library.Core.Players;
 
 public class AiPlayerFactory(IServiceProvider services)
 {
-    public AiPlayer<TCard> Make<TCard>(PlayerAccountCard playerAccountCard)
-        where TCard : Card
+    public AiPlayer Make(PlayerAccountCard playerAccountCard)
     {
-        return new AiPlayer<TCard>(playerAccountCard, services.GetRequiredService<ILogger<AiPlayer<TCard>>>());
+        return new AiPlayer(playerAccountCard, services.GetRequiredService<ILogger<AiPlayer>>());
     }
 }

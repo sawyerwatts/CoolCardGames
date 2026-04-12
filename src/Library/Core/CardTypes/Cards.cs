@@ -3,15 +3,14 @@ using System.Text;
 
 namespace CoolCardGames.Library.Core.CardTypes;
 
-public partial class Cards<TCard> : IList<TCard>
-    where TCard : Card
+public partial class Cards : IList<Card>
 {
     /// <summary>
     /// When this value is not null, inserted cards will be sorted by comparer.
     /// <br />
     /// When this value is set to a non-null value, the existing cards will be sorted.
     /// </summary>
-    public IComparer<TCard>? CardComparer
+    public IComparer<Card>? CardComparer
     {
         get => _cardComparer;
         set
@@ -26,16 +25,16 @@ public partial class Cards<TCard> : IList<TCard>
         }
     }
 
-    private IComparer<TCard>? _cardComparer = null;
+    private IComparer<Card>? _cardComparer = null;
 
-    private readonly List<TCard> _cards;
+    private readonly List<Card> _cards;
 
     public Cards(int capacity = 0)
     {
-        _cards = new List<TCard>(capacity);
+        _cards = new List<Card>(capacity);
     }
 
-    public Cards(IEnumerable<TCard> seed)
+    public Cards(IEnumerable<Card> seed)
     {
         _cards = [..seed];
     }
@@ -44,7 +43,7 @@ public partial class Cards<TCard> : IList<TCard>
     /// This returns a span to the underlying cards.
     /// </summary>
     /// <returns></returns>
-    public Span<TCard> AsSpan()
+    public Span<Card> AsSpan()
     {
         return CollectionsMarshal.AsSpan(_cards);
     }
@@ -80,7 +79,7 @@ public partial class Cards<TCard> : IList<TCard>
         return builder.ToString();
     }
 
-    public bool Matches(Cards<TCard> other)
+    public bool Matches(Cards other)
     {
         if (ReferenceEquals(this, other))
             return true;

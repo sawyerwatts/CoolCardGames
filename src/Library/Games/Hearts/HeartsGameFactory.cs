@@ -18,7 +18,7 @@ public class HeartsGameFactory(
 {
     public HeartsSettings DefaultHeartsSettings => settingsMonitor.CurrentValue;
 
-    public IGame Make(List<IPlayer<HeartsCard>> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
+    public IGame Make(List<IPlayer> players, CancellationToken cancellationToken, HeartsSettings? settings = null)
     {
         if (players.Count != HeartsGame.NumPlayers)
             throw new ArgumentException($"{nameof(players)} must have {HeartsGame.NumPlayers} elements, but it has {players.Count} elements");

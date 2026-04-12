@@ -1,7 +1,6 @@
 namespace CoolCardGames.Library.Core.CardUtils.Comparers;
 
-public class CardComparerSuitThenRank<TCard> : IComparer<TCard>
-    where TCard : Card
+public class CardComparerSuitThenRank : IComparer<Card>
 {
     private readonly PrioritizedEnumsComparer<Rank> _rankComparer;
     private readonly PrioritizedEnumsComparer<Suit> _suitComparer;
@@ -18,7 +17,7 @@ public class CardComparerSuitThenRank<TCard> : IComparer<TCard>
         _suitComparer = new PrioritizedEnumsComparer<Suit>(suitPriorities);
     }
 
-    public int Compare(TCard? x, TCard? y)
+    public int Compare(Card? x, Card? y)
     {
         if (ReferenceEquals(x, y))
         {

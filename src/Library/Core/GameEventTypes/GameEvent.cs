@@ -9,8 +9,7 @@ namespace CoolCardGames.Library.Core.GameEventTypes;
 /// </remarks>
 public abstract partial record GameEvent(string Summary)
 {
-    private static string SerializeCards<TCard>(IEnumerable<TCard> cards)
-        where TCard : Card
+    private static string SerializeCards(IEnumerable<Card> cards)
     {
         return string.Join(", ", cards);
     }

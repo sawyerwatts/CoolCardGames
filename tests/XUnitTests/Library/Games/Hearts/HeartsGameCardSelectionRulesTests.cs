@@ -4,7 +4,7 @@ namespace CoolCardGames.XUnitTests.Library.Games.Hearts;
 
 public class HeartsGameCardSelectionRulesTests
 {
-    private readonly Cards<HeartsCard> _hand =
+    private readonly Cards _hand =
     [
         new(TwoOfClubs.Instance),    // 0
         new(FiveOfClubs.Instance),   // 1

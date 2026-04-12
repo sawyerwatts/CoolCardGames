@@ -10,9 +10,9 @@ public abstract partial record GameEvent
 
     public record PlayerPassed(PlayerAccountCard PlayerCard) : GameEvent($"{PlayerCard} has passed");
 
-    public record PlayerPlayedCard<TCard>(PlayerAccountCard PlayerCard, TCard Card) : GameEvent($"{PlayerCard} played: {Card}") where TCard : Card;
+    public record PlayerPlayedCard(PlayerAccountCard PlayerCard, Card Card) : GameEvent($"{PlayerCard} played: {Card}");
 
-    public record PlayerPlayedCards<TCard>(PlayerAccountCard PlayerCard, Cards<TCard> Cards) : GameEvent($"{PlayerCard} played: {SerializeCards(Cards)}") where TCard : Card;
+    public record PlayerPlayedCards(PlayerAccountCard PlayerCard, Cards Cards) : GameEvent($"{PlayerCard} played: {SerializeCards(Cards)}");
 
     public record PlayerPlayedHiddenCard(PlayerAccountCard PlayerCard) : GameEvent($"{PlayerCard} played: a hidden card");
 
@@ -22,9 +22,9 @@ public abstract partial record GameEvent
 
     public record PlayerReceivedHiddenCards(PlayerAccountCard PlayerCard, int numCards) : GameEvent($"{PlayerCard} received: {numCards} hidden card(s)");
 
-    public record PlayerTookTrickWithCard<TCard>(PlayerAccountCard PlayerCard, TCard Card) : GameEvent($"{PlayerCard} took the trick with: {Card}") where TCard : Card;
+    public record PlayerTookTrickWithCard(PlayerAccountCard PlayerCard, Card Card) : GameEvent($"{PlayerCard} took the trick with: {Card}");
 
-    public record PlayerTookTrickWithCards<TCard>(PlayerAccountCard PlayerCard, Cards<TCard> Cards) : GameEvent($"{PlayerCard} took the trick with: {SerializeCards(Cards)}") where TCard : Card;
+    public record PlayerTookTrickWithCards(PlayerAccountCard PlayerCard, Cards Cards) : GameEvent($"{PlayerCard} took the trick with: {SerializeCards(Cards)}");
 
     public record PlayerAtOrExceededMaxPoints(PlayerAccountCard PlayerAccountCard, int Points, int MaxPoints)
         : GameEvent($"{PlayerAccountCard} has {Points} points, which is at or over max allowed points of {MaxPoints}");

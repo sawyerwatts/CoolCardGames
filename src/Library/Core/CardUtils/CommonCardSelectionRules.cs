@@ -12,10 +12,9 @@ public static class CommonCardSelectionRules
     /// <br /> - If the suit to follow is hearts and there are no hearts in the given cards, then
     /// the chosen card can have any suit.
     /// </example>
-    public static CardSelectionRule<TCard> IsSuitFollowedIfPossible<TCard>(Suit suitToFollow)
-        where TCard : Card
+    public static CardSelectionRule IsSuitFollowedIfPossible(Suit suitToFollow)
     {
-        return new CardSelectionRule<TCard>(
+        return new CardSelectionRule(
             description: $"If possible, play a {suitToFollow}",
             validateCard: (hand, iCardToPlay) =>
             {
@@ -28,20 +27,18 @@ public static class CommonCardSelectionRules
             });
     }
 
-    public static CardComboSelectionRule<TCard> LimitNumberOfCardsSelected<TCard>(int exactNumberOfCardsToPlay)
-        where TCard : Card
+    public static CardComboSelectionRule LimitNumberOfCardsSelected(int exactNumberOfCardsToPlay)
     {
-        return LimitNumberOfCardsSelected<TCard>(exactNumberOfCardsToPlay, exactNumberOfCardsToPlay);
+        return LimitNumberOfCardsSelected(exactNumberOfCardsToPlay, exactNumberOfCardsToPlay);
     }
 
-    public static CardComboSelectionRule<TCard> LimitNumberOfCardsSelected<TCard>(int minCardsToPlay, int maxCardsToPlay)
-        where TCard : Card
+    public static CardComboSelectionRule LimitNumberOfCardsSelected(int minCardsToPlay, int maxCardsToPlay)
     {
         if (minCardsToPlay < 0)
             throw new ArgumentException($"{nameof(minCardsToPlay)} ({minCardsToPlay}) is less than 0");
         if (minCardsToPlay > maxCardsToPlay)
             throw new ArgumentException($"{nameof(minCardsToPlay)} ({minCardsToPlay}) is higher than {nameof(maxCardsToPlay)} ({maxCardsToPlay})");
-        return new CardComboSelectionRule<TCard>(
+        return new CardComboSelectionRule(
             description: minCardsToPlay == maxCardsToPlay
                 ? $"Select exactly {minCardsToPlay} card(s)"
                 : $"Select between {minCardsToPlay} and {maxCardsToPlay} cards (inclusive)",

@@ -10,9 +10,9 @@ public interface IHeartsSetupRound
     Task Go(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken);
 }
 
-public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<IPlayer<HeartsCard>> players) : IHeartsSetupRound
+public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPublisher, List<IPlayer> players) : IHeartsSetupRound
 {
-    public static readonly IComparer<HeartsCard> HandSortingComparer = new CardComparerSuitThenRank<HeartsCard>(
+    public static readonly IComparer<Card> HandSortingComparer = new CardComparerSuitThenRank(
         suitPriorities:
         [
             Suit.Spades,
@@ -70,8 +70,8 @@ public class HeartsSetupRound(IDealer dealer, IGameEventPublisher gameEventPubli
     public async Task HavePlayersPassCards(HeartsGameState gameState, PassDirection passDirection, CancellationToken cancellationToken)
     {
         await gameEventPublisher.Publish(new HeartsGameEvent.GetReadyToPass(passDirection), cancellationToken);
-        List<Task<Cards<HeartsCard>>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);
-        var ruleSelectThreeCards = CommonCardSelectionRules.LimitNumberOfCardsSelected<HeartsCard>(exactNumberOfCardsToPlay: 3);
+        List<Task<Cards>> takeCardsFromPlayerTasks = new(capacity: HeartsGame.NumPlayers);
+        var ruleSelectThreeCards = CommonCardSelectionRules.LimitNumberOfCardsSelected(exactNumberOfCardsToPlay: 3);
         for (var i = 0; i < HeartsGame.NumPlayers; i++)
         {
             var task = players[i].PromptForValidCardsAndPlay(

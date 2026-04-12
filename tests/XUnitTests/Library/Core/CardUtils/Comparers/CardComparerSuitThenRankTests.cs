@@ -11,7 +11,7 @@ public class CardComparerSuitThenRankTests
     [ClassData(typeof(TestData))]
     public void Test(CardValue? x, Result expected, CardValue? y)
     {
-        var sut = new CardComparerSuitThenRank<Card>(
+        var sut = new CardComparerSuitThenRank(
             suitPriorities: [Suit.Spades],
             rankPriorities: [Rank.Ace, Rank.King, Rank.Queen]);
 

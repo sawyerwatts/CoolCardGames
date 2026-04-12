@@ -46,7 +46,7 @@ public class Driver(
         logger.LogInformation("Initializing {Game}", gameName);
         try
         {
-            var cliPlayer = cliPlayerFactory.Make<HeartsCard>(accountCard);
+            var cliPlayer = cliPlayerFactory.Make(accountCard);
             var heartsFactory = services.GetRequiredService<HeartsGameFactory>();
 
             // Ensure the game gets canceled when the player's session ends.
@@ -57,9 +57,9 @@ public class Driver(
                 players:
                 [
                     cliPlayer,
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
-                    aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
+                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
+                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
+                    aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
                 ],
                 cancellationToken: gameCancellationToken);
             game.PlayAndDisposeInBackgroundThread(gameCancellationToken);

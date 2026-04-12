@@ -5,10 +5,9 @@ namespace CoolCardGames.Library.Core.CardTypes;
 // This file contains the proxied methods for IList, as well as any missing methods on List but not
 // IList (like AddRange and FindIndex).
 
-public partial class Cards<TCard>
-    where TCard : Card
+public partial class Cards
 {
-    public IEnumerator<TCard> GetEnumerator()
+    public IEnumerator<Card> GetEnumerator()
     {
         return _cards.GetEnumerator();
     }
@@ -18,7 +17,7 @@ public partial class Cards<TCard>
         return ((IEnumerable)_cards).GetEnumerator();
     }
 
-    public void Add(TCard item)
+    public void Add(Card item)
     {
         _cards.Add(item);
         if (_cardComparer is not null)
@@ -27,7 +26,7 @@ public partial class Cards<TCard>
         }
     }
 
-    public void AddRange(IEnumerable<TCard> items)
+    public void AddRange(IEnumerable<Card> items)
     {
         _cards.AddRange(items);
         if (_cardComparer is not null)
@@ -41,17 +40,17 @@ public partial class Cards<TCard>
         _cards.Clear();
     }
 
-    public bool Contains(TCard item)
+    public bool Contains(Card item)
     {
         return _cards.Contains(item);
     }
 
-    public void CopyTo(TCard[] array, int arrayIndex)
+    public void CopyTo(Card[] array, int arrayIndex)
     {
         _cards.CopyTo(array, arrayIndex);
     }
 
-    public bool Remove(TCard item)
+    public bool Remove(Card item)
     {
         return _cards.Remove(item);
     }
@@ -60,12 +59,12 @@ public partial class Cards<TCard>
 
     public bool IsReadOnly => false;
 
-    public int IndexOf(TCard item)
+    public int IndexOf(Card item)
     {
         return _cards.IndexOf(item);
     }
 
-    public void Insert(int index, TCard item)
+    public void Insert(int index, Card item)
     {
         if (_cardComparer is not null)
         {
@@ -79,7 +78,7 @@ public partial class Cards<TCard>
         _cards.RemoveAt(index);
     }
 
-    public TCard this[int index]
+    public Card this[int index]
     {
         get => _cards[index];
         set
@@ -92,5 +91,5 @@ public partial class Cards<TCard>
         }
     }
 
-    public int FindIndex(Predicate<TCard> match) => _cards.FindIndex(match);
+    public int FindIndex(Predicate<Card> match) => _cards.FindIndex(match);
 }

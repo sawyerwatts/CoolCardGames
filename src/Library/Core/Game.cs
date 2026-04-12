@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace CoolCardGames.Library.Core;
 
 /// <remarks>
-/// If you want to actually code a game, you'll want to extend <see cref="Game{TCard,TPlayerState}"/>.
+/// If you want to actually code a game, you'll want to extend <see cref="Game{TPlayerState}"/>.
 /// This interface is more for ease of proxying and testing and stuff.
 /// </remarks>
 public interface IGame : IDisposable
@@ -15,14 +15,13 @@ public interface IGame : IDisposable
     void PlayAndDisposeInBackgroundThread(CancellationToken cancellationToken);
 }
 
-public abstract class Game<TCard, TPlayerState>(
+public abstract class Game<TPlayerState>(
     IGameEventPublisher gameEventPublisher,
-    GameState<TCard, TPlayerState> gameState,
-    IReadOnlyList<IPlayer<TCard>> players,
-    ILogger<Game<TCard, TPlayerState>> logger)
+    GameState<TPlayerState> gameState,
+    IReadOnlyList<IPlayer> players,
+    ILogger<Game<TPlayerState>> logger)
     : IGame
-    where TCard : Card
-    where TPlayerState : PlayerState<TCard>
+    where TPlayerState : PlayerState
 {
     public abstract string Name { get; }
 

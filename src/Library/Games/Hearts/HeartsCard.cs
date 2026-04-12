@@ -20,6 +20,6 @@ public sealed record HeartsCard : Card
         return base.ToString();
     }
 
-    public new static Cards<HeartsCard> MakeDeck(IEnumerable<CardValue> seed) =>
+    public new static Cards MakeDeck(IEnumerable<CardValue> seed) =>
         new(seed.Select(cardValue => new HeartsCard(cardValue)));
 }

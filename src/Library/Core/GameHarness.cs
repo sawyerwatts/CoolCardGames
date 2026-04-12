@@ -10,8 +10,8 @@ namespace CoolCardGames.Library.Core;
 /// that occur alongside a game's execution.
 /// </summary>
 /// <remarks>
-/// You could probably roll this into <see cref="Game{TCard,TPlayerState}"/>, but I believe that
-/// would cause <see cref="Game{TCard,TPlayerState}"/> to have too many conceptual threads
+/// You could probably roll this into <see cref="Game{TPlayerState}"/>, but I believe that
+/// would cause <see cref="Game{TPlayerState}"/> to have too many conceptual threads
 /// (violating the Single Responsibility Principle, if you will).
 /// </remarks>
 /// <param name="game"></param>

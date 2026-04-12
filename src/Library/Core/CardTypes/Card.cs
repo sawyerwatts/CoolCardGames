@@ -15,6 +15,6 @@ public record Card(CardValue Value)
         return Value.ToString();
     }
 
-    public static Cards<Card> MakeDeck(IEnumerable<CardValue> seed) =>
+    public static Cards MakeDeck(IEnumerable<CardValue> seed) =>
         new(seed.Select(cardValue => new Card(cardValue)));
 }

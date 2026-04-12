@@ -1,4 +1,3 @@
-using CoolCardGames.Library.Core.CardTypes;
 using CoolCardGames.Library.Core.Players;
 
 using Microsoft.Extensions.Options;
@@ -7,15 +6,14 @@ namespace CoolCardGames.Cli;
 
 public class CliPlayerFactory(IServiceProvider services)
 {
-    public CliPlayer<TCard> Make<TCard>(PlayerAccountCard accountCard)
-        where TCard : Card
+    public CliPlayer Make(PlayerAccountCard accountCard)
     {
         var cliUserSettings = services.GetRequiredService<IOptionsMonitor<CliPlayerUserSettings>>();
         var cliSystemSettings = services.GetRequiredService<IOptionsMonitor<CliPlayerSystemSettings>>();
-        return new CliPlayer<TCard>(
+        return new CliPlayer(
             accountCard,
             cliUserSettings,
             cliSystemSettings,
-            services.GetRequiredService<ILogger<CliPlayer<TCard>>>());
+            services.GetRequiredService<ILogger<CliPlayer>>());
     }
 }

@@ -8,17 +8,15 @@ namespace CoolCardGames.WebApi;
 
 /// <summary>
 /// Games will asynchronously ask this player class for cards, and in parallel, users will make web
-/// requests to get events and submit cards. Beyond the usual responsibilities of <see cref="IPlayer{TCard}"/>,
+/// requests to get events and submit cards. Beyond the usual responsibilities of <see cref="IPlayer"/>,
 /// this class handles the synchronization of these two operations.
 /// </summary>
 /// <param name="playerAccountCard"></param>
 /// <param name="logger"></param>
-/// <typeparam name="TCard"></typeparam>
-public class WebPlayer<TCard>(
+public class WebPlayer(
     PlayerAccountCard playerAccountCard,
-    ILogger<IPlayer<TCard>> logger)
-    : Player<TCard>(logger)
-    where TCard : Card
+    ILogger<IPlayer> logger)
+    : Player(logger)
 {
     public override PlayerAccountCard AccountCard => playerAccountCard;
 
@@ -62,39 +60,39 @@ public class WebPlayer<TCard>(
         });
     }
 
-    public Task AnswerPromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, List<CardSelectionRule<TCard>> cardSelectionRules, CancellationToken cancellationToken)
+    public Task AnswerPromptForIndexOfCardToPlay(uint prePromptEventId, Cards cards, List<CardSelectionRule> cardSelectionRules, CancellationToken cancellationToken)
     {
         // TODO: this
         IfNotNullSelectCardFollowingTheseRules = cardSelectionRules.Select(rule => rule.Description);
         throw new NotImplementedException();
     }
 
-    public Task AnswerPromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, List<CardComboSelectionRule<TCard>> cardComboSelectionRules, CancellationToken cancellationToken)
+    public Task AnswerPromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards cards, List<CardComboSelectionRule> cardComboSelectionRules, CancellationToken cancellationToken)
     {
         // TODO: this
         IfNotNullSelectCardComboFollowingTheseRules = cardComboSelectionRules.Select(rule => rule.Description);
         throw new NotImplementedException();
     }
 
-    protected override Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards<TCard> cards, List<CardSelectionRule<TCard>> cardSelectionRules, CancellationToken cancellationToken)
+    protected override Task<int> PromptForIndexOfCardToPlay(uint prePromptEventId, Cards cards, List<CardSelectionRule> cardSelectionRules, CancellationToken cancellationToken)
     {
         // TODO: this
         throw new NotImplementedException();
     }
 
-    protected override Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards<TCard> cards, List<CardComboSelectionRule<TCard>> cardComboSelectionRules, CancellationToken cancellationToken)
+    protected override Task<List<int>> PromptForIndexesOfCardsToPlay(uint prePromptEventId, Cards cards, List<CardComboSelectionRule> cardComboSelectionRules, CancellationToken cancellationToken)
     {
         // TODO: this
         throw new NotImplementedException();
     }
 
-    protected override Task CardSelectedWasNotValid(Cards<TCard> cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    protected override Task CardSelectedWasNotValid(Cards cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
     {
         // TODO: this
         throw new NotImplementedException();
     }
 
-    protected override Task CardsSelectedWereNotValid(Cards<TCard> cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    protected override Task CardsSelectedWereNotValid(Cards cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
     {
         // TODO: this
         throw new NotImplementedException();

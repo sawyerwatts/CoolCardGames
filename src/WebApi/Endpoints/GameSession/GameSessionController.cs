@@ -10,9 +10,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
-// TODO: this assumes sticky sessions (so new events can be passed)
+// TODO: JsonSerializer isn't serializing subclass' properties
+
+// BUG: game is crashing
+
+// TODO: how clean up finished sessions?
 
 // TODO: openapi serialize enums as strings
+
+// TODO: this assumes sticky sessions (so new events can be passed)
 
 [ApiController]
 [Route("v1/GameSession")]
@@ -59,15 +65,15 @@ public class GameSessionsController(
             switch (gameType) // TODO: rm duplication b/w this and cli; put into GameRegistry?
             {
                 case HeartsGame.NameConst:
-                    var playerLogger = loggerFactory.CreateLogger<WebPlayer<HeartsCard>>();
-                    var webPlayer = new WebPlayer<HeartsCard>(_accountCard, playerLogger);
+                    var playerLogger = loggerFactory.CreateLogger<WebPlayer>();
+                    var webPlayer = new WebPlayer(_accountCard, playerLogger);
                     var game = heartsFactory.Make(
                         players:
                         [
                             webPlayer,
-                            aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
-                            aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
-                            aiPlayerFactory.Make<HeartsCard>(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
+                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 0")),
+                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 1")),
+                            aiPlayerFactory.Make(new PlayerAccountCard(Guid.NewGuid().ToString(), "AI 2")),
                         ],
                         cancellationToken: gameCancellationToken);
 
@@ -80,7 +86,6 @@ public class GameSessionsController(
                     };
                     newSession = new Session(
                         PostResponse: postResp,
-                        WebPlayerType: typeof(WebPlayer<HeartsCard>),
                         WebPlayer: webPlayer,
                         CleanUp: disposable);
 
@@ -110,13 +115,16 @@ public class GameSessionsController(
     }
 
     [HttpGet("{sessionId}")]
-    public ActionResult<GameSessionGetCurrentStateResponse> GetCurrentState([Required] string sessionId, CancellationToken cancellationToken)
+    public async Task<ActionResult<GameSessionGetCurrentStateResponse?>> GetCurrentState([Required] string sessionId, CancellationToken cancellationToken)
     {
-        // TODO: check+use sessionId
         // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
-        // TODO: actually retrieve from game; if no game, 400
-        var currState = new GameSessionGetCurrentStateResponse();
-        return Ok(currState);
+
+        var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
+        if (session is null)
+            return Ok(null);
+
+        var resp = await session.WebPlayer.GetCurrentState(cancellationToken);
+        return Ok(resp);
     }
 
     [HttpPost("{sessionId}/playCard")]
@@ -135,7 +143,6 @@ public class GameSessionsController(
 
     private sealed record Session(
         GameSessionPostResponse PostResponse,
-        Type WebPlayerType,
-        object WebPlayer,
+        WebPlayer WebPlayer,
         Disposable CleanUp);
 }

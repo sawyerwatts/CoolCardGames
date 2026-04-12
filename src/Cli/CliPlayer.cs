@@ -10,12 +10,12 @@ using Spectre.Console;
 
 namespace CoolCardGames.Cli;
 
-public partial class CliPlayer<TCard>(
+public partial class CliPlayer(
     PlayerAccountCard playerAccountCard,
     IOptionsMonitor<CliPlayerUserSettings> userSettings,
     IOptionsMonitor<CliPlayerSystemSettings> systemSettings,
-    ILogger<CliPlayer<TCard>> logger)
-    : Player<TCard>(logger) where TCard : Card
+    ILogger<CliPlayer> logger)
+    : Player(logger)
 {
     public override PlayerAccountCard AccountCard => playerAccountCard;
 
@@ -115,8 +115,8 @@ public partial class CliPlayer<TCard>(
 
     protected override async Task<int> PromptForIndexOfCardToPlay(
         uint prePromptEventId,
-        Cards<TCard> cards,
-        List<CardSelectionRule<TCard>> cardSelectionRules,
+        Cards cards,
+        List<CardSelectionRule> cardSelectionRules,
         CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
@@ -129,7 +129,7 @@ public partial class CliPlayer<TCard>(
             AnsiConsole.WriteLine();
 
         var cardToPlay = await AnsiConsole.PromptAsync(
-            new SelectionPrompt<TCard>()
+            new SelectionPrompt<Card>()
                 // .Title(title)
                 .PageSize(1024)
 #pragma warning disable CA1861
@@ -143,8 +143,8 @@ public partial class CliPlayer<TCard>(
 
     protected override async Task<List<int>> PromptForIndexesOfCardsToPlay(
         uint prePromptEventId,
-        Cards<TCard> cards,
-        List<CardComboSelectionRule<TCard>> cardComboSelectionRules,
+        Cards cards,
+        List<CardComboSelectionRule> cardComboSelectionRules,
         CancellationToken cancellationToken)
     {
         await WaitUntilUiIsSynced(prePromptEventId, cancellationToken);
@@ -157,7 +157,7 @@ public partial class CliPlayer<TCard>(
             AnsiConsole.WriteLine();
 
         var cardsToPlay = await AnsiConsole.PromptAsync(
-            new MultiSelectionPrompt<TCard>()
+            new MultiSelectionPrompt<Card>()
                 .PageSize(1024)
                 .InstructionsText(
                     "[grey](Press [blue]<space>[/] to toggle a card, " +
@@ -189,7 +189,7 @@ public partial class CliPlayer<TCard>(
         }
     }
 
-    protected override Task CardSelectedWasNotValid(Cards<TCard> cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    protected override Task CardSelectedWasNotValid(Cards cards, int iCardSelected, List<string> rulesFailed, CancellationToken cancellationToken)
     {
         if (rulesFailed.Count == 0)
             throw new ArgumentException($"{nameof(rulesFailed)} should not be empty");
@@ -199,7 +199,7 @@ public partial class CliPlayer<TCard>(
         return Task.CompletedTask;
     }
 
-    protected override Task CardsSelectedWereNotValid(Cards<TCard> cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
+    protected override Task CardsSelectedWereNotValid(Cards cards, List<int> iCardsSelected, List<string> rulesFailed, CancellationToken cancellationToken)
     {
         if (rulesFailed.Count == 0)
             throw new ArgumentException($"{nameof(rulesFailed)} should not be empty");

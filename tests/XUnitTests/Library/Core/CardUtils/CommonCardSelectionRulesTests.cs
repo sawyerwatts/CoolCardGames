@@ -4,7 +4,7 @@ namespace CoolCardGames.XUnitTests.Library.Core.CardUtils;
 
 public class CommonCardSelectionRulesTests
 {
-    private readonly Cards<Card> _hand =
+    private readonly Cards _hand =
     [
         new(AceOfHearts.Instance),
         new(TwoOfHearts.Instance),
@@ -15,7 +15,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestIsSuitFollowedIfPossibleGivenHandHasSuitAndCardIsSuitThenTrue()
     {
-        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible<Card>(Suit.Hearts);
+        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible(Suit.Hearts);
         var validCardToPlay = rule.ValidateCard(_hand, 1);
         Assert.True(validCardToPlay);
     }
@@ -23,7 +23,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestIsSuitFollowedIfPossibleGivenHandHasSuitAndCardIsNotSuitThenFalse()
     {
-        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible<Card>(Suit.Hearts);
+        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible(Suit.Hearts);
         var validCardToPlay = rule.ValidateCard(_hand, 3);
         Assert.False(validCardToPlay);
     }
@@ -31,7 +31,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestIsSuitFollowedIfPossibleGivenHandLacksSuitAndCardIsNotSuitThenTrue()
     {
-        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible<Card>(Suit.Spades);
+        var rule = CommonCardSelectionRules.IsSuitFollowedIfPossible(Suit.Spades);
         var validCardToPlay = rule.ValidateCard(_hand, 3);
         Assert.True(validCardToPlay);
     }
@@ -39,7 +39,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestLimitNumberOfCardsSelectedExpectingSpecificNumberOfCardsAndGivenThatManyCardsThenTrue()
     {
-        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(2);
+        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected(2);
         var validCardsToPlay = rule.ValidateCards(_hand, [0, 1]);
         Assert.True(validCardsToPlay);
     }
@@ -47,7 +47,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestLimitNumberOfCardsSelectedExpectingSpecificNumberOfCardsAndGivenTooFewCardsThenFalse()
     {
-        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(2);
+        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected(2);
         var validCardsToPlay = rule.ValidateCards(_hand, [0]);
         Assert.False(validCardsToPlay);
     }
@@ -55,7 +55,7 @@ public class CommonCardSelectionRulesTests
     [Fact]
     public void TestLimitNumberOfCardsSelectedExpectingSpecificNumberOfCardsAndGivenTooManyCardsThenFalse()
     {
-        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(2);
+        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected(2);
         var validCardsToPlay = rule.ValidateCards(_hand, [0, 1, 2]);
         Assert.False(validCardsToPlay);
     }
@@ -64,7 +64,7 @@ public class CommonCardSelectionRulesTests
     [MemberData(nameof(DataForTestLimitNumberOfCardsSelectedExpectingRangeAndGivenValidNumberOfCardsThenTrue))]
     public void TestLimitNumberOfCardsSelectedExpectingRangeAndGivenValidNumberOfCardsThenTrue(List<int> iCardsToPlay)
     {
-        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(minCardsToPlay: 1, maxCardsToPlay: 3);
+        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected(minCardsToPlay: 1, maxCardsToPlay: 3);
         var validCardsToPlay = rule.ValidateCards(_hand, iCardsToPlay);
         Assert.True(validCardsToPlay);
     }
@@ -81,7 +81,7 @@ public class CommonCardSelectionRulesTests
     [MemberData(nameof(DataForTestLimitNumberOfCardsSelectedExpectingRangeAndGivenInvalidNumberOfCardsThenFalse))]
     public void TestLimitNumberOfCardsSelectedExpectingRangeAndGivenInvalidNumberOfCardsThenFalse(List<int> iCardsToPlay)
     {
-        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(minCardsToPlay: 1, maxCardsToPlay: 3);
+        var rule = CommonCardSelectionRules.LimitNumberOfCardsSelected(minCardsToPlay: 1, maxCardsToPlay: 3);
         var validCardsToPlay = rule.ValidateCards(_hand, iCardsToPlay);
         Assert.False(validCardsToPlay);
     }
@@ -99,6 +99,6 @@ public class CommonCardSelectionRulesTests
     public void TestLimitNumberOfCardsSelectedGivenBadBounds(int minCardsToPlay, int maxCardsToPlay)
     {
         Assert.Throws<ArgumentException>(() =>
-            CommonCardSelectionRules.LimitNumberOfCardsSelected<Card>(minCardsToPlay: minCardsToPlay, maxCardsToPlay: maxCardsToPlay));
+            CommonCardSelectionRules.LimitNumberOfCardsSelected(minCardsToPlay: minCardsToPlay, maxCardsToPlay: maxCardsToPlay));
     }
 }

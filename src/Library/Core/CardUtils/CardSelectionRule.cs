@@ -1,14 +1,12 @@
 namespace CoolCardGames.Library.Core.CardUtils;
 
-public delegate bool CardSelectionValidation<TCard>(
-    Cards<TCard> cards,
-    int iCardToPlay)
-    where TCard : Card;
+public delegate bool CardSelectionValidation(
+    Cards cards,
+    int iCardToPlay);
 
-public readonly struct CardSelectionRule<TCard>(
+public readonly struct CardSelectionRule(
     string description,
-    CardSelectionValidation<TCard> validateCard)
-    where TCard : Card
+    CardSelectionValidation validateCard)
 {
     public CardSelectionRule() : this(null!, null!) => throw new NotSupportedException();
 
@@ -16,12 +14,12 @@ public readonly struct CardSelectionRule<TCard>(
 
     /// <remarks>
     /// This will pre-validate that <paramref name="iCardToPlay"/> is in bounds before executing the
-    /// injected <see cref="CardSelectionValidation{TCard}"/>.
+    /// injected <see cref="CardSelectionValidation"/>.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Throw when <paramref name="iCardToPlay"/> is out of range of <paramref name="cards"/>.
     /// </exception>
-    public bool ValidateCard(Cards<TCard> cards, int iCardToPlay)
+    public bool ValidateCard(Cards cards, int iCardToPlay)
     {
         if (iCardToPlay < 0 || iCardToPlay >= cards.Count)
             throw new ArgumentOutOfRangeException(nameof(iCardToPlay), $"{nameof(iCardToPlay)} ({iCardToPlay}) is out of bounds for given cards (count: {cards.Count})");
@@ -33,18 +31,16 @@ public readonly struct CardSelectionRule<TCard>(
 ////////////////////////////////////////////////////////////////////////////////
 
 /// <remarks>
-/// When used with <see cref="CardComboSelectionRule{TCard}"/>, <paramref name="iCardsToPlay"/>
+/// When used with <see cref="CardComboSelectionRule"/>, <paramref name="iCardsToPlay"/>
 /// can be assumed to be unique, valid indexes within <paramref name="cards"/>.
 /// </remarks>
-public delegate bool CardComboSelectionValidation<TCard>(
-    Cards<TCard> cards,
-    List<int> iCardsToPlay)
-    where TCard : Card;
+public delegate bool CardComboSelectionValidation(
+    Cards cards,
+    List<int> iCardsToPlay);
 
-public readonly struct CardComboSelectionRule<TCard>(
+public readonly struct CardComboSelectionRule(
     string description,
-    CardComboSelectionValidation<TCard> validateCards)
-    where TCard : Card
+    CardComboSelectionValidation validateCards)
 {
     public CardComboSelectionRule() : this(null!, null!) => throw new NotSupportedException();
 
@@ -52,7 +48,7 @@ public readonly struct CardComboSelectionRule<TCard>(
 
     /// <remarks>
     /// This will pre-validate that <paramref name="iCardsToPlay"/> are unique and all in bounds
-    /// before executing the injected <see cref="CardComboSelectionValidation{TCard}"/>.
+    /// before executing the injected <see cref="CardComboSelectionValidation"/>.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Throw when <paramref name="iCardsToPlay"/> is out of range of <paramref name="cards"/>.
@@ -60,7 +56,7 @@ public readonly struct CardComboSelectionRule<TCard>(
     /// <exception cref="ArgumentException">
     /// Throw when <paramref name="iCardsToPlay"/> contains duplicate values.
     /// </exception>
-    public bool ValidateCards(Cards<TCard> cards, List<int> iCardsToPlay)
+    public bool ValidateCards(Cards cards, List<int> iCardsToPlay)
     {
         if (iCardsToPlay.Count != iCardsToPlay.Distinct().Count())
             throw new ArgumentException($"{nameof(iCardsToPlay)} contains at least one duplicated index");

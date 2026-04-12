@@ -64,7 +64,7 @@ public sealed class DealerTests
     public async Task TestShuffle()
     {
         var deck = Card.MakeDeck(Decks.Standard52());
-        Cards<Card> prevDeck = new(deck);
+        Cards prevDeck = new(deck);
 
         var numChangedDecks = 0;
         for (var i = 0; i < 5; i++)
@@ -72,7 +72,7 @@ public sealed class DealerTests
             deck = await _dealer.Shuffle(deck, CancellationToken.None);
             if (!deck.Matches(prevDeck))
                 numChangedDecks++;
-            prevDeck = new Cards<Card>(deck);
+            prevDeck = new Cards(deck);
 
             Assert.Equal(i+1, _publisher.Events.Count);
             Assert.Equal(GameEvent.DeckShuffled.Singleton, _publisher.Events[i].GameEvent);
