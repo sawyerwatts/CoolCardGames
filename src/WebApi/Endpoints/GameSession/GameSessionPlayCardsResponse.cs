@@ -1,5 +1,3 @@
-using CoolCardGames.Library.Core.CardTypes;
-
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 public class GameSessionPlayCardsResponse
@@ -11,5 +9,5 @@ public class GameSessionPlayCardsResponse
 
     public IEnumerable<string>? RulesFailed { get; set; }
     public List<int>? IndexesOfCardsAttempted { get; set; }
-    public IEnumerable<Card>? AllCards { get; set; }
+    public IEnumerable<CardDto>? AllCards { get; set; }
 }

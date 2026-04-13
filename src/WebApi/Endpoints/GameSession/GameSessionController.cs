@@ -17,6 +17,8 @@ namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 // TODO: in resp, don't have Hand w/ cards, have Card w/ Location enum
 
+// TODO: finish separating library and api types
+
 // TODO: openapi serialize enums as strings
 
 // TODO: this assumes sticky sessions (so new events can be passed)

@@ -49,7 +49,6 @@ single binary is desired.
 - Web API (so can vibe code frontend; test what heard about good prototype but bad at iterating)
   - Just use a hardcoded jwt, for now
   - Impl stubbed endpoints
-  - Swagger page (esp for game events and card types)
   - More things to iteratively build. This way, can see how well AI behaves when given updates
     - General web API quality (POST vs PUT, problem details, etc)
     - Timeouts (player bridge)
@@ -64,8 +63,9 @@ single binary is desired.
   - `ChannelGameEventPublisher`
   - Most of Hearts
   - CLI
-- Fill out `GameRegistry`'s meta data
-- When registering game events, if the event is
+- Merging `PlayCard` and `PlayCards` to remove duplication
+- `GameRegistry`'s `MetaData` maybe possibly could use some more work around containing factories
+  - What about setting overrides?
 - How handle data visibility to diff players?
 - CLI updates
     - If game crashes, display game ID so users could report

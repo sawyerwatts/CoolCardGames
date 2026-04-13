@@ -7,7 +7,7 @@ namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
 public class GameSessionGetCurrentStateResponse
 {
-    public IEnumerable<Card> Cards { get; set; } = [];
+    public IEnumerable<CardDto> Cards { get; set; } = [];
     public IEnumerable<string>? IfNotNullSelectCardFollowingTheseRules { get; set; }
     public IEnumerable<string>? IfNotNullSelectCardComboFollowingTheseRules { get; set; }
 

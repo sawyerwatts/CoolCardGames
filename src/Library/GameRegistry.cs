@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CoolCardGames.Library;
 
-// TODO: use keyed services for game factories? what about setting overrides?
-
 public class GameRegistry(
     HeartsGameFactory heartsGameFactory,
     AiPlayerFactory aiPlayerFactory,

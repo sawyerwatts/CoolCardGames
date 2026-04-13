@@ -81,7 +81,7 @@ public class WebPlayer : Player
                 result.IfNotNullSelectCardComboFollowingTheseRules = _state.IfNotNullSelectCardComboFollowingTheseRules;
 
             if (_state.Cards is not null)
-                result.Cards = _state.Cards;
+                result.Cards = _state.Cards.ToDtos();
 
             // If the network drops the response, then the user won't have any way of replaying the
             // lost events. I couldn't think of a (relatively painless) way to implement event
@@ -308,7 +308,7 @@ public class WebPlayer : Player
                 resp.IndexOfCardAttempted = _state.IndexOfCardToPlay;
                 _state.IndexOfCardToPlay = null;
 
-                resp.AllCards = _state.Cards;
+                resp.AllCards = _state.Cards?.ToDtos();
                 _state.Cards = null;
 
                 return resp;
@@ -346,7 +346,7 @@ public class WebPlayer : Player
                 resp.IndexesOfCardsAttempted = _state.IndexesOfCardsToPlay;
                 _state.IndexesOfCardsToPlay = null;
 
-                resp.AllCards = _state.Cards;
+                resp.AllCards = _state.Cards?.ToDtos();
                 _state.Cards = null;
 
                 return resp;
