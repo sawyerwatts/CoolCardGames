@@ -11,17 +11,6 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.WebApi.Endpoints.GameSession;
 
-// TODO: replace `ok(null)`s w/ 410s
-
-// TODO: how clean up finished sessions (esp on exc)?
-
-// TODO: in resp, don't have Hand w/ cards, have Card w/ Location enum
-
-// TODO: finish separating library and api types
-
-// TODO: openapi serialize enums as strings
-
-// TODO: this assumes sticky sessions (so new events can be passed)
 
 [ApiController]
 [Route("v1/GameSession")]
@@ -108,8 +97,6 @@ public class GameSessionsController(
     [HttpGet("{sessionId}")]
     public async Task<ActionResult<GameSessionGetCurrentStateResponse?>> GetCurrentState([Required] string sessionId, CancellationToken cancellationToken)
     {
-        // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
-
         var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
         if (session is null)
             return Ok(null);
@@ -124,8 +111,6 @@ public class GameSessionsController(
         GameSessionPlayCardRequest playCardRequest,
         CancellationToken cancellationToken)
     {
-        // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
-
         var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
         if (session is null)
             return Ok(null);
@@ -141,8 +126,6 @@ public class GameSessionsController(
         GameSessionPlayCardsRequest playCardsRequest,
         CancellationToken cancellationToken)
     {
-        // TODO: use JWT sub claim to figure out player to target (if admin, get everything?)
-
         var session = Sessions.FirstOrDefault(session => session.PostResponse.SessionId == sessionId);
         if (session is null)
             return Ok(null);

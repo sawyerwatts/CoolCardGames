@@ -13,14 +13,6 @@ using Microsoft.Extensions.Options;
 
 namespace CoolCardGames.WebApi;
 
-// BUG: there are still concurrency bugs in this class
-//      - on the second trick, "The game never reviewed the cards before timing out"
-//      - esp around ifNotNullSelectCardFollowingTheseRules not being updated after the first round
-
-// TODO: if they PlayCard when need to PlayCards, don't time out
-
-// TODO: need better docs about the specific order these methods need to be used in
-
 /// <summary>
 /// Games will asynchronously ask this player class for cards, and in parallel, users will make web
 /// requests to get events and submit cards. Beyond the usual responsibilities of <see cref="IPlayer"/>,
@@ -53,10 +45,6 @@ public class WebPlayer : Player
     private readonly IOptions<Settings> _settings;
 
     private SharedState _state = new();
-
-    // TODO: need a pointer to internal game state so can get cards on demand
-    //      have its own attach to game? update Player.JoinGame to take a pointer to the game state?
-    //          update JoinGame and pass a func (method on GameState) to return state visible to given player?
 
     public override Disposable JoinGame(ChannelReader<GameEventEnvelope> currGamesEvents, IGameEventPublisher currGameEventPublisher)
     {

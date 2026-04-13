@@ -47,42 +47,55 @@ single binary is desired.
 ### Short-Term
 
 - Web API (so can vibe code frontend; test what heard about good prototype but bad at iterating)
-  - Just use a hardcoded jwt, for now
-  - Impl stubbed endpoints
-  - More things to iteratively build. This way, can see how well AI behaves when given updates
-    - General web API quality (POST vs PUT, problem details, etc)
-    - Timeouts (player bridge)
-    - Real auth
-    - Configure user/game settings
-    - Pagination of gameInstances
-    - Multiplayer (posting a game session, requiring a password like DS3, etc)
-    - [Rollback](https://en.wikipedia.org/wiki/Netcode#Rollback)
+    - replace `ok(null)`s w/ 410s
+    - `WebPlayer`: there are still concurrency bugs in this class
+        - on the second trick, "The game never reviewed the cards before timing out"
+        - esp around ifNotNullSelectCardFollowingTheseRules not being updated after the first round
+        - prob want a state machine
+        - prob want docs once finished
+    - `GameSessionController`
+        - this assumes sticky sessions (so new events can be passed)
+        - use jwt in session selection logic
+        - if they PlayCard when need to PlayCards, don't time out
+        - how clean up finished sessions (esp on exc)?
+        - in resp, don't have Hand w/ cards, have Card w/ Location enum?
+        - finish separating library and api types
+    - openapi serialize enums as strings
+    - Use a hardcoded jwt, for now
+    - More things to iteratively build. This way, can see how well AI behaves when given updates
+        - General web API quality (POST vs PUT, problem details, etc)
+        - Timeouts (player bridge)
+        - Real auth
+        - Configure user/game settings
+        - Pagination of gameInstances
+        - Multiplayer (posting a game session, requiring a password like DS3, etc)
+        - [Rollback](https://en.wikipedia.org/wiki/Netcode#Rollback)
+    - How handle data visibility to diff players? Then add to `GameSessionGetCurrentStateResponse`
+        - Might wanna pass GetCards() or GetVisibleState() delegate to player
 - More unit tests!
-  - `IReadOnlyListExtensions.FindIndex`
-  - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
-  - `ChannelGameEventPublisher`
-  - Most of Hearts
-  - CLI
+    - `IReadOnlyListExtensions.FindIndex`
+    - `Game.Play` and `Game.PlayAndDisposeInBackgroundThread`
+    - `ChannelGameEventPublisher`
+    - Most of Hearts
+    - CLI
 - Merging `PlayCard` and `PlayCards` to remove duplication
 - `GameRegistry`'s `MetaData` maybe possibly could use some more work around containing factories
-  - What about setting overrides?
-- How handle data visibility to diff players?
+    - What about setting overrides?
 - CLI updates
     - If game crashes, display game ID so users could report
     - Add a rules section to wireframe
     - Implement CLI wireframe: ![cliWireFrame.png](./docs/images/cliWireFrame.png)
-      - ([docs](https://spectreconsole.net/widgets/layout))
+        - ([docs](https://spectreconsole.net/widgets/layout))
     - Update `Driver` to be more dynamic than just hardcoding hearts stuff
     - support configuring settings, like for the game n cli itself
 - Update docs and architecture diagram to better detail interactions (and setup?)
 - Misc
-    - Since `IPlayer` is specific to a specific card type, need to construct one per game, so could
-      inject the channel into the player n take a player factory
     - revisit `HeartsGame` and `HeartsGameFactory` and see how they can be reused n cleaned up
     - Unit test `CliPlayer`
     - helpers to prompt for card(s) from many/all players?
 - Actually impl `PlayerBridge`
     - Timeout requests probably
+    - If playing by themselves, have no timeout. Otherwise, 30 sec
     - It'd be slick to refactor `CliPlayer`'s sync logic here (or "in" `IPlayer`)
 - Implement durability of games (redis, prob)
 
