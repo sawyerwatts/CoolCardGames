@@ -46,7 +46,7 @@ single binary is desired.
 
 ### Short-Term
 
-- Web API (so can vibe code frontend; test what heard about good prototype but bad at iterating)
+- Web API
     - replace `ok(null)`s w/ 410s
     - `WebPlayer`: there are still concurrency bugs in this class
         - on the second trick, "The game never reviewed the cards before timing out"
